@@ -1501,4 +1501,26 @@ class WebController extends Controller
     {
         return 'ammount is refunded';
     }
+
+    
+    public function sitemap()
+    {
+        
+        return view('web.pages.sitemap');
+    }
+    public function pagesitemap()
+    {
+        
+        return view('web.pages.pagesitemap');
+    }
+    public function productsitemap()
+    {
+        
+        return view('web.pages.productsitemap');
+    }
+    public function categoriessitemap()
+    {
+        
+        return view('web.pages.categoriessitemap');
+    }
 }
