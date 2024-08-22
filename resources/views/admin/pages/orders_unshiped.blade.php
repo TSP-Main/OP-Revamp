@@ -1,5 +1,5 @@
 @extends('admin.layouts.default')
-@section('title', 'Despensory Orders')
+@section('title', 'ShippingFail Orders')
 @section('content')
 <!-- main stated -->
 <main id="main" class="main">
@@ -328,12 +328,12 @@
     </style>
 
     <div class="pagetitle">
-        <h1><a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary-outline fw-bold "><i class="bi bi-arrow-left"></i> Back</a> | Despensory Orders</h1>
+        <h1><a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary-outline fw-bold "><i class="bi bi-arrow-left"></i> Back</a> | ShippingFail Orders</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item">Pages</li>
-                <li class="breadcrumb-item active">Despensory Orders</li>
+                <li class="breadcrumb-item active">ShippingFail Orders</li>
             </ol>
         </nav>
     </div>
@@ -433,11 +433,8 @@
                                     <td><span class="btn fw-bold rounded-pill btn-success"> {{$val['payment_status'] ?? ''}}</span> </td>
                                     <td><span class="btn  fw-bold {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }} {{ $val['status'] == 'Approved' ?  'btn-success' :'' }} {{ $val['status'] == 'Received' ?  'btn-primary' :'' }} {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }} rounded-pill">{{ $val['status'] ?? '' }}</span></td>
                                     <td style="display: inline-block;">
-                                        @if($val['status'] == 'Approved')
+                                        @if($val['status'] == 'ShippingFail')
                                         <span data-order_id="{{$val['id']}}" class="btn ship_now  fw-bold btn-primary no-wrap rounded-pill">Ship Now</span>
-                                        @endif
-                                        @if($val['status'] == 'Shiped')
-                                        <span class="btn  fw-bold btn-success no-wrap rounded-pill">Shiped</span>
                                         @endif
                                     </td>
 

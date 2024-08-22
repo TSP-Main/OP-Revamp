@@ -100,6 +100,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/doctorsApproval', [SystemController::class, 'doctors_approval'])->name('admin.doctorsApproval');
     Route::get('/dispensaryApproval', [SystemController::class, 'dispensary_approval'])->name('admin.dispensaryApproval');
     Route::get('/ordersShiped', [SystemController::class, 'orders_shiped'])->name('admin.ordersShiped');
+    Route::get('/orders-ShippingFail', [SystemController::class, 'orders_unshiped'])->name('admin.ordersShippingFail');
     Route::get('/ordersAudit', [SystemController::class, 'orders_audit'])->name('admin.ordersAudit');
     Route::get('/gpaLeters', [SystemController::class, 'gpa_letters'])->name('admin.gpaLeters');
     Route::get('/orderDetail/{id}', [SystemController::class, 'order_detail'])->name('admin.orderDetail');
