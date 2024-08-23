@@ -5,6 +5,7 @@ use App\Http\Controllers\web\HomeController;
 use App\Http\Controllers\web\WebController;
 use App\Http\Controllers\web\CartController;
 use App\Http\Controllers\Admin\DefualtController;
+use App\Http\Controllers\GoogleMerchantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,6 +145,8 @@ Route::match(['get', 'post'], '/skincare', [WebController::class, 'skincare'])->
 Route::match(['get', 'post'], '/categorydetail', [WebController::class, 'categorydetail'])->name('web.categorydetail');
 Route::get('/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_categories'])->name('web.collections');
 
+
+Route::get('/google-products', [GoogleMerchantController::class, 'listProducts']);
 
 Route::get('/sitemap_index.xml', [WebController::class, 'sitemap'])->name('sitemap');
 Route::get('/page-sitemap.xml', [WebController::class, 'pagesitemap'])->name('sitemap');
