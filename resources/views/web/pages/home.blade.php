@@ -12,7 +12,7 @@
     #div {
         width: 100%;
         height: 450px;
-        background-image: url('/img/banner/oner.webp');
+        background-image: url('/img/banner/web_banner_2.webp');
         background-size: 100% 100%;
     }
 
@@ -26,7 +26,7 @@
     #div2 {
         width: 100%;
         height: 450px;
-        background-image: url('/img/banner/home-ban-1.webp');
+        background-image: url('/img/banner/web_banner_7.webp');
         background-size: 100% 100%;
     }
 
