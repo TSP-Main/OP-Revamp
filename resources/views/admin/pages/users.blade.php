@@ -72,7 +72,7 @@
                                     <th>Phone</th>
                                     <th>Address</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <!--<th>Actions</th>-->
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,14 +99,14 @@
                                     <td style="vertical-align: middle; text-align: center;">
                                         <span class="badge  {{($value['status'] == 1) ? 'bg-success' : 'bg-danger'; }}  rounded-pill d-inline">{{ ($value['status'] == 1) ? 'Active' : 'Deactive'; }} </span>
                                     </td>
-                                    <td style="vertical-align: middle; text-align: center;">
+                                    <!--<td style="vertical-align: middle; text-align: center;">-->
                                         <!-- <a class="edit" style="cursor: pointer;" title="Edit" data-id="{{$value['id']}}" data-toggle="tooltip">
                                             <i class="bi bi-pencil-square"></i>
                                         </a> -->
-                                        <a class="delete" style="cursor: pointer;" title="Delete" data-id="{{$value['id']}} data-toggle=" tooltip">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </a>
-                                    </td>
+                                        <!--<a class="delete" style="cursor: pointer;" title="Delete" data-id="{{$value['id']}} data-toggle=" tooltip">-->
+                                        <!--    <i class="bi bi-trash-fill"></i>-->
+                                        <!--</a>-->
+                                    <!--</td>-->
                                 </tr>
                                 @endforeach
                             </tbody>

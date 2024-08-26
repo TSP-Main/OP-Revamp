@@ -105,6 +105,7 @@ function view_permission($page_name)
                 case 'orders':
                 case 'consultation_view':
                 case 'orders_shipped':
+                case 'orders_unshiped':
                 case 'orders_created':
                 case 'orders_refunded':
                 case 'orders_audit':
@@ -142,6 +143,7 @@ function view_permission($page_name)
                 case 'dispensary_approval':
                 case 'doctors_approval':
                 case 'orders_shipped':
+                case 'orders_unshiped':
                 case 'consultation_view':
                 case 'contact':
                 case 'setting':

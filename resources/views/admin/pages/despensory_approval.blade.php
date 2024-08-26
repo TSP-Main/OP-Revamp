@@ -533,7 +533,6 @@
 
         $(document).on('click', ".ship_now", function() {
             let order_id = $(this).data('order_id');
-            alert(order_id);
             $('#shiping_order').val(order_id);
             $('#form_shiping_now').submit();
         });

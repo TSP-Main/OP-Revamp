@@ -251,51 +251,74 @@ class WebController extends Controller
 
     public function product_detail(Request $request, $slug)
     {
-
+        // Redirect if there's a 'variant' query parameter
+        if ($request->has('variant')) {
+            $cleanUrl = route('web.product', ['id' => $slug]);
+            return redirect($cleanUrl, 301);
+        }
+    
         $data['user'] = auth()->user() ?? [];
-        // $data['product'] = Product::with('category:id,name,slug', 'sub_cat:id,name,slug', 'child_cat:id,name,slug', 'variants')->findOrFail($request->id);
-        $data['product'] = Product::with('productAttributes:id,product_id,image', 'category:id,name,slug', 'sub_cat:id,name,slug', 'child_cat:id,name,slug', 'variants')->where('slug', $slug)->where('status', $this->status['Active'])->firstOrFail();
-        $variants = $data['product']['variants']->toArray() ?? [];
-        if ($variants) {
-            $variants_tags = [];
+    
+        // Load product with related data
+        $data['product'] = Product::with([
+            'productAttributes:id,product_id,image',
+            'category:id,name,slug',
+            'sub_cat:id,name,slug',
+            'child_cat:id,name,slug',
+            'variants'
+        ])
+        ->where('slug', $slug)
+        ->where('status', $this->status['Active'])
+        ->firstOrFail();
+    
+        // Process variants
+        $data['variants'] = [];
+        $data['variants_tags'] = [];
+        $data['varints_selectors'] = [];
+    
+        if ($data['product']->variants->isNotEmpty()) {
+            $variants = $data['product']->variants->toArray();
             foreach ($variants as $variant) {
-                $variant_selectors = explode(';', $variant['title']);
-                $variant_values = explode(';', $variant['value']);
-                foreach ($variant_selectors as $index => $selector) {
-                    if (!in_array($variant_values[$index], $variants_tags[$selector] ?? [])) {
-                        $variants_tags[$selector][] = $variant_values[$index];
+                $selectors = explode(';', $variant['title']);
+                $values = explode(';', $variant['value']);
+                foreach ($selectors as $index => $selector) {
+                    $value = $values[$index] ?? '';
+                    $modifiedValue = str_replace([';', ' '], ['', '_'], trim($value));
+                    if (!isset($data['variants_tags'][$selector])) {
+                        $data['variants_tags'][$selector] = [];
                     }
+                    if (!in_array($value, $data['variants_tags'][$selector])) {
+                        $data['variants_tags'][$selector][] = $value;
+                    }
+                    $data['variants'][$modifiedValue] = $variant;
                 }
             }
-            $modifyValue = function ($value) {
-                return str_replace([';', ' '], ['', '_'], trim($value));
-            };
-
             $data['varints_selectors'] = explode(';', $variants[0]['title'] ?? '');
-            $data['variants_tags']  = $variants_tags;
-            $data['variants'] = array_combine(array_map($modifyValue, array_column($variants, 'value')), $variants);
         }
-        if ($data['product']) {
-            $data['pre_add_to_cart']  = 'no';
-            foreach (session('consultations') ?? [] as $key => $value) {
-                if ($key == $data['product']->id || strpos($key, ',') !== false && in_array($data['product']->id, explode(',', $key))) {
-                    if (isset(session('consultations')[$key]) && session('consultations')[$key]['gen_quest_ans'] != '' && session('consultations')[$key]['pro_quest_ans'] != '') {
-                        $data['pre_add_to_cart']  = 'yes';
-                        break;
-                    }
+    
+        // Check if product can be added to cart
+        $data['pre_add_to_cart'] = 'no';
+        foreach (session('consultations') ?? [] as $key => $value) {
+            if ($key == $data['product']->id || strpos($key, ',') !== false && in_array($data['product']->id, explode(',', $key))) {
+                if (isset(session('consultations')[$key]) && session('consultations')[$key]['gen_quest_ans'] !== '' && session('consultations')[$key]['pro_quest_ans'] !== '') {
+                    $data['pre_add_to_cart'] = 'yes';
+                    break;
                 }
             }
-            $data['related_products'] = $this->get_related_products($data['product']);
-            $data['faqs'] = FaqProduct::where(['status' => 'Active', 'product_id' => $data['product']->id])
-                ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
-                ->orderBy('id')
-                ->get()
-                ->toArray();
-            return view('web.pages.product', $data);
-        } else {
-            redirect()->back();
         }
+    
+        // Fetch related products and FAQs
+        $data['related_products'] = $this->get_related_products($data['product']);
+        $data['faqs'] = FaqProduct::where(['status' => 'Active', 'product_id' => $data['product']->id])
+            ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
+            ->orderBy('id')
+            ->get()
+            ->toArray();
+    
+        // Render view with data
+        return view('web.pages.product', $data);
     }
+    
 
 
     public function consultation_form(Request $request)
@@ -1500,5 +1523,27 @@ class WebController extends Controller
     public function successfully_refunded(Request $request)
     {
         return 'ammount is refunded';
+    }
+
+    
+    public function sitemap()
+    {
+        
+        return view('web.pages.sitemap');
+    }
+    public function pagesitemap()
+    {
+        
+        return view('web.pages.pagesitemap');
+    }
+    public function productsitemap()
+    {
+        
+        return view('web.pages.productsitemap');
+    }
+    public function categoriessitemap()
+    {
+        
+        return view('web.pages.categoriessitemap');
     }
 }
