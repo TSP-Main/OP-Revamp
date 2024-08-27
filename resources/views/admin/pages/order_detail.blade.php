@@ -219,7 +219,7 @@
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-lg-12">
                                 <div class="text">
-                                    <h4 class="fw-bold">Fulfill By</h4>
+                                    <h4 class="fw-bold">Order Placed</h4>
                                     <p>{{ \Carbon\Carbon::parse($order['created_at'])->format('M, d, Y - H:i') }}</p>
                                 </div>
                                 <div class="card shadow-0 border mb-4">

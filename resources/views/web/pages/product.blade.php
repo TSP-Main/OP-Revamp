@@ -380,7 +380,7 @@
             var combinedVariantVal = '';
             $('.variant_tag_active').each(function() {
                 var variantValue = $(this).data('variant_val');
-                variantValue = variantValue.replace(/;/g, '').replace(/ /g, '_');
+                variantValue =String(variantValue).replace(/;/g, '').replace(/ /g, '_');
                 combinedVariantVal += variantValue;
             });
             var current_variant = variantData[combinedVariantVal];

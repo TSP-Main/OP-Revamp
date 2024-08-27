@@ -1788,6 +1788,22 @@ class SystemController extends Controller
         return view('admin.pages.orders_shiped', $data);
     }
 
+    public function orders_unshiped()
+    {
+        $data['user'] = auth()->user();
+        $page_name = 'orders_shipped';
+        if (!view_permission($page_name)) {
+            return redirect()->back();
+        }
+        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders);
+            $data['orders'] = $this->assign_order_types($orders);
+        }
+
+        return view('admin.pages.orders_unshiped', $data);
+    }
+
     public function gpa_letters()
     {
         $data['user'] = auth()->user();
@@ -2329,11 +2345,11 @@ class SystemController extends Controller
                     "total" => $order['total_ammount'],
                     "currencyCode" => "GBP",
                     "postageDetails" => [
-                        "sendNotificationsTo" => "sender",
+                        "sendNotificationsTo" => "billing",
                         "consequentialLoss" => 0,
                         "receiveEmailNotification" => true,
-                        "receiveSmsNotification" => false,
-                        "guaranteedSaturdayDelivery" => null,
+                        "receiveSmsNotification" => true,
+                        "guaranteedSaturdayDelivery" => false,
                         "requestSignatureUponDelivery" => true,
                         "isLocalCollect" => null,
                         "safePlace" => null,

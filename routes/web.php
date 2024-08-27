@@ -5,6 +5,7 @@ use App\Http\Controllers\web\HomeController;
 use App\Http\Controllers\web\WebController;
 use App\Http\Controllers\web\CartController;
 use App\Http\Controllers\Admin\DefualtController;
+use App\Http\Controllers\GoogleMerchantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,14 +24,6 @@ Route::match(['get', 'post'], '/login', [DefualtController::class, 'login'])->na
 Route::match(['get', 'post'], '/register', [DefualtController::class, 'registration_form'])->name('register');
 Route::match(['get', 'post'], '/regisrationFrom', [DefualtController::class, 'user_register'])->name('web.user_register');
 Route::match(['get', 'post'], '/logout', [DefualtController::class, 'logout'])->name('web.logout');
-
-Route::match(['get', 'post'], '/categories', [WebController::class, 'categories'])->name('web.categories');
-Route::match(['get', 'post'], '/sleep', [WebController::class, 'sleep'])->name('web.sleep');
-Route::match(['get', 'post'], '/category/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_products'])->name('category.products');
-Route::match(['get', 'post'], '/diabetes', [WebController::class, 'diabetes'])->name('web.diabetes');
-Route::match(['get', 'post'], '/skincare', [WebController::class, 'skincare'])->name('web.skincare');
-Route::match(['get', 'post'], '/categorydetail', [WebController::class, 'categorydetail'])->name('web.categorydetail');
-Route::get('/collections/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_categories'])->name('web.collections');
 
 Route::get('/shop', [WebController::class, 'shop'])->name('shop');
 Route::get('/product/{id:slug}', [WebController::class, 'product_detail'])->name('web.product');
@@ -143,5 +136,21 @@ return view('emails.order_confrimation');
 
 Route::fallback([WebController::class, 'error_404']);
 include __DIR__ . '/admin.php';
+
+Route::match(['get', 'post'], '/categories', [WebController::class, 'categories'])->name('web.categories');
+Route::match(['get', 'post'], '/sleep', [WebController::class, 'sleep'])->name('web.sleep');
+Route::match(['get', 'post'], '/category/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_products'])->name('category.products');
+Route::match(['get', 'post'], '/diabetes', [WebController::class, 'diabetes'])->name('web.diabetes');
+Route::match(['get', 'post'], '/skincare', [WebController::class, 'skincare'])->name('web.skincare');
+Route::match(['get', 'post'], '/categorydetail', [WebController::class, 'categorydetail'])->name('web.categorydetail');
+Route::get('/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_categories'])->name('web.collections');
+
+
+Route::get('/google-products', [GoogleMerchantController::class, 'listProducts']);
+
+Route::get('/sitemap_index.xml', [WebController::class, 'sitemap'])->name('sitemap');
+Route::get('/page-sitemap.xml', [WebController::class, 'pagesitemap'])->name('sitemap');
+Route::get('/categories-sitemap.xml', [WebController::class, 'categoriessitemap'])->name('sitemap');
+Route::get('/products-sitemap.xml', [WebController::class, 'productsitemap'])->name('sitemap');
 
 

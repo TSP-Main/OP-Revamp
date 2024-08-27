@@ -254,17 +254,17 @@
                                 <div class="d-flex inch d-flex justify-content-end ">
                                     <div class="col-4">
                                         <label for="feet" class="form-lable ">Feet</lable>
-                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="feet" name="quest_10['feet']" placeholder="0.0">
+                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="feet" name="quest_16['feet']" placeholder="0.0">
                                     </div>
                                     <div class="col-4">
                                         <label for="inches" class="form-lable ">Inches</lable>
-                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="inches" name="quest_10['inches']" placeholder="0.0">
+                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="inches" name="quest_16['inches']" placeholder="0.0">
                                     </div>
                                 </div>
                                 <div class="d-flex cm d-flex justify-content-end d-none">
                                     <div class="col-6">
                                         <label for="cm" class="form-lable px-2">cm</lable>
-                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="cm" name="quest_10['cm']" placeholder="0.0">
+                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="cm" name="quest_16['cm']" placeholder="0.0">
                                     </div>
                                 </div>
                             </div>
@@ -282,17 +282,17 @@
                                 <div class="d-flex stone d-flex justify-content-end ">
                                     <div class="col-4">
                                         <label for="stone" class="form-lable ">Stone</lable>
-                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="stone" name="quest_11['stone']" placeholder="0.0">
+                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="stone" name="quest_17['stone']" placeholder="0.0">
                                     </div>
                                     <div class="col-4">
                                         <label for="pounds" class="form-lable ">Pounds</lable>
-                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="pounds" name="quest_11['pounds']" placeholder="0.0">
+                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="pounds" name="quest_17['pounds']" placeholder="0.0">
                                     </div>
                                 </div>
                                 <div class="d-flex kg d-flex justify-content-end d-none">
                                     <div class="col-6">
                                         <label for="kg" class="form-lable px-2">Kg</lable>
-                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="kg" name="quest_11['kg']" placeholder="0.0">
+                                            <input type="number" min="0.00" class="form-control w-100 " style="padding: 11px !important; " id="kg" name="quest_17['kg']" placeholder="0.0">
                                     </div>
                                 </div>
                             </div>
@@ -515,6 +515,15 @@
             $('.cm').toggleClass('d-none');
             $('.inch').toggleClass('d-none');
             var buttonText = $(this).text() === 'Switch to cm' ? 'Switch to ft, in' : 'Switch to cm';
+            if (buttonText === 'Switch to ft, in') {
+                $('#inches').attr('required', false).val('');
+                $('#feet').attr('required', false).val('');
+                $('#cm').attr('required', true).val('');
+            } else {
+                $('#feet').attr('required', true).val('');
+                $('#inches').attr('required', true).val('');
+                $('#cm').attr('required', false).val('');
+            }
             $(this).text(buttonText);
         });
 
@@ -522,6 +531,15 @@
             $('.stone').toggleClass('d-none');
             $('.kg').toggleClass('d-none');
             var buttonText = $(this).text() === 'Switch to Kg' ? 'Switch to st, lb' : 'Switch to Kg';
+            if (buttonText === 'Switch to st, lb') {
+                $('#stone').attr('required', false).val('');
+                $('#pounds').attr('required', false).val('');
+                $('#kg').attr('required', true).val('');
+            } else {
+                $('#stone').attr('required', true).val('');
+                $('#pounds').attr('required', true).val('');
+                $('#kg').attr('required', false).val('');
+            }
             $(this).text(buttonText);
         });
 
