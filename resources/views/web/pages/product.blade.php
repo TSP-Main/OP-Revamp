@@ -386,10 +386,10 @@
             var current_variant = variantData[combinedVariantVal];
 
             // // update url according to variant start
-            // var current_variant_slug = current_variant.slug;
-            // var currentUrl = window.location.href;
-            // var newUrl = updateUrlParameter(currentUrl, 'variant', current_variant_slug);
-            // history.pushState({}, '', newUrl);
+            var current_variant_slug = current_variant.slug;
+            var currentUrl = window.location.href;
+            var newUrl = updateUrlParameter(currentUrl, 'variant', current_variant_slug);
+            history.pushState({}, '', newUrl);
             // // update url according to variant end
 
             var mainImage = $(this).data('main_image');

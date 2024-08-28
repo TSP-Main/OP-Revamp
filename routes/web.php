@@ -26,7 +26,7 @@ Route::match(['get', 'post'], '/regisrationFrom', [DefualtController::class, 'us
 Route::match(['get', 'post'], '/logout', [DefualtController::class, 'logout'])->name('web.logout');
 
 Route::get('/shop', [WebController::class, 'shop'])->name('shop');
-Route::get('/product/{id:slug}', [WebController::class, 'product_detail'])->name('web.product');
+Route::get('/{id:slug}', [WebController::class, 'product_detail'])->name('web.product');
 
 Route::match(['get', 'post'], '/productQuestion/{id}', [WebController::class, 'product_question'])->name('web.productQuestion');
 Route::match(['get', 'post'], '/consultationForm', [WebController::class, 'consultation_form'])->name('web.consultationForm');
