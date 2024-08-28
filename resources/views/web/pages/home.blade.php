@@ -57,13 +57,16 @@
     <div class="ltn__slide-one-active slick-slide-arrow-1 slick-slide-dots-1">
         <!-- ltn__slide-item -->
         <div class="">
-            <div id="div"></div>
+            <a href="https://onlinepharmacy-4u.co.uk/product/canesoasis-cystitis-relief-4g-x-6-sachets">
+            <div id="div"></div> </a>
         </div>
         <div class="">
-            <div id="div1"></div>
+            <a href="https://onlinepharmacy-4u.co.uk/product/colief-baby-scalp-oil-30ml">
+            <div id="div1"></div></a>
         </div>
         <div class="">
-            <div id="div2"></div>
+            <a href= "https://onlinepharmacy-4u.co.uk/product/vitality-cbd-muscle-joint-gel-500mg-100ml">
+            <div id="div2"></div></a>
         </div>
         <!--  -->
     </div>

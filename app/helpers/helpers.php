@@ -111,6 +111,7 @@ function view_permission($page_name)
                 case 'orders_audit':
                 case 'gpa_letters':
                 case 'orders_recieved':
+                case 'admin.allOrders';
                 case 'doctors_approval':
                 case 'doctors':
                 case 'add_doctor':

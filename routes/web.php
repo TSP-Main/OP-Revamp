@@ -137,6 +137,11 @@ return view('emails.order_confrimation');
 Route::fallback([WebController::class, 'error_404']);
 include __DIR__ . '/admin.php';
 
+Route::get('/sitemap_index.xml', [WebController::class, 'sitemap'])->name('sitemap');
+Route::get('/page-sitemap.xml', [WebController::class, 'pagesitemap'])->name('sitemap');
+Route::get('/categories-sitemap.xml', [WebController::class, 'categoriessitemap'])->name('sitemap');
+Route::get('/products-sitemap.xml', [WebController::class, 'productsitemap'])->name('sitemap');
+
 Route::match(['get', 'post'], '/categories', [WebController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/sleep', [WebController::class, 'sleep'])->name('web.sleep');
 Route::match(['get', 'post'], '/category/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_products'])->name('category.products');
@@ -148,9 +153,5 @@ Route::get('/{main_category?}/{sub_category?}/{child_category?}', [WebController
 
 Route::get('/google-products', [GoogleMerchantController::class, 'listProducts']);
 
-Route::get('/sitemap_index.xml', [WebController::class, 'sitemap'])->name('sitemap');
-Route::get('/page-sitemap.xml', [WebController::class, 'pagesitemap'])->name('sitemap');
-Route::get('/categories-sitemap.xml', [WebController::class, 'categoriessitemap'])->name('sitemap');
-Route::get('/products-sitemap.xml', [WebController::class, 'productsitemap'])->name('sitemap');
 
 

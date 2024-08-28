@@ -60,6 +60,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/updateBuyLimits', [ProductController::class, 'update_buy_limits'])->name('admin.updateBuyLimits');
     Route::match(['get', 'post'], '/updateStatus', [ProductController::class, 'update_status'])->name('admin.updateStatus');
     Route::match(['get', 'post'], '/searchProducts', [ProductController::class, 'search_products'])->name('admin.searchProducts');
+    Route::match(['get', 'post'], '/exportProductsCSV', [ProductController::class, 'exportCSV'])->name('admin.exportProductsCSV');
 
     Route::get('/admins', [SystemController::class, 'admins'])->name('admin.admins');
     Route::match(['get', 'post'], '/addAdmin',   [SystemController::class, 'add_admin'])->name('admin.addAdmin');
@@ -91,6 +92,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/commentStore', [SystemController::class, 'comment_store'])->name('admin.commentStore');
 
     Route::get('/ordersReceived', [SystemController::class, 'orders_recieved'])->name('admin.ordersRecieved');
+    Route::get('/ordersAll', [SystemController::class, 'all_orders'])->name('admin.allOrders');
     Route::get('/ordersCreated', [SystemController::class, 'orders_created'])->name('admin.ordersCreated');
     Route::post('/duplicate-order', [SystemController::class, 'duplicate_Order'])->name('admin.duplicateOrder');
 
