@@ -251,72 +251,50 @@ class WebController extends Controller
 
     public function product_detail(Request $request, $slug)
     {
-        // Redirect if there's a 'variant' query parameter
-        if ($request->has('variant')) {
-            $cleanUrl = route('web.product', ['id' => $slug]);
-            return redirect($cleanUrl, 301);
-        }
-    
+
         $data['user'] = auth()->user() ?? [];
-    
-        // Load product with related data
-        $data['product'] = Product::with([
-            'productAttributes:id,product_id,image',
-            'category:id,name,slug',
-            'sub_cat:id,name,slug',
-            'child_cat:id,name,slug',
-            'variants'
-        ])
-        ->where('slug', $slug)
-        ->where('status', $this->status['Active'])
-        ->firstOrFail();
-    
-        // Process variants
-        $data['variants'] = [];
-        $data['variants_tags'] = [];
-        $data['varints_selectors'] = [];
-    
-        if ($data['product']->variants->isNotEmpty()) {
-            $variants = $data['product']->variants->toArray();
+        // $data['product'] = Product::with('category:id,name,slug', 'sub_cat:id,name,slug', 'child_cat:id,name,slug', 'variants')->findOrFail($request->id);
+        $data['product'] = Product::with('productAttributes:id,product_id,image', 'category:id,name,slug', 'sub_cat:id,name,slug', 'child_cat:id,name,slug', 'variants')->where('slug', $slug)->where('status', $this->status['Active'])->firstOrFail();
+        $variants = $data['product']['variants']->toArray() ?? [];
+        if ($variants) {
+            $variants_tags = [];
             foreach ($variants as $variant) {
-                $selectors = explode(';', $variant['title']);
-                $values = explode(';', $variant['value']);
-                foreach ($selectors as $index => $selector) {
-                    $value = $values[$index] ?? '';
-                    $modifiedValue = str_replace([';', ' '], ['', '_'], trim($value));
-                    if (!isset($data['variants_tags'][$selector])) {
-                        $data['variants_tags'][$selector] = [];
+                $variant_selectors = explode(';', $variant['title']);
+                $variant_values = explode(';', $variant['value']);
+                foreach ($variant_selectors as $index => $selector) {
+                    if (!in_array($variant_values[$index], $variants_tags[$selector] ?? [])) {
+                        $variants_tags[$selector][] = $variant_values[$index];
                     }
-                    if (!in_array($value, $data['variants_tags'][$selector])) {
-                        $data['variants_tags'][$selector][] = $value;
-                    }
-                    $data['variants'][$modifiedValue] = $variant;
                 }
             }
+            $modifyValue = function ($value) {
+                return str_replace([';', ' '], ['', '_'], trim($value));
+            };
+
             $data['varints_selectors'] = explode(';', $variants[0]['title'] ?? '');
+            $data['variants_tags']  = $variants_tags;
+            $data['variants'] = array_combine(array_map($modifyValue, array_column($variants, 'value')), $variants);
         }
-    
-        // Check if product can be added to cart
-        $data['pre_add_to_cart'] = 'no';
-        foreach (session('consultations') ?? [] as $key => $value) {
-            if ($key == $data['product']->id || strpos($key, ',') !== false && in_array($data['product']->id, explode(',', $key))) {
-                if (isset(session('consultations')[$key]) && session('consultations')[$key]['gen_quest_ans'] !== '' && session('consultations')[$key]['pro_quest_ans'] !== '') {
-                    $data['pre_add_to_cart'] = 'yes';
-                    break;
+        if ($data['product']) {
+            $data['pre_add_to_cart']  = 'no';
+            foreach (session('consultations') ?? [] as $key => $value) {
+                if ($key == $data['product']->id || strpos($key, ',') !== false && in_array($data['product']->id, explode(',', $key))) {
+                    if (isset(session('consultations')[$key]) && session('consultations')[$key]['gen_quest_ans'] != '' && session('consultations')[$key]['pro_quest_ans'] != '') {
+                        $data['pre_add_to_cart']  = 'yes';
+                        break;
+                    }
                 }
             }
+            $data['related_products'] = $this->get_related_products($data['product']);
+            $data['faqs'] = FaqProduct::where(['status' => 'Active', 'product_id' => $data['product']->id])
+                ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
+                ->orderBy('id')
+                ->get()
+                ->toArray();
+            return view('web.pages.product', $data);
+        } else {
+            redirect()->back();
         }
-    
-        // Fetch related products and FAQs
-        $data['related_products'] = $this->get_related_products($data['product']);
-        $data['faqs'] = FaqProduct::where(['status' => 'Active', 'product_id' => $data['product']->id])
-            ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
-            ->orderBy('id')
-            ->get()
-            ->toArray();
-    
-        // Render view with data
-        return view('web.pages.product', $data);
     }
     
 
@@ -1074,6 +1052,190 @@ class WebController extends Controller
             }
         }
     }
+//     protected function sendHttpRequest($url, $data, $endpoint)
+//     {
+//         $apiKey = env('API_KEY');
+//         $brandId = env('BRAND_ID');
+        
+//         \Log::info('Sending request to Super Payments', [
+//             'url' => $url,
+//             'headers' => [
+//                 'Authorization' => $apiKey,
+//                 'Accept' => 'application/json',
+//                 'Content-Type' => 'application/json'
+//             ],
+//             'data' => json_encode(array_merge($data, ['brandId' => $brandId]))
+//         ]);
+        
+//         $response = Http::withHeaders([
+//             'Authorization' => $apiKey,
+//             'Accept' => 'application/json',
+//             'Content-Type' => 'application/json',
+//         ])->post($url, $data); // Send data directly without additional json_encode
+        
+//         \Log::info('Received response from Super Payments', [
+//             'response' => $response->body(),
+//             'status' => $response->status(),
+//             'headers' => $response->headers()
+//         ]);
+        
+//         return $response->body();
+//     }
+    
+    
+    
+
+//   public function payment(Request $request)
+// {
+//     $user = auth()->user() ?? [];
+//     $data = $request->all();
+//     $order_ids = $request->input('order_id.order_id', []);
+//     $order = null;
+
+//     if (!empty($order_ids)) {
+//         $order = Order::whereIn('id', $order_ids)->first();
+//         if ($order) {
+//             $order->update([
+//                 'user_id'       => $user->id ?? 'guest',
+//                 'email'         => $request->email,
+//                 'note'          => $request->note,
+//                 'shiping_cost'  => $request->shiping_cost,
+//                 'coupon_code'   => $request->coupon_code ?? null,
+//                 'coupon_value'  => $request->coupon_value ?? null,
+//                 'total_ammount' => $request->total_ammount ?? null,
+//                 'created_at' => now(),
+//                 'updated_at' => now(),
+//             ]);
+//         }
+//     } else {
+//         $order = Order::create([
+//             'user_id'        => $user->id ?? 'guest',
+//             'email'          => $request->email,
+//             'note'           => $request->note,
+//             'shiping_cost'   => $request->shiping_cost,
+//             'coupon_code'    => $request->coupon_code ?? null,
+//             'coupon_value'   => $request->coupon_value ?? null,
+//             'total_ammount'  => $request->total_ammount ?? null,
+//         ]);
+//     }
+
+//     if ($order) {
+//         $order_details = [];
+//         $index = 0;
+//         $order_for = 'despensory';
+        
+//         foreach ($request->order_details['product_id'] as $key => $ids) {
+//             if (strpos($ids, '_') !== false) {
+//                 [$pro_id, $variant_id] = explode('_', $ids);
+//             } else {
+//                 $pro_id = $ids;
+//                 $variant_id = null;
+//             }
+//             $consultaion_type = 'one_over';
+
+//             foreach (session('consultations') ?? [] as $key => $value) {
+//                 if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
+//                     if (isset(session('consultations')[$key])) {
+//                         $consultaion_type = session('consultations')[$key]['type'];
+//                         $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : null;
+//                         $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : null;
+//                         if ($product_consultation != '""') {
+//                             $order_for = 'doctor';
+//                         }
+//                         break;
+//                     }
+//                 }
+//             }
+//             if ($variant_id) {
+//                 $variant = ProductVariant::find($variant_id);
+//                 $vart_type = explode(';', $variant->title);
+//                 $vart_value = explode(';', $variant->value);
+//                 $var_info = '';
+//                 foreach ($vart_type as $key => $type) {
+//                     $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+//                     if ($key < count($vart_type) - 1) {
+//                         $var_info .= ', ';
+//                     }
+//                 }
+//             }
+
+//             $order_details[] = [
+//                 'product_id' => $pro_id,
+//                 'variant_id' => $variant_id ?? null,
+//                 'variant_details' => $var_info ?? null,
+//                 'weight' => Product::find($pro_id)->weight,
+//                 'order_id' => $order->id,
+//                 'product_price' => $request->order_details['product_price'][$index],
+//                 'product_name' => $request->order_details['product_name'][$index],
+//                 'product_qty' => $request->order_details['product_qty'][$index],
+//                 'generic_consultation' => $generic_consultation ?? null,
+//                 'product_consultation' => $product_consultation ?? null,
+//                 'consultation_type' => $consultaion_type ?? null,
+//                 'created_at' => now(),
+//                 'updated_at' => now(),
+//             ];
+
+//             $index++;
+//         }
+
+//         Order::where(['id' => $order->id])->latest('created_at')->first()
+//             ->update(['order_for' => $order_for]);
+//         OrderDetail::insert($order_details);
+
+//         $shipping_details = [
+//             'order_id' => $order->id,
+//             'user_id' => $user->id ?? '',
+//             'cost' => $request->shiping_cost,
+//             'method' => $request->shipping_method,
+//             'old_address' => $request->old_address ?? 'no',
+//             'firstName' => $request->firstName,
+//             'lastName' => $request->lastName,
+//             'email' => $request->email,
+//             'phone' => $request->phone,
+//             'address' => $request->address,
+//             'address2' => $request->address2,
+//             'city' => $request->city,
+//             'state' => $request->state,
+//             'zip_code' => $request->zip_code,
+//         ];
+//         ShipingDetail::create($shipping_details);
+
+//         // Call Super Payments API for reward calculation
+//         $rewardResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/reward-calculations', [
+//             'amount' => $request->total_ammount * 100, 
+//             'brandId' => '28f5c069-c26f-4b65-8b4b-0eaea87897ac',
+//             'currency' => 'GBP'
+//         ], 'reward');
+
+//         $rewardData = json_decode($rewardResponse, true);
+
+//         if (isset($rewardData['id'])) {
+//             $rewardCalculationId = $rewardData['id'];
+
+//             $baseUrl = 'https://onlinepharmacy-4u.co.uk/'; // Update with actual base URL
+
+//             // Call Super Payments API to create a payment
+//             $paymentResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/payments', [
+//                 "brandId" =>  $brandId = env('BRAND_ID'),
+//                 'amount' => (int)$request->total_ammount * 100, 
+//                 'rewardCalculationId' => $rewardCalculationId,
+//                 'currency' => 'GBP',
+//                 'successUrl' =>strip_tags($baseUrl),
+//                 'cancelUrl' =>strip_tags($baseUrl),
+//                 'failureUrl' => strip_tags($baseUrl)
+//             ], 'payment');
+
+//             $paymentData = json_decode($paymentResponse, true);
+
+//             if (isset($paymentData['redirectUrl'])) {
+//                 return response()->json(['redirectUrl' => $paymentData['redirectUrl']]);
+//             }
+//         }
+//     }
+
+//     return redirect()->route('web.view.cart');
+// }
+
 
     private function getAccessToken()
     {
