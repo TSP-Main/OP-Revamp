@@ -84,7 +84,7 @@
                                                 <button class="theme-btn-1 btn btn-block px-4 py-2" type="submit">SIGN IN</button>
                                             </div>
                                             <div class="dont-account text-center mt-3">
-                                                <strong>Don't have an account? <span> <a href="/register" class="pe-2" style="font-size: 12px; color:gray">Create Account</a></span> </strong>
+                                                <strong>Don't have an account? <span> <a href="/register" class="pe-2" style="font-size: 14px; color:rgb(0, 123, 255)">Create Account</a></span> </strong>
                                             </div>
 
                                     </form>

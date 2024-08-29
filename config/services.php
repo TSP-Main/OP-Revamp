@@ -13,6 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'super_payments' => [
+    'api_key' => env('SUPERPAYMENT_API_KEY'),
+    'brand_id' => env('BRAND_ID'),
+   ],
 
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),

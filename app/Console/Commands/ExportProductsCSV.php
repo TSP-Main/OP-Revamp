@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Product; // Ensure this path matches your Product model
+use App\Models\Product;
 use League\Csv\Writer;
 use SplTempFileObject;
 
@@ -34,15 +34,18 @@ class ExportProductsCSV extends Command
             'Created At', 'Updated At'
         ]);
 
+        // Define base URL for slug and main image
+        $baseUrl = 'https://onlinepharmacy-4u.co.uk';
+
         // Add product data
         foreach ($products as $product) {
             $csv->insertOne([
                 $product->id,
                 $product->title,
-                $product->slug,
+                $baseUrl . '/product/' . $product->slug, // Full URL for slug
                 $product->short_desc,
                 $product->desc,
-                $product->main_image,
+                $baseUrl . '/storage/' . $product->main_image, // Full URL for main image
                 $product->price,
                 $product->stock,
                 $product->weight,

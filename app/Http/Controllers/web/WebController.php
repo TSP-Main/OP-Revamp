@@ -1146,6 +1146,9 @@ class WebController extends Controller
                     }
                 }
             }
+            
+            $var_info = null;
+            
             if ($variant_id) {
                 $variant = ProductVariant::find($variant_id);
                 $vart_type = explode(';', $variant->title);
