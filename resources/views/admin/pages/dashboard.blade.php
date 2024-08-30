@@ -47,14 +47,13 @@
                                 <div class="filter">
                                     <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                             class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         <li class="dropdown-header text-start">
                                             <h6>Filter</h6>
                                         </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('salesThisDay')">Today</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('salesThisMonth')">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('salesThisYear')">This Year</a></li>
                                     </ul>
                                 </div>
 
@@ -68,8 +67,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="total-revenue">Loading...</h6>
-                                            <span class="text-success small pt-1 fw-bold">8%</span> <span
-                                                class="text-muted small pt-2 ps-1">increase</span>
+                                            <!-- <span class="text-success small pt-1 fw-bold">8%</span> <span
+                                                class="text-muted small pt-2 ps-1">increase</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -83,15 +82,15 @@
 
                                 <div class="filter">
                                     <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
+                                            class="bi bi-three-dots"></i></a> 
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         <li class="dropdown-header text-start">
                                             <h6>Filter</h6>
                                         </li>
 
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('doctorOrdersThisDay')">Today</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('doctorOrdersThisMonth')">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('doctorOrdersThisYear')">This Year</a></li>
                                     </ul>
                                 </div>
 
@@ -105,8 +104,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="orders-doctors">Loading...</h6>
-                                            <span class="text-danger small pt-1 fw-bold">12%</span> <span
-                                                class="text-muted small pt-2 ps-1">decrease</span>
+                                            <!-- <span class="text-danger small pt-1 fw-bold">12%</span> <span
+                                                class="text-muted small pt-2 ps-1">decrease</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -120,15 +119,15 @@
 
                                 <div class="filter">
                                     <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
+                                            class="bi bi-three-dots"></i></a> 
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         <li class="dropdown-header text-start">
                                             <h6>Filter</h6>
                                         </li>
 
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('despensoryOrdersThisYear')">Today</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('despensoryOrdersThisMonth')">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('despensoryOrdersThisDay')">This Year</a></li>
                                     </ul>
                                 </div>
 
@@ -142,8 +141,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="orders-dispensaries">Loading...</h6>
-                                            <span class="text-danger small pt-1 fw-bold">12%</span> <span
-                                                class="text-muted small pt-2 ps-1">decrease</span>
+                                            <!-- <span class="text-danger small pt-1 fw-bold">12%</span> <span
+                                                class="text-muted small pt-2 ps-1">decrease</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -157,7 +156,7 @@
                 <!-- End Left side columns -->
 
                 <!-- Left side columns -->
-                <div class="col-lg-8">
+                <div class="col-lg-12">
                     <div class="row">
 
 
@@ -173,9 +172,9 @@
                                             <h6>Filter</h6>
                                         </li>
 
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('totalOrdersThisDay')">Today</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('totalOrdersThisMonth')">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('totalOrdersThisYear')">This Year</a></li>
                                     </ul>
                                 </div>
 
@@ -189,8 +188,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="total-orders">Loading...</h6>
-                                            <span class="text-success small pt-1 fw-bold">12%</span> <span
-                                                class="text-muted small pt-2 ps-1">increase</span>
+                                            <!-- <span class="text-success small pt-1 fw-bold">12%</span> <span
+                                                class="text-muted small pt-2 ps-1">increase</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -210,9 +209,9 @@
                                             <h6>Filter</h6>
                                         </li>
 
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('pendingOrdersThisDay')">Today</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('pendingOrdersThisMonth')">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('pendingOrdersThisYear')">This Year</a></li>
                                     </ul>
                                 </div>
 
@@ -226,8 +225,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="pending-orders">Loading...</h6>
-                                            <span class="text-danger small pt-1 fw-bold">5%</span> <span
-                                                class="text-muted small pt-2 ps-1">decrease</span>
+                                            <!-- <span class="text-danger small pt-1 fw-bold">5%</span> <span
+                                                class="text-muted small pt-2 ps-1">decrease</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -247,9 +246,9 @@
                                             <h6>Filter</h6>
                                         </li>
 
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('paidOrdersThisDay')">Today</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('paidOrdersThisMonth')">This Month</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="dayWise('paidOrdersThisYear')">This Year</a></li>
                                     </ul>
                                 </div>
 
@@ -263,8 +262,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="paid-orders">Loading...</h6>
-                                            <span class="text-success small pt-1 fw-bold">8%</span> <span
-                                                class="text-muted small pt-2 ps-1">increase</span>
+                                            <!-- <span class="text-success small pt-1 fw-bold">8%</span> <span
+                                                class="text-muted small pt-2 ps-1">increase</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -291,24 +290,59 @@
                                 </div>
 
                                 <div class="card-body">
-                                    <h5 class="card-title">Reports <span>/Today</span></h5>
+                                    <h5 class="card-title">Reports</h5>
 
                                     <!-- Line Chart -->
                                     <div id="reportsChart"></div>
 
                                     <script>
                                         document.addEventListener("DOMContentLoaded", () => {
+        //                                     const salesData = [
+        // { "date": "2024-08-27", "total_sales": 21.7 },
+        // { "date": "2024-08-28", "total_sales": 127.28 },
+        // { "date": "2024-08-30", "total_sales": 44.45 }
+    // ];
+    const localStorageItem = localStorage.getItem("statistic")
+const salesData  = JSON.parse(localStorageItem);
+console.log(salesData);
+                                              // Generate the last 7 days
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        last7Days.push(date.toISOString().split('T')[0]);  // Format as YYYY-MM-DD
+    }
+
+    // Create a lookup object from salesData for quick access
+    const salesDataLookup = {};
+    salesData.salesData.forEach(data => {
+        salesDataLookup[data.date] = data.total_sales;
+    });
+
+    // Create final data array that includes all days
+    const finalSalesData = last7Days.map(date => {
+        return {
+            date: date,
+            total_sales: salesDataLookup[date] || 0  // Use 0 if no sales data for the date
+        };
+    });
+    const totalSales = finalSalesData.map(data => data.total_sales);
+
+    console.log(finalSalesData);  
                                             new ApexCharts(document.querySelector("#reportsChart"), {
                                                 series: [{
                                                     name: 'Sales',
-                                                    data: [31, 40, 28, 51, 42, 82, 56],
-                                                }, {
-                                                    name: 'Revenue',
-                                                    data: [11, 32, 45, 32, 34, 52, 41]
-                                                }, {
-                                                    name: 'Customers',
-                                                    data: [15, 11, 32, 18, 9, 24, 11]
-                                                }],
+                                                    // data: [31, 40, 28, 51, 42, 82, 56],
+                                                    data: totalSales,
+                                                }
+                                                // , {
+                                                //     name: 'Revenue',
+                                                //     data: [11, 32, 45, 32, 34, 52, 41]
+                                                // }, {
+                                                //     name: 'Customers',
+                                                //     data: [15, 11, 32, 18, 9, 24, 11]
+                                                // }
+                                                ],
                                                 chart: {
                                                     height: 350,
                                                     type: 'area',
@@ -539,7 +573,7 @@
                     <!-- Recent Activity -->
 
                     <!-- Budget Report -->
-                    <div class="card">
+                    <!-- <div class="card">
                         <div class="filter">
                             <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                     class="bi bi-three-dots"></i></a>
@@ -611,13 +645,13 @@
                             </script>
 
                         </div>
-                    </div>
+                    </div> -->
                     <!-- End Budget Report -->
 
                     <!-- Website Traffic -->
                     <div class="card d-none">
                         <div class="filter">
-                            <a class="icon" href="#" data-bs-toggle="dropdown"><i
+                            <!-- <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                     class="bi bi-three-dots"></i></a>
                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                 <li class="dropdown-header text-start">
@@ -627,7 +661,7 @@
                                 <li><a class="dropdown-item" href="#">Today</a></li>
                                 <li><a class="dropdown-item" href="#">This Month</a></li>
                                 <li><a class="dropdown-item" href="#">This Year</a></li>
-                            </ul>
+                            </ul> -->
                         </div>
 
                         <div class="card-body pb-0">
@@ -721,27 +755,78 @@
 
 
         <script>
-            <i class="bi bi-currency-pound"></i>(document).ready(function() {
-                dashboard();
-            });
+    $(document).ready(function() {
+        dashboard();
+    });
+   function dayWise($value)
+   {
+    const localStorageItem = localStorage.getItem("statistic")
+const data  = JSON.parse(localStorageItem)
+    if($value == 'salesThisDay')
+    $('#total-revenue').text('£' + data.salesThisDay.toFixed(2));
+    else if($value == 'salesThisMonth')
+    $('#total-revenue').text('£' + data.salesThisMonth.toFixed(2));
+    else if($value == 'salesThisYear')
+    $('#total-revenue').text('£' + data.salesThisYear.toFixed(2));
 
-            function dashboard() {
-                <i class="bi bi-currency-pound"></i>.ajax({
-                    url: "{{ route('admin.dashboard.detail') }}",
-                    type: "GET",
-                    success: function(data) {
-                        console.log(data);
-                        <i class="bi bi-currency-pound"></i>('#total-revenue').text('<i class="bi bi-currency-pound"></i>' + data.totalSales.toFixed(2));
-                        <i class="bi bi-currency-pound"></i>('#orders-doctors').text(data.doctorOrders);
-                        <i class="bi bi-currency-pound"></i>('#orders-dispensaries').text(data.despensoryOrders);
-                        <i class="bi bi-currency-pound"></i>('#total-orders').text(data.totalOrders);
-                        <i class="bi bi-currency-pound"></i>('#pending-orders').text(data.notApprovedOrders);
-                        <i class="bi bi-currency-pound"></i>('#paid-orders').text(data.paidOrders);
-                    },
-                    error: function(error) {
-                        console.error("There was an error fetching the dashboard details:", error);
-                    }
-                });
+    else if($value == 'doctorOrdersThisYear')
+    $('#orders-doctors').text(data.doctorOrdersThisYear);
+    else if($value == 'doctorOrdersThisDay')
+    $('#orders-doctors').text(data.doctorOrdersThisDay);
+    else if($value == 'doctorOrdersThisMonth')
+    $('#orders-doctors').text(data.doctorOrdersThisMonth);
+
+    else if($value == 'despensoryOrdersThisYear')
+    $('#orders-dispensaries').text(data.despensoryOrdersThisYear);
+    else if($value == 'doctorOrdersThisDay')
+    $('#orders-dispensaries').text(data.doctorOrdersThisDay);
+    else if($value == 'doctorOrdersThisYear')
+    $('#orders-dispensaries').text(data.doctorOrdersThisYear);
+
+    else if($value == 'paidOrdersThisMonth')
+    $('#paid-orders').text(data.paidOrdersThisMonth);
+    else if($value == 'paidOrdersThisDay')
+    $('#paid-orders').text(data.paidOrdersThisDay);
+    else if($value == 'paidOrdersThisYear')
+    $('#paid-orders').text(data.paidOrdersThisYear);
+
+    else if($value == 'pendingOrdersThisMonth')
+    $('#pending-orders').text(data.pendingOrdersThisMonth);
+    else if($value == 'pendingOrdersThisDay')
+    $('#pending-orders').text(data.pendingOrdersThisDay);
+    else if($value == 'pendingOrdersThisYear')
+    $('#pending-orders').text(data.pendingOrdersThisYear);
+
+    else if($value == 'totalOrdersThisMonth')
+    $('#total-orders').text(data.totalOrdersThisMonth);
+    else if($value == 'totalOrdersThisDay')
+    $('#total-orders').text(data.totalOrdersThisDay);
+    else if($value == 'totalOrdersThisYear')
+    $('#total-orders').text(data.totalOrdersThisYear);
+   }
+    function dashboard() {
+        $.ajax({
+            url: "{{ route('admin.dashboard.detail') }}",
+            type: "GET",
+            success: function(data) {
+                console.log(data.salesThisMonth);
+
+                window.localStorage.setItem("statistic",JSON.stringify(data));
+                // window.localStorage.setItem("salesThisDay",data.salesThisDay);
+                // window.localStorage.setItem("salesThisMonth",data.salesThisMonth);
+
+                $('#total-revenue').text('£' + data.salesThisMonth.toFixed(2));
+                $('#orders-doctors').text(data.doctorOrdersThisMonth);
+                $('#orders-dispensaries').text(data.despensoryOrdersThisMonth);
+                $('#total-orders').text(data.totalOrdersThisMonth);
+                $('#pending-orders').text(data.pendingOrdersThisMonth);
+                $('#paid-orders').text(data.paidOrdersThisMonth);
+            },
+            error: function(error) {
+                console.error("There was an error fetching the dashboard details:", error);
             }
-        </script>
+        });
+    }
+</script>
+
     @endPushOnce

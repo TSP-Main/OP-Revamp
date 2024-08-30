@@ -30,7 +30,7 @@ use App\Models\AssignQuestion;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\ProductAttribute;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 
 
@@ -99,27 +99,97 @@ class DefualtController extends Controller
     public function admin_dashboard_detail(Request $request)
     {
 
-
-        $totalOrders = Order::count();
+        // Get current year, month, week, and day using Carbon
+        $currentYear = Carbon::now()->year;
+        $currentMonth = Carbon::now()->month;
+        $currentWeek = Carbon::now()->week;
+        $currentDay = Carbon::now()->day;
+        $totalOrdersthisYear = Order::yearly()->count();
+        $totalOrdersthisMonth = Order::monthly()->count();
+        $totalOrdersthisDay = Order::daily()->count();
+      
         $notApprovedOrders = Order::where('status', 'Not_Approved')->count();
         $paidOrders = Order::where('payment_status', 'paid')->count();
         $UnpaidOrders = Order::where('payment_status', 'Unpaid')->count();
         $totalSales = Order::where('status', 'paid')->sum('total_ammount');
         $totalSales = Order::where('payment_status', 'paid')->sum('total_ammount');
         $doctorOrders = Order::where('order_for', 'doctor')->count();
-        $despensoryOrders = Order::where('order_for', 'despensory')->count();
+        $despensoryOrdersThisYear = Order::yearly('despensory')->count();
+        $despensoryOrdersThisMonth = Order::monthly('despensory')->count();
+        $despensoryOrdersThisDay = Order::daily('despensory')->count();
+        $doctorOrdersThisYear = Order::yearly('doctor')->count();
+        $doctorOrdersThisMonth = Order::monthly('doctor') ->count();
+        $doctorOrdersThisDay = Order:: daily('doctor') ->count();
+        $paidOrdersThisYear = Order::yearly(null,'paid')->count();
+        $paidOrdersThisMonth = Order::monthly(null,'paid') ->count();
+        $paidOrdersThisDay = Order:: daily(null,'paid') ->count();
+        $UnpaidOrdersThisYear = Order::yearly(null,'Unpaid')->count();
+        $UnpaidOrdersThisMonth = Order::monthly(null,'Unpaid') ->count();
+        $UnpaidOrdersThisDay = Order:: daily(null,'Unpaid') ->count();
+        $pendingOrdersThisYear = Order::where('status', 'Not_Approved')->yearly()->count();
+        $pendingOrdersThisMonth = Order::where('status', 'Not_Approved')->monthly() ->count();
+        $pendingOrdersThisDay = Order:: where('status', 'Not_Approved')->daily() ->count();
+        $salesThisYear = Order::where('payment_status', 'paid')
+                                    ->whereYear('created_at', $currentYear)
+                                    ->sum('total_ammount');
+        $salesThisMonth = Order::where('payment_status', 'paid')
+                                    ->whereYear('created_at', $currentYear)
+                                    ->whereMonth('created_at', $currentMonth)
+                                    ->sum('total_ammount');
+        $salesThisDay = Order::where('payment_status', 'paid')
+                                    ->whereYear('created_at', $currentYear)
+                                    ->whereMonth('created_at', $currentMonth)
+                                    ->whereDay('created_at', $currentDay)
+                                    ->sum('total_ammount');
+                                    $startDate = Carbon::now()->subDays(6)->startOfDay();
+                                    $endDate = Carbon::now()->endOfDay();
+                                    
+                                    // Query to get total sales for each day in the last week
+                                    $salesData = Order::selectRaw('DATE(created_at) as date, SUM(total_ammount) as total_sales')
+                                        ->whereBetween('created_at', [$startDate, $endDate])
+                                        ->where('payment_status', 'paid')
+                                        ->groupBy(DB::raw('DATE(created_at)'))
+                                        ->orderBy('date', 'asc')
+                                        ->get();
 
-
+                    return response()->json([
+                        'totalOrdersThisYear' => $totalOrdersthisYear,
+                        'totalOrdersThisMonth' => $totalOrdersthisMonth,
+                        'totalOrdersThisDay' => $totalOrdersthisDay,
+                        'doctorOrdersThisYear' => $doctorOrdersThisYear,     
+                        'doctorOrdersThisMonth' => $doctorOrdersThisMonth,      
+                        'doctorOrdersThisDay' => $doctorOrdersThisDay,     
+                        'despensoryOrdersThisYear' => $despensoryOrdersThisYear,   
+                        'despensoryOrdersThisMonth' => $despensoryOrdersThisMonth,  
+                        'despensoryOrdersThisDay' => $despensoryOrdersThisDay,  
+                        'salesThisYear' => $salesThisYear,   
+                        'salesThisMonth' => $salesThisMonth,  
+                        'salesThisDay' => $salesThisDay,
+                        'paidOrdersThisYear' => $paidOrdersThisYear,
+                        'paidOrdersThisMonth' => $paidOrdersThisMonth,
+                        'paidOrdersThisDay' => $paidOrdersThisDay,
+                        'UnpaidOrdersThisYear' => $UnpaidOrdersThisYear ,
+                        'UnpaidOrdersThisMonth' => $UnpaidOrdersThisMonth,
+                        'UnpaidOrdersThisDay' => $UnpaidOrdersThisDay,
+                        'pendingOrdersThisMonth' => $pendingOrdersThisMonth,
+                        'pendingOrdersThisYear' =>  $pendingOrdersThisYear,
+                        'pendingOrdersThisDay' =>    $pendingOrdersThisDay,
+                        'salesData' => $salesData
+                    ]);
+        /////////////////////////////////////////////////////////////////
+        
+   
+        
         // Return the total orders as a JSON response
-        return response()->json([
-            'totalOrders' => $totalOrders,
-            'notApprovedOrders' => $notApprovedOrders,
-            'paidOrders' => $paidOrders,
-            'UnpaidOrders' => $UnpaidOrders,
-            'totalSales' => $totalSales,
-            'doctorOrders' => $doctorOrders,
-            'despensoryOrders' => $despensoryOrders
-        ]);
+        // return response()->json([
+        //     'totalOrders' => $totalOrders,
+        //     'notApprovedOrders' => $notApprovedOrders,
+        //     'paidOrders' => $paidOrders,
+        //     'UnpaidOrders' => $UnpaidOrders,
+        //     'totalSales' => $totalSales,
+        //     'doctorOrders' => $doctorOrders,
+        //     'despensoryOrders' => $despensoryOrders
+        // ]);
 
     }
 
