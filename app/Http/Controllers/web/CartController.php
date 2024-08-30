@@ -154,18 +154,56 @@ class CartController extends Controller
 
     public function updateCart(Request $request)
     {
-        $rowId = $request->rowId;
-        $qty = $request->qty;
-
+        $rowId = $request->input('rowId');
+        $qty = $request->input('qty');
+    
+        // Retrieve the cart item
+        $cartItem = Cart::get($rowId);
+    
+        if (!$cartItem) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found in cart'
+            ]);
+        }
+    
+        // Retrieve the product
+        $product = Product::find($cartItem->id);
+    
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found'
+            ]);
+        }
+    
+        // Validate quantity against limits
+        if ($qty < $product->min_buy) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Minimum quantity is ' . $product->min_buy
+            ]);
+        }
+    
+        if ($qty > $product->max_buy) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Maximum quantity is ' . $product->max_buy
+            ]);
+        }
+    
+        // Update the cart with the validated quantity
         Cart::update($rowId, $qty);
-
+    
         $message = 'Cart updated successfully';
         session()->flash('success', $message);
+    
         return response()->json([
             'status' => true,
             'message' => $message
         ]);
     }
+    
 
     public function deleteItem(Request $request)
     {

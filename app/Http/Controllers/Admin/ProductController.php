@@ -23,6 +23,9 @@ use App\Models\FeaturedProduct;
 use App\Models\ProductAttribute;
 use \Cviebrock\EloquentSluggable\Services\SlugService;
 use Yajra\DataTables\Facades\DataTables;
+use League\Csv\Writer;
+use SplTempFileObject;
+use Response;
 
 class ProductController extends Controller
 {
@@ -646,5 +649,66 @@ class ProductController extends Controller
             
             return response()->json(['status' => 'success', 'data' => $products]);
         }
+    }
+
+    public function exportCSV()
+    {
+        // Fetch product details
+        $products = Product::all();
+
+        // Create CSV writer instance
+        $csv = Writer::createFromFileObject(new SplTempFileObject());
+
+        // Add CSV header
+        $csv->insertOne([
+            'ID', 'Title', 'Slug', 'Short Description', 'Description', 'Main Image',
+            'Price', 'Stock', 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
+            'SKU', 'Barcode', 'Cut Price', 'Category ID', 'Sub Category', 'Child Category',
+            'Product Template', 'Question Category', 'Status', 'Created By', 'Updated By',
+            'Created At', 'Updated At'
+        ]);
+
+        // Define base URL for slug and main image
+        $baseUrl = 'https://onlinepharmacy-4u.co.uk';
+
+        // Add product data
+        foreach ($products as $product) {
+            $csv->insertOne([
+                $product->id,
+                $product->title,
+                $baseUrl . '/product/' . $product->slug, // Full URL for slug
+                $product->short_desc,
+                $product->desc,
+                $baseUrl . '/storage/product_image' . $product->main_image, // Full URL for main image
+                $product->price,
+                $product->stock,
+                $product->weight,
+                $product->min_buy,
+                $product->max_buy,
+                $product->comb_variants,
+                $product->SKU,
+                $product->barcode,
+                $product->cut_price,
+                $product->category_id,
+                $product->sub_category,
+                $product->child_category,
+                $product->product_template,
+                $product->question_category,
+                $product->status,
+                $product->created_by,
+                $product->updated_by,
+                $product->created_at,
+                $product->updated_at
+            ]);
+        }
+
+        // Prepare the CSV for download
+        $csvData = $csv->toString();
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="products.csv"',
+        ];
+
+        return Response::make($csvData, 200, $headers);
     }
 }
