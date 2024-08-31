@@ -21,16 +21,28 @@ class Order extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function scopeWeekly(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+            //    ->whereYear('created_at',Carbon::now()->year)
+            ->where('created_at','>', Carbon::now()->subDays(7));
+    }
     public function scopeMonthly(Builder $builder,?string $status =null,?string $payment_status=null): void
     {
         $builder->conditions($status,$payment_status)
-               ->whereYear('created_at',Carbon::now()->year)
-            ->whereMonth('created_at', Carbon::now()->month);
+            //    ->whereYear('created_at',Carbon::now()->year)
+            // ->whereMonth('created_at', Carbon::now()->month);
+            ->where( 'created_at', '>', Carbon::now()->subDays(30));
     }
     public function scopeYearly(Builder $builder,?string $status =null,?string $payment_status=null): void
     {
         $builder->conditions($status,$payment_status)
-                  ->whereYear('created_at',Carbon::now()->year);
+                      ->where('created_at','>', Carbon::now()->subDays(365));
+    }
+    public function scopeLast90Days(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+                     ->where('created_at','>', Carbon::now()->subDays(90));
     }
     public function scopeDaily(Builder $builder,?string $status =null,?string $payment_status=null): void
     {

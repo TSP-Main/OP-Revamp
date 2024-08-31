@@ -43,20 +43,7 @@
                         <!-- Total Revenue Card -->
                         <div class="col-xl-4">
                             <div class="card info-card revenue-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('salesThisDay')">Today</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('salesThisMonth')">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('salesThisYear')">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'salesThisDay','last7Day' => 'salesThisWeek','last30Day' => 'salesThisMonth','last90Day' => 'salesThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Revenue <span>| This Month</span></h5>
 
@@ -79,21 +66,7 @@
                         <!-- Orders for Doctors Card -->
                         <div class="col-xl-4">
                             <div class="card info-card customers-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a> 
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('doctorOrdersThisDay')">Today</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('doctorOrdersThisMonth')">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('doctorOrdersThisYear')">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'doctorOrdersThisDay','last7Day' => 'doctorOrdersThisWeek','last30Day' => 'doctorOrdersThisMonth','last90Day' => 'doctorOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Order For Doctor <span>| This Month</span></h5>
 
@@ -116,22 +89,7 @@
                         <!-- Orders for Dispensaries Card -->
                         <div class="col-xl-4">
                             <div class="card info-card customers-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a> 
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('despensoryOrdersThisYear')">Today</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('despensoryOrdersThisMonth')">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('despensoryOrdersThisDay')">This Year</a></li>
-                                    </ul>
-                                </div>
-
-                                <div class="card-body">
+                                @include('admin.filter.index',['lastDay' => 'despensoryOrdersThisDay','last7Day' => 'despensoryOrdersThisWeek','last30Day' => 'despensoryOrdersThisMonth','last90Day' => 'despensoryOrdersThisYear'])                                <div class="card-body">
                                     <h5 class="card-title">Order For Dispensary <span>| This Month</span></h5>
 
                                     <div class="d-flex align-items-center">
@@ -163,21 +121,7 @@
                         <!-- Total Orders Card -->
                         <div class="col-xl-4 col-md-6">
                             <div class="card info-card total-orders-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('totalOrdersThisDay')">Today</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('totalOrdersThisMonth')">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('totalOrdersThisYear')">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'totalOrdersThisDay','last7Day' => 'totalOrdersThisWeek','last30Day' => 'totalOrdersThisMonth','last90Day' => 'totalOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Total Orders <span>| This Month</span></h5>
 
@@ -200,21 +144,7 @@
                         <!-- Pending Orders Card -->
                         <div class="col-xl-4 col-md-6">
                             <div class="card info-card pending-orders-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('pendingOrdersThisDay')">Today</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('pendingOrdersThisMonth')">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('pendingOrdersThisYear')">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'pendingOrdersThisDay','last7Day' => 'pendingOrdersThisWeek','last30Day' => 'pendingOrdersThisMonth','last90Day' => 'pendingOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Pending Orders <span>| This Month</span></h5>
 
@@ -237,21 +167,7 @@
                         <!-- Paid Orders Card -->
                         <div class="col-xl-4 col-md-6">
                             <div class="card info-card paid-orders-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('paidOrdersThisDay')">Today</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('paidOrdersThisMonth')">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="dayWise('paidOrdersThisYear')">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'paidOrdersThisDay','last7Day' => 'paidOrdersThisWeek','last30Day' => 'paidOrdersThisMonth','last90Day' => 'paidOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Paid Orders <span>| This Month</span></h5>
 
@@ -275,7 +191,7 @@
                         <div class="col-12">
                             <div class="card">
 
-                                <div class="filter">
+                                <!-- <div class="filter">
                                     <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                             class="bi bi-three-dots"></i></a>
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -287,7 +203,7 @@
                                         <li><a class="dropdown-item" href="#">This Month</a></li>
                                         <li><a class="dropdown-item" href="#">This Year</a></li>
                                     </ul>
-                                </div>
+                                </div> -->
 
                                 <div class="card-body">
                                     <h5 class="card-title">Reports</h5>
@@ -305,42 +221,66 @@
     const localStorageItem = localStorage.getItem("statistic")
 const salesData  = JSON.parse(localStorageItem);
 console.log(salesData);
-                                              // Generate the last 7 days
-    const last7Days = [];
-    for (let i = 6; i >= 0; i--) {
+console.log(salesData["WeeklyGraphData"]);
+console.log(salesData);
+// Helper function to generate date arrays
+const generateDateArray = (days) => {
+    const dateArray = [];
+    for (let i = days - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
-        last7Days.push(date.toISOString().split('T')[0]);  // Format as YYYY-MM-DD
+        dateArray.push(date.toISOString().split('T')[0]);  // Format as YYYY-MM-DD
     }
+    return dateArray;
+};
 
-    // Create a lookup object from salesData for quick access
+// Generate date arrays for 7, 30, and 90 days
+const last7Days = generateDateArray(7);
+const last30Days = generateDateArray(29);
+const last90Days = generateDateArray(90);
+
+// Function to create final sales data
+const createSalesDataArray = (dateArray, salesData) => {
     const salesDataLookup = {};
-    salesData.salesData.forEach(data => {
+    salesData.map(data => {
         salesDataLookup[data.date] = data.total_sales;
     });
 
-    // Create final data array that includes all days
-    const finalSalesData = last7Days.map(date => {
-        return {
-            date: date,
-            total_sales: salesDataLookup[date] || 0  // Use 0 if no sales data for the date
-        };
-    });
-    const totalSales = finalSalesData.map(data => data.total_sales);
+    return dateArray.map(date => ({
+        date: date,
+        total_sales: salesDataLookup[date] || 0  // Use 0 if no sales data for the date
+    }));
+};
 
-    console.log(finalSalesData);  
+// Create final data arrays for 7, 30, and 90 days
+console.log("salesData");
+console.log(salesData["weeklyGraphData"]);
+console.log(salesData["monthlyGraphData"]);
+console.log(salesData["yearlyGraphData"]);
+console.log("salesData");
+const weeklySalesData = createSalesDataArray(last7Days, salesData["weeklyGraphData"]);
+const monthlySalesData = createSalesDataArray(last30Days, salesData["monthlyGraphData"]);
+const yearlySalesData = createSalesDataArray(last90Days, salesData["yearlyGraphData"]);
+
+    const weeklySalesDataAll = weeklySalesData.map(data => data.total_sales);
+    const monthlySalesDataAll = monthlySalesData.map(data => data.total_sales);
+    const yearlySalesDataAll = yearlySalesData.map(data => data.total_sales);
+
+    console.log(weeklySalesData);  
                                             new ApexCharts(document.querySelector("#reportsChart"), {
                                                 series: [{
                                                     name: 'Sales',
                                                     // data: [31, 40, 28, 51, 42, 82, 56],
-                                                    data: totalSales,
+                                                    data: weeklySalesDataAll,
                                                 }
                                                 // , {
                                                 //     name: 'Revenue',
-                                                //     data: [11, 32, 45, 32, 34, 52, 41]
+                                                //     // data: [11, 32, 45, 32, 34, 52, 41]
+                                                //     data : monthlySalesDataAll
                                                 // }, {
                                                 //     name: 'Customers',
-                                                //     data: [15, 11, 32, 18, 9, 24, 11]
+                                                //     data : yearlySalesDataAll
+                                                //     // data: [15, 11, 32, 18, 9, 24, 11]
                                                 // }
                                                 ],
                                                 chart: {
@@ -758,63 +698,14 @@ console.log(salesData);
     $(document).ready(function() {
         dashboard();
     });
-   function dayWise($value)
-   {
-    const localStorageItem = localStorage.getItem("statistic")
-const data  = JSON.parse(localStorageItem)
-    if($value == 'salesThisDay')
-    $('#total-revenue').text('£' + data.salesThisDay.toFixed(2));
-    else if($value == 'salesThisMonth')
-    $('#total-revenue').text('£' + data.salesThisMonth.toFixed(2));
-    else if($value == 'salesThisYear')
-    $('#total-revenue').text('£' + data.salesThisYear.toFixed(2));
-
-    else if($value == 'doctorOrdersThisYear')
-    $('#orders-doctors').text(data.doctorOrdersThisYear);
-    else if($value == 'doctorOrdersThisDay')
-    $('#orders-doctors').text(data.doctorOrdersThisDay);
-    else if($value == 'doctorOrdersThisMonth')
-    $('#orders-doctors').text(data.doctorOrdersThisMonth);
-
-    else if($value == 'despensoryOrdersThisYear')
-    $('#orders-dispensaries').text(data.despensoryOrdersThisYear);
-    else if($value == 'doctorOrdersThisDay')
-    $('#orders-dispensaries').text(data.doctorOrdersThisDay);
-    else if($value == 'doctorOrdersThisYear')
-    $('#orders-dispensaries').text(data.doctorOrdersThisYear);
-
-    else if($value == 'paidOrdersThisMonth')
-    $('#paid-orders').text(data.paidOrdersThisMonth);
-    else if($value == 'paidOrdersThisDay')
-    $('#paid-orders').text(data.paidOrdersThisDay);
-    else if($value == 'paidOrdersThisYear')
-    $('#paid-orders').text(data.paidOrdersThisYear);
-
-    else if($value == 'pendingOrdersThisMonth')
-    $('#pending-orders').text(data.pendingOrdersThisMonth);
-    else if($value == 'pendingOrdersThisDay')
-    $('#pending-orders').text(data.pendingOrdersThisDay);
-    else if($value == 'pendingOrdersThisYear')
-    $('#pending-orders').text(data.pendingOrdersThisYear);
-
-    else if($value == 'totalOrdersThisMonth')
-    $('#total-orders').text(data.totalOrdersThisMonth);
-    else if($value == 'totalOrdersThisDay')
-    $('#total-orders').text(data.totalOrdersThisDay);
-    else if($value == 'totalOrdersThisYear')
-    $('#total-orders').text(data.totalOrdersThisYear);
-   }
+   
     function dashboard() {
         $.ajax({
             url: "{{ route('admin.dashboard.detail') }}",
             type: "GET",
             success: function(data) {
-                console.log(data.salesThisMonth);
-
+                console.log(data.doctorOrdersThisMonth);
                 window.localStorage.setItem("statistic",JSON.stringify(data));
-                // window.localStorage.setItem("salesThisDay",data.salesThisDay);
-                // window.localStorage.setItem("salesThisMonth",data.salesThisMonth);
-
                 $('#total-revenue').text('£' + data.salesThisMonth.toFixed(2));
                 $('#orders-doctors').text(data.doctorOrdersThisMonth);
                 $('#orders-dispensaries').text(data.despensoryOrdersThisMonth);

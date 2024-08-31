@@ -104,9 +104,10 @@ class DefualtController extends Controller
         $currentMonth = Carbon::now()->month;
         $currentWeek = Carbon::now()->week;
         $currentDay = Carbon::now()->day;
-        $totalOrdersthisYear = Order::yearly()->count();
-        $totalOrdersthisMonth = Order::monthly()->count();
-        $totalOrdersthisDay = Order::daily()->count();
+        $totalOrdersThisYear = Order::last90Days()->count();
+        $totalOrdersThisMonth = Order::monthly()->count();
+        $totalOrdersThisWeek= Order::weekly()->count();
+        $totalOrdersThisDay = Order::daily()->count();
       
         $notApprovedOrders = Order::where('status', 'Not_Approved')->count();
         $paidOrders = Order::where('payment_status', 'paid')->count();
@@ -114,82 +115,50 @@ class DefualtController extends Controller
         $totalSales = Order::where('status', 'paid')->sum('total_ammount');
         $totalSales = Order::where('payment_status', 'paid')->sum('total_ammount');
         $doctorOrders = Order::where('order_for', 'doctor')->count();
-        $despensoryOrdersThisYear = Order::yearly('despensory')->count();
-        $despensoryOrdersThisMonth = Order::monthly('despensory')->count();
-        $despensoryOrdersThisDay = Order::daily('despensory')->count();
-        $doctorOrdersThisYear = Order::yearly('doctor')->count();
-        $doctorOrdersThisMonth = Order::monthly('doctor') ->count();
-        $doctorOrdersThisDay = Order:: daily('doctor') ->count();
-        $paidOrdersThisYear = Order::yearly(null,'paid')->count();
-        $paidOrdersThisMonth = Order::monthly(null,'paid') ->count();
-        $paidOrdersThisDay = Order:: daily(null,'paid') ->count();
-        $UnpaidOrdersThisYear = Order::yearly(null,'Unpaid')->count();
-        $UnpaidOrdersThisMonth = Order::monthly(null,'Unpaid') ->count();
-        $UnpaidOrdersThisDay = Order:: daily(null,'Unpaid') ->count();
-        $pendingOrdersThisYear = Order::where('status', 'Not_Approved')->yearly()->count();
-        $pendingOrdersThisMonth = Order::where('status', 'Not_Approved')->monthly() ->count();
-        $pendingOrdersThisDay = Order:: where('status', 'Not_Approved')->daily() ->count();
-        $salesThisYear = Order::where('payment_status', 'paid')
-                                    ->whereYear('created_at', $currentYear)
-                                    ->sum('total_ammount');
-        $salesThisMonth = Order::where('payment_status', 'paid')
-                                    ->whereYear('created_at', $currentYear)
-                                    ->whereMonth('created_at', $currentMonth)
-                                    ->sum('total_ammount');
-        $salesThisDay = Order::where('payment_status', 'paid')
-                                    ->whereYear('created_at', $currentYear)
-                                    ->whereMonth('created_at', $currentMonth)
-                                    ->whereDay('created_at', $currentDay)
-                                    ->sum('total_ammount');
-                                    $startDate = Carbon::now()->subDays(6)->startOfDay();
-                                    $endDate = Carbon::now()->endOfDay();
-                                    
-                                    // Query to get total sales for each day in the last week
-                                    $salesData = Order::selectRaw('DATE(created_at) as date, SUM(total_ammount) as total_sales')
-                                        ->whereBetween('created_at', [$startDate, $endDate])
-                                        ->where('payment_status', 'paid')
-                                        ->groupBy(DB::raw('DATE(created_at)'))
-                                        ->orderBy('date', 'asc')
-                                        ->get();
 
-                    return response()->json([
-                        'totalOrdersThisYear' => $totalOrdersthisYear,
-                        'totalOrdersThisMonth' => $totalOrdersthisMonth,
-                        'totalOrdersThisDay' => $totalOrdersthisDay,
-                        'doctorOrdersThisYear' => $doctorOrdersThisYear,     
-                        'doctorOrdersThisMonth' => $doctorOrdersThisMonth,      
-                        'doctorOrdersThisDay' => $doctorOrdersThisDay,     
-                        'despensoryOrdersThisYear' => $despensoryOrdersThisYear,   
-                        'despensoryOrdersThisMonth' => $despensoryOrdersThisMonth,  
-                        'despensoryOrdersThisDay' => $despensoryOrdersThisDay,  
-                        'salesThisYear' => $salesThisYear,   
-                        'salesThisMonth' => $salesThisMonth,  
-                        'salesThisDay' => $salesThisDay,
-                        'paidOrdersThisYear' => $paidOrdersThisYear,
-                        'paidOrdersThisMonth' => $paidOrdersThisMonth,
-                        'paidOrdersThisDay' => $paidOrdersThisDay,
-                        'UnpaidOrdersThisYear' => $UnpaidOrdersThisYear ,
-                        'UnpaidOrdersThisMonth' => $UnpaidOrdersThisMonth,
-                        'UnpaidOrdersThisDay' => $UnpaidOrdersThisDay,
-                        'pendingOrdersThisMonth' => $pendingOrdersThisMonth,
-                        'pendingOrdersThisYear' =>  $pendingOrdersThisYear,
-                        'pendingOrdersThisDay' =>    $pendingOrdersThisDay,
-                        'salesData' => $salesData
-                    ]);
-        /////////////////////////////////////////////////////////////////
-        
-   
-        
-        // Return the total orders as a JSON response
-        // return response()->json([
-        //     'totalOrders' => $totalOrders,
-        //     'notApprovedOrders' => $notApprovedOrders,
-        //     'paidOrders' => $paidOrders,
-        //     'UnpaidOrders' => $UnpaidOrders,
-        //     'totalSales' => $totalSales,
-        //     'doctorOrders' => $doctorOrders,
-        //     'despensoryOrders' => $despensoryOrders
-        // ]);
+        $despensoryOrdersThisYear = Order::last90Days('despensory')->count();
+        $despensoryOrdersThisMonth = Order::monthly('despensory')->count();
+        $despensoryOrdersThisWeek = Order::weekly('despensory')->count();
+        $despensoryOrdersThisDay = Order::daily('despensory')->count();
+
+        $doctorOrdersThisYear = Order::last90Days('doctor')->count();
+        $doctorOrdersThisMonth = Order::monthly('doctor') ->count();
+        $doctorOrdersThisWeek = Order::weekly('doctor') ->count();
+        $doctorOrdersThisDay = Order:: daily('doctor') ->count();
+
+        $paidOrdersThisYear = Order::last90Days(null,'paid')->count();
+        $paidOrdersThisMonth = Order::monthly(null,'paid') ->count();
+        $paidOrdersThisWeek = Order::weekly(null,'paid') ->count();
+        $paidOrdersThisDay = Order:: daily(null,'paid') ->count();
+
+        $UnpaidOrdersThisYear = Order::last90Days(null,'Unpaid')->count();
+        $UnpaidOrdersThisMonth = Order::monthly(null,'Unpaid') ->count();
+        $UnpaidOrdersThisWeek = Order::weekly(null,'Unpaid') ->count();
+        $UnpaidOrdersThisDay = Order:: daily(null,'Unpaid') ->count();
+
+        $pendingOrdersThisYear = Order::where('status', 'Not_Approved')->last90Days()->count();
+        $pendingOrdersThisMonth = Order::where('status', 'Not_Approved')->monthly() ->count();
+        $pendingOrdersThisWeek = Order::where('status', 'Not_Approved')->weekly() ->count();
+        $pendingOrdersThisDay = Order:: where('status', 'Not_Approved')->daily() ->count();
+
+        $salesThisYear = Order::last90Days(null,'paid')->sum('total_ammount');
+        $salesThisMonth = Order::monthly(null,'paid')->sum('total_ammount');
+        $salesThisWeek = Order::weekly(null,'paid')->sum('total_ammount');
+        $salesThisDay = Order::daily(null,'paid')->sum('total_ammount');
+
+        $startDate = Carbon::now()->subDays(6)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+                                    
+            // Query to get total sales for each day in the last week
+            $grapData = Order::query()->selectRaw('DATE(created_at) as date, SUM(total_ammount) as total_sales')
+                ->where('payment_status', 'paid')
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->orderBy('date', 'asc');
+            $weeklyGraphData = (clone $grapData)->weekly()->get();
+            $monthlyGraphData = (clone $grapData)->monthly()->get();
+            $yearlyGraphData = (clone $grapData)->yearly()->get();
+            //   dd($salesData);
+            return response()->json([...get_defined_vars()]);
 
     }
 
