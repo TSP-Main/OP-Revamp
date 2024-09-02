@@ -79,14 +79,17 @@ class CartController extends Controller
                 ]);
             }
         }
-
-        if ($product == null) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product Not Found'
-            ]);
-        }
-
+        
+        // // Retrieve the product
+        // $product = Product::find($cartItems->id);
+    
+        // if (!$product) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Product not found'
+        //     ]);
+        // }
+    
         // if(Cart::count() > 0){
         //     $cartContent = Cart::content();
         //     $productAlreadyExist = false;
@@ -152,6 +155,8 @@ class CartController extends Controller
         ]);
     }
 
+    
+
     public function updateCart(Request $request)
     {
         $rowId = $request->input('rowId');
@@ -167,30 +172,30 @@ class CartController extends Controller
             ]);
         }
     
-        // Retrieve the product
-        $product = Product::find($cartItem->id);
+        // // Retrieve the product
+        // $product = Product::find($cartItem->id);
     
-        if (!$product) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product not found'
-            ]);
-        }
+        // if (!$product) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Product not found'
+        //     ]);
+        // }
     
-        // Validate quantity against limits
-        if ($qty < $product->min_buy) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Minimum quantity is ' . $product->min_buy
-            ]);
-        }
+        // // Validate quantity against limits
+        // if ($qty < $product->min_buy) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Minimum quantity is ' . $product->min_buy
+        //     ]);
+        // }
     
-        if ($qty > $product->max_buy) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Maximum quantity is ' . $product->max_buy
-            ]);
-        }
+        // if ($qty > $product->max_buy) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Maximum quantity is ' . $product->max_buy
+        //     ]);
+        // }
     
         // Update the cart with the validated quantity
         Cart::update($rowId, $qty);
@@ -272,4 +277,81 @@ class CartController extends Controller
         return view('web.pages.checkoutid', compact('ukCities', 'ukPostalcode', 'order'));
     }
 
+
+    public function reorder(Request $request)
+    {
+        $orderId = $request->input('order_id');
+        
+        // Fetch the order and its details
+        $order = Order::with('orderdetails')->find($orderId);
+        
+        if (!$order) {
+            return response()->json(['status' => false, 'message' => 'Order not found']);
+        }
+    
+        foreach ($order->orderdetails as $detail) {
+            // Find the product using the product ID from the order details
+            $product = Product::find($detail->product_id); // Assuming `product_id` is the column in `orderdetails`
+    
+            if (!$product) {
+                // Log the ID for debugging
+                \Log::error('Product not found for ID: ' . $detail->product_id);
+    
+                continue; // Skip if product not found
+            }
+    
+            $variant = null;
+            if ($detail->variant_id) {
+                // Find the variant if there is one
+                $variant = ProductVariant::find($detail->variant_id);
+            }
+    
+            // Prepare data for cart
+            $cartData = [
+                'productImage' => $product->main_image ?? '',
+                'slug' => $product->slug
+            ];
+    
+            if ($variant) {
+                // Prepare variant information
+                $vart_type = explode(';', $variant->title);
+                $vart_value = explode(';', $variant->value);
+                $var_info = '<br>';
+                foreach ($vart_type as $key => $type) {
+                    $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                    if ($key < count($vart_type) - 1) {
+                        $var_info .= ', ';
+                    }
+                }
+                $variant['new_var_info'] = $var_info;
+    
+                // Add to cart with variant
+                Cart::add(
+                    $product->id . '_' . $variant->id,
+                    $product->title,
+                    $detail->product_qty,
+                    $variant->price,
+                    ['productImage' => $product->main_image ?? '', 'variant_info' => $variant, 'slug' => $product->slug]
+                );
+            } else {
+                // Add to cart without variant
+                Cart::add(
+                    $product->id,
+                    $product->title,
+                    $detail->product_qty,
+                    $product->price,
+                    $cartData
+                );
+            }
+        }
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Order items added to cart',
+            'redirect' => route('web.view.cart')
+        ]);
+    }
+    
+    
+    
 }

@@ -1054,7 +1054,7 @@ class WebController extends Controller
     // }
     protected function sendHttpRequest($url, $data, $endpoint)
     {
-        $apiKey = env('API_KEY');
+        $apiKey = env('SUPERPAYMENT_API_KEY');
         $brandId = env('BRAND_ID');
         
         \Log::info('Sending request to Super Payments', [
@@ -1206,7 +1206,7 @@ class WebController extends Controller
         // Call Super Payments API for reward calculation
         $rewardResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/reward-calculations', [
             'amount' => $request->total_ammount * 100, 
-            'brandId' => '28f5c069-c26f-4b65-8b4b-0eaea87897ac',
+            'brandId' =>  env('BRAND_ID'),
             'currency' => 'GBP'
         ], 'reward');
 
@@ -1219,7 +1219,7 @@ class WebController extends Controller
 
             // Call Super Payments API to create a payment
             $paymentResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/payments', [
-                "brandId" =>  $brandId = env('BRAND_ID'),
+                "brandId" => env('BRAND_ID'),
                 'amount' => (int)$request->total_ammount * 100, 
                 'rewardCalculationId' => $rewardCalculationId,
                 'currency' => 'GBP',

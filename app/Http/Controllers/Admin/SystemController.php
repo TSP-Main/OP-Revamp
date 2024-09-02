@@ -1599,6 +1599,78 @@ class SystemController extends Controller
         }
     }
 
+    public function consultation_user_view(Request $request)
+    {
+        $data['user'] = auth()->user();
+        $page_name = 'consultation_view';
+        if (!view_permission($page_name)) {
+            return redirect()->back();
+        }
+        if ($request->odd_id) {
+            $odd_id = base64_decode($request->odd_id);
+            $user_result = [];
+            $prod_result = [];
+            $consultaion  = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
+            if ($consultaion) {
+                $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
+                $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
+                    return $value !== null;
+                }));
+                if ($consultaion->consultation_type == 'pmd') {
+                    $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+                } elseif ($consultaion->consultation_type == 'premd') {
+                    $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+                    $pro_quest_ans = json_decode($consultaion->product_consultation, true);
+                    $pro_quest_ids = array_keys(array_filter($pro_quest_ans, function ($value) {
+                        return $value !== null;
+                    }));
+                    $product_consultation = Question::whereIn('id', $pro_quest_ids)->orderBy('id')->get()->toArray();
+                    $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
+                        return [$item['id'] => $item];
+                    });
+
+                    foreach ($pro_quest_ans as $q_id => $answer) {
+                        if (isset($product_consultation[$q_id])) {
+                            $prod_result[] = [
+                                'id' => $q_id,
+                                'title' => $product_consultation[$q_id]['title'],
+                                'desc' => $product_consultation[$q_id]['desc'],
+                                'answer' => $answer,
+                            ];
+                        }
+                    }
+                }
+                $consult_questions = collect($consult_questions)->mapWithKeys(function ($item) {
+                    return [$item['id'] => $item];
+                });
+
+                foreach ($consutl_quest_ans as $quest_id => $ans) {
+                    if (isset($consult_questions[$quest_id])) {
+                        $user_result[] = [
+                            'id' => $quest_id,
+                            'title' => $consult_questions[$quest_id]['title'],
+                            'desc' => $consult_questions[$quest_id]['desc'],
+                            'answer' => $ans,
+                        ];
+                    }
+                }
+
+                $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
+                $data['order_user_detail'] =  ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
+                $data['user_profile_details'] =  (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+                $data['generic_consultation'] = $user_result;
+                $data['product_consultation'] = $prod_result ?? [];
+                return view('admin.pages.consultation_view', $data);
+            } else {
+                notify()->error('Consultaions Id Did not found. ⚡️');
+                return redirect()->back()->with('error', 'Transaction not found.');
+            }
+        } else {
+            notify()->error('Consultaions Id Did not found. ⚡️');
+            return redirect()->back();
+        }
+    }
+
     public function orders_recieved()
     {
         $data['user'] = auth()->user();
