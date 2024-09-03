@@ -43,21 +43,7 @@
                         <!-- Total Revenue Card -->
                         <div class="col-xl-4">
                             <div class="card info-card revenue-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'salesThisDay','last7Day' => 'salesThisWeek','last30Day' => 'salesThisMonth','last90Day' => 'salesThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Revenue <span>| This Month</span></h5>
 
@@ -68,8 +54,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="total-revenue">Loading...</h6>
-                                            <span class="text-success small pt-1 fw-bold">8%</span> <span
-                                                class="text-muted small pt-2 ps-1">increase</span>
+                                            <!-- <span class="text-success small pt-1 fw-bold">8%</span> <span
+                                                class="text-muted small pt-2 ps-1">increase</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -80,21 +66,7 @@
                         <!-- Orders for Doctors Card -->
                         <div class="col-xl-4">
                             <div class="card info-card customers-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'doctorOrdersThisDay','last7Day' => 'doctorOrdersThisWeek','last30Day' => 'doctorOrdersThisMonth','last90Day' => 'doctorOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Order For Doctor <span>| This Month</span></h5>
 
@@ -105,8 +77,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="orders-doctors">Loading...</h6>
-                                            <span class="text-danger small pt-1 fw-bold">12%</span> <span
-                                                class="text-muted small pt-2 ps-1">decrease</span>
+                                            <!-- <span class="text-danger small pt-1 fw-bold">12%</span> <span
+                                                class="text-muted small pt-2 ps-1">decrease</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -117,22 +89,7 @@
                         <!-- Orders for Dispensaries Card -->
                         <div class="col-xl-4">
                             <div class="card info-card customers-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                    </ul>
-                                </div>
-
-                                <div class="card-body">
+                                @include('admin.filter.index',['lastDay' => 'despensoryOrdersThisDay','last7Day' => 'despensoryOrdersThisWeek','last30Day' => 'despensoryOrdersThisMonth','last90Day' => 'despensoryOrdersThisYear'])                                <div class="card-body">
                                     <h5 class="card-title">Order For Dispensary <span>| This Month</span></h5>
 
                                     <div class="d-flex align-items-center">
@@ -142,8 +99,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="orders-dispensaries">Loading...</h6>
-                                            <span class="text-danger small pt-1 fw-bold">12%</span> <span
-                                                class="text-muted small pt-2 ps-1">decrease</span>
+                                            <!-- <span class="text-danger small pt-1 fw-bold">12%</span> <span
+                                                class="text-muted small pt-2 ps-1">decrease</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -157,28 +114,14 @@
                 <!-- End Left side columns -->
 
                 <!-- Left side columns -->
-                <div class="col-lg-8">
+                <div class="col-lg-12">
                     <div class="row">
 
 
                         <!-- Total Orders Card -->
                         <div class="col-xl-4 col-md-6">
                             <div class="card info-card total-orders-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'totalOrdersThisDay','last7Day' => 'totalOrdersThisWeek','last30Day' => 'totalOrdersThisMonth','last90Day' => 'totalOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Total Orders <span>| This Month</span></h5>
 
@@ -189,8 +132,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="total-orders">Loading...</h6>
-                                            <span class="text-success small pt-1 fw-bold">12%</span> <span
-                                                class="text-muted small pt-2 ps-1">increase</span>
+                                            <!-- <span class="text-success small pt-1 fw-bold">12%</span> <span
+                                                class="text-muted small pt-2 ps-1">increase</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -201,21 +144,7 @@
                         <!-- Pending Orders Card -->
                         <div class="col-xl-4 col-md-6">
                             <div class="card info-card pending-orders-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'pendingOrdersThisDay','last7Day' => 'pendingOrdersThisWeek','last30Day' => 'pendingOrdersThisMonth','last90Day' => 'pendingOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Pending Orders <span>| This Month</span></h5>
 
@@ -226,8 +155,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="pending-orders">Loading...</h6>
-                                            <span class="text-danger small pt-1 fw-bold">5%</span> <span
-                                                class="text-muted small pt-2 ps-1">decrease</span>
+                                            <!-- <span class="text-danger small pt-1 fw-bold">5%</span> <span
+                                                class="text-muted small pt-2 ps-1">decrease</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -238,21 +167,7 @@
                         <!-- Paid Orders Card -->
                         <div class="col-xl-4 col-md-6">
                             <div class="card info-card paid-orders-card">
-
-                                <div class="filter">
-                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i
-                                            class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <li class="dropdown-header text-start">
-                                            <h6>Filter</h6>
-                                        </li>
-
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                    </ul>
-                                </div>
-
+                                @include('admin.filter.index',['lastDay' => 'paidOrdersThisDay','last7Day' => 'paidOrdersThisWeek','last30Day' => 'paidOrdersThisMonth','last90Day' => 'paidOrdersThisYear'])
                                 <div class="card-body">
                                     <h5 class="card-title">Paid Orders <span>| This Month</span></h5>
 
@@ -263,8 +178,8 @@
                                         </div>
                                         <div class="ps-3">
                                             <h6 id="paid-orders">Loading...</h6>
-                                            <span class="text-success small pt-1 fw-bold">8%</span> <span
-                                                class="text-muted small pt-2 ps-1">increase</span>
+                                            <!-- <span class="text-success small pt-1 fw-bold">8%</span> <span
+                                                class="text-muted small pt-2 ps-1">increase</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -276,7 +191,7 @@
                         <div class="col-12">
                             <div class="card">
 
-                                <div class="filter">
+                                <!-- <div class="filter">
                                     <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                             class="bi bi-three-dots"></i></a>
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -288,27 +203,86 @@
                                         <li><a class="dropdown-item" href="#">This Month</a></li>
                                         <li><a class="dropdown-item" href="#">This Year</a></li>
                                     </ul>
-                                </div>
+                                </div> -->
 
                                 <div class="card-body">
-                                    <h5 class="card-title">Reports <span>/Today</span></h5>
+                                    <h5 class="card-title">Reports</h5>
 
                                     <!-- Line Chart -->
                                     <div id="reportsChart"></div>
 
                                     <script>
                                         document.addEventListener("DOMContentLoaded", () => {
+        //                                     const salesData = [
+        // { "date": "2024-08-27", "total_sales": 21.7 },
+        // { "date": "2024-08-28", "total_sales": 127.28 },
+        // { "date": "2024-08-30", "total_sales": 44.45 }
+    // ];
+    const localStorageItem = localStorage.getItem("statistic")
+const salesData  = JSON.parse(localStorageItem);
+console.log(salesData);
+console.log(salesData["WeeklyGraphData"]);
+console.log(salesData);
+// Helper function to generate date arrays
+const generateDateArray = (days) => {
+    const dateArray = [];
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        dateArray.push(date.toISOString().split('T')[0]);  // Format as YYYY-MM-DD
+    }
+    return dateArray;
+};
+
+// Generate date arrays for 7, 30, and 90 days
+const last7Days = generateDateArray(7);
+const last30Days = generateDateArray(29);
+const last90Days = generateDateArray(90);
+
+// Function to create final sales data
+const createSalesDataArray = (dateArray, salesData) => {
+    const salesDataLookup = {};
+    salesData.map(data => {
+        salesDataLookup[data.date] = data.total_sales;
+    });
+
+    return dateArray.map(date => ({
+        date: date,
+        total_sales: salesDataLookup[date] || 0  // Use 0 if no sales data for the date
+    }));
+};
+
+// Create final data arrays for 7, 30, and 90 days
+console.log("salesData");
+console.log(salesData["weeklyGraphData"]);
+console.log(salesData["monthlyGraphData"]);
+console.log(salesData["yearlyGraphData"]);
+console.log("salesData");
+const weeklySalesData = createSalesDataArray(last7Days, salesData["weeklyGraphData"]);
+const monthlySalesData = createSalesDataArray(last30Days, salesData["monthlyGraphData"]);
+const yearlySalesData = createSalesDataArray(last90Days, salesData["yearlyGraphData"]);
+
+    const weeklySalesDataAll = weeklySalesData.map(data => data.total_sales);
+    const monthlySalesDataAll = monthlySalesData.map(data => data.total_sales);
+    const yearlySalesDataAll = yearlySalesData.map(data => data.total_sales);
+
+    console.log(weeklySalesData);  
                                             new ApexCharts(document.querySelector("#reportsChart"), {
                                                 series: [{
                                                     name: 'Sales',
-                                                    data: [31, 40, 28, 51, 42, 82, 56],
-                                                }, {
-                                                    name: 'Revenue',
-                                                    data: [11, 32, 45, 32, 34, 52, 41]
-                                                }, {
-                                                    name: 'Customers',
-                                                    data: [15, 11, 32, 18, 9, 24, 11]
-                                                }],
+                                                    // data: [31, 40, 28, 51, 42, 82, 56],
+                                                    data: weeklySalesDataAll,
+                                                }
+                                                // , {
+                                                //     name: 'Revenue',
+                                                //     // data: [11, 32, 45, 32, 34, 52, 41]
+                                                //     data : monthlySalesDataAll
+                                                // }, {
+                                                //     name: 'Customers',
+                                                //     data : yearlySalesDataAll
+                                                //     // data: [15, 11, 32, 18, 9, 24, 11]
+                                                // }
+                                                ],
                                                 chart: {
                                                     height: 350,
                                                     type: 'area',
@@ -539,7 +513,7 @@
                     <!-- Recent Activity -->
 
                     <!-- Budget Report -->
-                    <div class="card">
+                    <!-- <div class="card">
                         <div class="filter">
                             <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                     class="bi bi-three-dots"></i></a>
@@ -611,13 +585,13 @@
                             </script>
 
                         </div>
-                    </div>
+                    </div> -->
                     <!-- End Budget Report -->
 
                     <!-- Website Traffic -->
                     <div class="card d-none">
                         <div class="filter">
-                            <a class="icon" href="#" data-bs-toggle="dropdown"><i
+                            <!-- <a class="icon" href="#" data-bs-toggle="dropdown"><i
                                     class="bi bi-three-dots"></i></a>
                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                 <li class="dropdown-header text-start">
@@ -627,7 +601,7 @@
                                 <li><a class="dropdown-item" href="#">Today</a></li>
                                 <li><a class="dropdown-item" href="#">This Month</a></li>
                                 <li><a class="dropdown-item" href="#">This Year</a></li>
-                            </ul>
+                            </ul> -->
                         </div>
 
                         <div class="card-body pb-0">
@@ -721,27 +695,29 @@
 
 
         <script>
-            <i class="bi bi-currency-pound"></i>(document).ready(function() {
-                dashboard();
-            });
-
-            function dashboard() {
-                <i class="bi bi-currency-pound"></i>.ajax({
-                    url: "{{ route('admin.dashboard.detail') }}",
-                    type: "GET",
-                    success: function(data) {
-                        console.log(data);
-                        <i class="bi bi-currency-pound"></i>('#total-revenue').text('<i class="bi bi-currency-pound"></i>' + data.totalSales.toFixed(2));
-                        <i class="bi bi-currency-pound"></i>('#orders-doctors').text(data.doctorOrders);
-                        <i class="bi bi-currency-pound"></i>('#orders-dispensaries').text(data.despensoryOrders);
-                        <i class="bi bi-currency-pound"></i>('#total-orders').text(data.totalOrders);
-                        <i class="bi bi-currency-pound"></i>('#pending-orders').text(data.notApprovedOrders);
-                        <i class="bi bi-currency-pound"></i>('#paid-orders').text(data.paidOrders);
-                    },
-                    error: function(error) {
-                        console.error("There was an error fetching the dashboard details:", error);
-                    }
-                });
+    $(document).ready(function() {
+        dashboard();
+    });
+   
+    function dashboard() {
+        $.ajax({
+            url: "{{ route('admin.dashboard.detail') }}",
+            type: "GET",
+            success: function(data) {
+                console.log(data.doctorOrdersThisMonth);
+                window.localStorage.setItem("statistic",JSON.stringify(data));
+                $('#total-revenue').text('£' + data.salesThisMonth.toFixed(2));
+                $('#orders-doctors').text(data.doctorOrdersThisMonth);
+                $('#orders-dispensaries').text(data.despensoryOrdersThisMonth);
+                $('#total-orders').text(data.totalOrdersThisMonth);
+                $('#pending-orders').text(data.pendingOrdersThisMonth);
+                $('#paid-orders').text(data.paidOrdersThisMonth);
+            },
+            error: function(error) {
+                console.error("There was an error fetching the dashboard details:", error);
             }
-        </script>
+        });
+    }
+</script>
+
     @endPushOnce
