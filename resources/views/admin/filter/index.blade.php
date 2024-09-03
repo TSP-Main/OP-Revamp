@@ -3,20 +3,20 @@
                          class="bi bi-three-dots"></i></a>
                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                      <li class="dropdown-header text-start">
-                         <h6>Filter</h6>
+                         <h6>Filter{{$card}}</h6>
                      </li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $lastDay }}`)">LastDay</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last7Day }}`)">Last7Days</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last30Day }}`)">Last30Days</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last90Day }}`)">Last90Days</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $lastDay }}`,'This Day',`{{$card}}`)">LastDay</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last7Day }}`,'This Week',`{{$card}}`)">Last7Days</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last30Day }}`,'This Month',`{{$card}}`)">Last30Days</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last90Day }}`,'This Year',`{{$card}}`)">Last90Days</a></li>
                  </ul>
              </div>
              <script>
-                 function dayWise($value) {
+                 function dayWise($value,$time,$card) {
                      const localStorageItem = localStorage.getItem("statistic")
                      const data = JSON.parse(localStorageItem);
-                     console.log(data[$value]);
-                     console.log($value);
+                     const spanElement = document.querySelector(`.${$card} span`);
+                      spanElement.textContent = `| ${$time}`;
                      if ($value == 'salesThisDay' || $value == 'salesThisMonth' || $value == 'salesThisWeek' || $value == 'salesThisYear')
                          $('#total-revenue').text('£' + data[$value].toFixed(2));
 
