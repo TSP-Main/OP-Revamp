@@ -151,7 +151,7 @@
                                 <div class="form-check">
                                     <div class="custom-control" style="display: flex; align-items:center;">
                                         <input class="form-check-input" type="radio" name="shipping_method" id="free_shipping" value="free" data-ship="0" required>
-                                        <label class="form-check-label" for="free_shipping"><img src="{{ url('img/free-shipping.jpg') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
+                                        <label class="form-check-label" for="free_shipping"><img src="{{ url('img/freeshipping.png') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
                                     </div>
                                     <span class="float-right">Free Shipping (3-5 Working Days)</span>
                                     <span class="float-right"> (£0.00)</span>
