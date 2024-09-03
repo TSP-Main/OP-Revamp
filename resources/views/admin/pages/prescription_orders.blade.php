@@ -86,6 +86,7 @@
                                     <th>Total Atm.</th>
                                     <th>Payment Status</th>
                                     <th>Order Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -93,14 +94,14 @@
                                 <tr>
                                     <td>{{ ++$key }}</td>
                                     <td>
-                                        <a href="{{ route('admin.orderDetail',['id'=> base64_encode($order['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex; ">
+                                        <a href="{{ route('admin.orderDetail', ['id' => base64_encode($order['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex; ">
                                             #{{ $order['id'] }}
                                         </a>
                                     </td>
                                     <td>
                                         @foreach($order['orderdetails'] as $key => $val)
                                         @php
-                                        $src = (isset($val['variant']))? $val['variant']['image'] : $val['product']['main_image'];
+                                        $src = (isset($val['variant'])) ? $val['variant']['image'] : $val['product']['main_image'];
                                         @endphp
                                         <div class="row">
                                             <div class="col-9">
@@ -117,19 +118,18 @@
                                             </div>
                                             <div class="col-3">
                                                 <div class="text-center">
-                                                @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd')
-                                                    <a href="{{ route('admin.consultationView', ['odd_id' => base64_encode($val['id'])]) }}" class="btn btn-link fw-bold small center">
+                                                    @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd')
+                                                    <a href="{{ route('admin.consultationUserView', ['odd_id' => base64_encode($val['id'])]) }}" class="btn btn-link fw-bold small center">
                                                         Consultation
                                                     </a>
                                                     @endif
                                                 </div>
                                             </div>
                                         </div>
-                                        @if($loop->count > 1 && $loop->remaining > 0 )
+                                        @if($loop->count > 1 && $loop->remaining > 0)
                                         <hr class="mb-2" style="background-color: #e0e0e0; opacity: 1;">
                                         @endif
                                         @endforeach
-
                                     </td>
                                     @php
                                     $isNewOrder = null;
@@ -144,14 +144,18 @@
                                         @endif
                                         {{ isset($order['created_at']) ? date('Y-m-d H:i:s', strtotime($order['created_at'])) : '' }}
                                     </td>
-
                                     <td><span class="fw-bold">£{{$order['total_ammount'] ?? ''}} </span></td>
-                                    <td><span class="btn fw-bold rounded-pill btn-success px-5"> {{$order['payment_status'] ?? ''}}</span> </td>
+                                    <td><span class="btn fw-bold rounded-pill btn-success px-4"> {{$order['payment_status'] ?? ''}}</span> </td>
                                     <td><span class="btn  fw-bold btn-primary rounded-pill px-5">{{$order['status'] ?? ''}}</span></td>
+                                    <td>
+                                        <!-- Reorder button with onclick event -->
+                                        <button class="btn btn-primary" onclick="reorder({{ $order['id'] }})">Reorder</button>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                        
                     </div>
                     <!-- /.card-body -->
                 </div>
@@ -165,7 +169,7 @@
 @stop
 
 @pushOnce('scripts')
-<script>
+{{-- <script>
     $(function() {
         $("#tbl_data").DataTable({
             "paging": true,
@@ -193,5 +197,80 @@
             }
         });
     });
+    function reorder(orderId) {
+        $.ajax({
+            url: '{{ route('cart.reorder') }}',
+            type: 'POST',
+            data: {
+                order_id: orderId,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    window.location.href = response.redirect;
+                } else {
+                    alert('Failed to reorder. Please try again.');
+                }
+            },
+            error: function() {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    {{-- }  --}}
+    <script> 
+    $(function() {
+        // Initialize DataTable
+        $("#tbl_data").DataTable({
+            "paging": true,
+            "responsive": true,
+            "lengthChange": false,
+            "autoWidth": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "pageLength": 50,
+            "columnDefs": [{
+                "targets": [0, 5, 6, 7], // Non-searchable columns
+                "searchable": false
+            }]
+        });
+    });
+
+    $(document).ready(function() {
+        var tableApi = $('#tbl_data').DataTable();
+
+        // Search functionality for the DataTable
+        $('#search').on('input', function() {
+            let text = $(this).val();
+            tableApi.search(text).draw();
+        });
+    });
+
+    // Function to handle reorder
+    function reorder(orderId) {
+    $.ajax({
+        url: '{{ route('cart.reorder') }}',
+        type: 'POST',
+        data: {
+            order_id: orderId,
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.status) {
+                window.location.href = response.redirect;
+            } else {
+                alert('Failed to reorder. ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+            alert('An error occurred. Please try again.');
+        }
+    });
+}
+
 </script>
+
 @endPushOnce
