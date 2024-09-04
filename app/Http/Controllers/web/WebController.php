@@ -697,547 +697,547 @@ class WebController extends Controller
         return view('web.pages.sleep', $data);
     }
 
-    // public function payment(Request $request)
-    // {
-    //     // dd($request->all());
-    //     $user = auth()->user() ?? [];
-    //     $data = $request->all();
-    //     $order_ids = $request->input('order_id.order_id', []);
-    //     // dd($order_ids);
-
-    //     if (!empty($order_ids)) {
-    //         $order = Order::whereIn('id', $order_ids)->get();
-
-    //         foreach ($order as $order) {
-    //             $order->update([
-    //                 'user_id'       => $user->id ?? 'guest',
-    //                 'email'         => $request->email,
-    //                 'note'          => $request->note,
-    //                 'shiping_cost'  => $request->shiping_cost,
-    //                 'coupon_code'   => $request->coupon_code ?? null,
-    //                 'coupon_value'  => $request->coupon_value ?? null,
-    //                 'total_ammount' => $request->total_ammount ?? null,
-    //                 'created_at' => now(),
-    //                 'updated_at' => now(),
-
-    //             ]);
-    //         }
-
-    //         // dd($order);
-    //         if ($order) {
-    //             $order_details = [];
-    //             $index = 0;
-    //             $order_for = 'despensory';
-    //             foreach ($request->order_details['product_id'] as $key => $ids) {
-    //                 if (strpos($ids, '_') !== false) {
-    //                     [$pro_id, $variant_id] = explode('_', $ids);
-    //                 } else {
-    //                     $pro_id = $ids;
-    //                     $variant_id = NULL;
-    //                 }
-    //                 $consultaion_type = 'one_over';
-
-    //                 foreach (session('consultations') ?? [] as $key => $value) {
-    //                     if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
-    //                         if (isset(session('consultations')[$key])) {
-    //                             $consultaion_type = session('consultations')[$key]['type'];
-    //                             $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : NULL;
-    //                             $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : NULL;
-    //                             if ($product_consultation != '""') {
-    //                                 $order_for = 'doctor';
-    //                             }
-    //                             break;
-    //                         }
-    //                     }
-    //                 }
-    //                 if ($variant_id) {
-    //                     $variant = ProductVariant::find($variant_id);
-    //                     $vart_type = explode(';', $variant->title);
-    //                     $vart_value = explode(';', $variant->value);
-    //                     $var_info = '';
-    //                     foreach ($vart_type as $key => $type) {
-    //                         $var_info .= "<b>$type:</b> {$vart_value[$key]}";
-    //                         if ($key < count($vart_type) - 1) {
-    //                             $var_info .= ', ';
-    //                         }
-    //                     }
-    //                 }
-
-    //                 $order_details[] = [
-    //                     'product_id' => $pro_id,
-    //                     'variant_id' => $variant_id ?? Null,
-    //                     'variant_details' => $var_info ?? Null,
-    //                     'weight' => Product::find($pro_id)->weight,
-    //                     'order_id' => $order->id,
-    //                     'product_price' => $request->order_details['product_price'][$index],
-    //                     'product_name' => $request->order_details['product_name'][$index],
-    //                     'product_qty' => $request->order_details['product_qty'][$index],
-    //                     'generic_consultation' => $generic_consultation ?? NULL,
-    //                     'product_consultation' => $product_consultation ?? NULL,
-    //                     'consultation_type' => $consultaion_type ?? NULL,
-    //                     'created_at' => now(),
-    //                     'updated_at' => now(),
-    //                 ];
-
-    //                 $index++;
-    //             }
-    //             // dd($order_details);
-
-    //             // Update or create OrderDetail records
-    //             foreach ($order_details as $detail) {
-    //                 $inserted =  OrderDetail::updateOrCreate(
-    //                     ['order_id' => $detail['order_id']],
-    //                     $detail
-    //                 );
-    //             }
-    //             // dd ($order_detail_update);
-
-    //             Order::where(['id' => $order->id])->latest('created_at')->first()
-    //                 ->update(['order_for' => $order_for]);
-
-
-    //             // $inserted =  OrderDetail::insert($order_details);
-
-    //             // dd($request->all());
-    //             if ($inserted) {
-    //                 $shipping_details[] = [
-    //                     'order_id' => $order->id,
-    //                     'user_id' => $user->id ?? '',
-    //                     'cost' => $request->shiping_cost,
-    //                     'method' => $request->shipping_method,
-    //                     'old_address' => $request->old_address ?? 'no',
-    //                     'firstName' => $request->firstName,
-    //                     'lastName' => $request->lastName,
-    //                     'email' => $request->email,
-    //                     'phone' => $request->phone,
-    //                     'address' => $request->address,
-    //                     'address2' => $request->address2,
-    //                     'city' => $request->city,
-    //                     'state' => $request->state,
-    //                     'zip_code' => $request->zip_code,
-    //                 ];
-    //                 // $shiping =  ShipingDetail::create($shipping_details);
-    //                 foreach ($shipping_details as $detail) {
-    //                     $shiping =  ShipingDetail::updateOrCreate(
-    //                         ['order_id' => $detail['order_id']],
-    //                         $detail
-    //                     );
-    //                 }
-    //                 // dd($shiping);
-    //                 if ($shiping) {
-    //                     session()->put('order_id', $order->id);
-    //                     $payable_ammount = $request->total_ammount * 100;
-    //                     $productName = 'Pharmacy 4U';
-    //                     $productDescription = 'Pharmacy 4U';
-    //                     $full_name = $request->firstName . ' ' . $request->lastName;
-
-    //                     // Obtain Access Token
-    //                     $accessToken = $this->getAccessToken();
-    //                     // Prepare POST fields for creating an order
-    //                     $postFields = [
-    //                         'amount'              => $payable_ammount,
-    //                         'customerTrns'        => $productDescription,
-    //                         'customer'            => [
-    //                             'email'       => $request->email,
-    //                             'fullName'    => $full_name,
-    //                             'phone'       => $request->phone,
-    //                             'countryCode' => 'GB', // United Kingdom country code
-    //                             'requestLang' => 'en-GB', // Request language set to English (United Kingdom)
-    //                         ],
-    //                         'paymentTimeout'      => 1800,
-    //                         'preauth'             => false,
-    //                         'allowRecurring'      => false,
-    //                         'maxInstallments'     => 0,
-    //                         'paymentNotification' => true,
-    //                         'disableExactAmount'  => false,
-    //                         'disableCash'         => false,
-    //                         'disableWallet'       => false,
-    //                         'sourceCode'          => '1503',
-    //                         "merchantTrns" => "Short description of items/services purchased by customer",
-    //                         "tags" =>
-    //                         [
-    //                             "tags for grouping and filtering the transactions",
-    //                             "this tag can be searched on VivaWallet sales dashboard",
-    //                             "Sample tag 1",
-    //                             "Sample tag 2",
-    //                             "Another string"
-    //                         ],
-    //                     ];
-
-    //                     $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
-    //                     $responseData = json_decode($response, true);
-
-    //                     if (isset($responseData['orderCode'])) {
-
-    //                         $orderCode = $responseData['orderCode'];
-    //                         $temp_code = random_int(00000, 99999); //tesitng ..
-    //                         $temp_transetion = 'testing'; // testing purspose
-    //                         $payment_detials = [
-    //                             'order_id' => $order->id,
-    //                             'orderCode' => ($this->ENV == 'Live') ?  $orderCode : $temp_code,
-    //                             'amount' => $request->total_ammount
-    //                         ];
-
-    //                         $payment_init =  PaymentDetail::create($payment_detials);
-    //                         Order::where('id', $order->id)->update([
-    //                             'payment_id' => $payment_init->id,
-    //                             'payment_status' => 'Paid',
-    //                             'status' =>         'Received',
-    //                         ]);
-    //                         if ($payment_init) {
-    //                             $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
-    //                             return response()->json(['redirectUrl' => $redirectUrl]);
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     if (empty($order_ids)) {
-
-    //         // dd($request->all());
-    //         $order =  Order::create([
-    //             'user_id'        => $user->id ?? 'guest',
-    //             'email'          => $request->email,
-    //             'note'           => $request->note,
-    //             'shiping_cost'   => $request->shiping_cost,
-    //             'coupon_code'    => $request->coupon_code ?? Null,
-    //             'coupon_value'   => $request->coupon_value ?? Null,
-    //             'total_ammount'  => $request->total_ammount ?? Null,
-    //         ]);
-
-    //         if ($order) {
-    //             $order_details = [];
-    //             $index = 0;
-    //             $order_for = 'despensory';
-    //             foreach ($request->order_details['product_id'] as $key => $ids) {
-    //                 if (strpos($ids, '_') !== false) {
-    //                     [$pro_id, $variant_id] = explode('_', $ids);
-    //                 } else {
-    //                     $pro_id = $ids;
-    //                     $variant_id = NULL;
-    //                 }
-    //                 $consultaion_type = 'one_over';
-
-    //                 foreach (session('consultations') ?? [] as $key => $value) {
-    //                     if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
-    //                         if (isset(session('consultations')[$key])) {
-    //                             $consultaion_type = session('consultations')[$key]['type'];
-    //                             $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : NULL;
-    //                             $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : NULL;
-    //                             if ($product_consultation != '""') {
-    //                                 $order_for = 'doctor';
-    //                             }
-    //                             break;
-    //                         }
-    //                     }
-    //                 }
-    //                 if ($variant_id) {
-    //                     $variant = ProductVariant::find($variant_id);
-    //                     $vart_type = explode(';', $variant->title);
-    //                     $vart_value = explode(';', $variant->value);
-    //                     $var_info = '';
-    //                     foreach ($vart_type as $key => $type) {
-    //                         $var_info .= "<b>$type:</b> {$vart_value[$key]}";
-    //                         if ($key < count($vart_type) - 1) {
-    //                             $var_info .= ', ';
-    //                         }
-    //                     }
-    //                 }
-
-    //                 $order_details[] = [
-    //                     'product_id' => $pro_id,
-    //                     'variant_id' => $variant_id ?? Null,
-    //                     'variant_details' => $var_info ?? Null,
-    //                     'weight' => Product::find($pro_id)->weight,
-    //                     'order_id' => $order->id,
-    //                     'product_price' => $request->order_details['product_price'][$index],
-    //                     'product_name' => $request->order_details['product_name'][$index],
-    //                     'product_qty' => $request->order_details['product_qty'][$index],
-    //                     'generic_consultation' => $generic_consultation ?? NULL,
-    //                     'product_consultation' => $product_consultation ?? NULL,
-    //                     'consultation_type' => $consultaion_type ?? NULL,
-    //                     'created_at' => now(),
-    //                     'updated_at' => now(),
-    //                 ];
-
-    //                 $index++;
-    //             }
-
-    //             Order::where(['id' => $order->id])->latest('created_at')->first()
-    //                 ->update(['order_for' => $order_for]);
-    //             $inserted =  OrderDetail::insert($order_details);
-    //             if ($inserted) {
-    //                 $shipping_details = [
-    //                     'order_id' => $order->id,
-    //                     'user_id' => $user->id ?? '',
-    //                     'cost' => $request->shiping_cost,
-    //                     'method' => $request->shipping_method,
-    //                     'old_address' => $request->old_address ?? 'no',
-    //                     'firstName' => $request->firstName,
-    //                     'lastName' => $request->lastName,
-    //                     'email' => $request->email,
-    //                     'phone' => $request->phone,
-    //                     'address' => $request->address,
-    //                     'address2' => $request->address2,
-    //                     'city' => $request->city,
-    //                     'state' => $request->state,
-    //                     'zip_code' => $request->zip_code,
-    //                 ];
-    //                 $shiping =  ShipingDetail::create($shipping_details);
-    //                 if ($shiping) {
-    //                     session()->put('order_id', $order->id);
-    //                     $payable_ammount = $request->total_ammount * 100;
-    //                     $productName = 'Pharmacy 4U';
-    //                     $productDescription = 'Pharmacy 4U';
-    //                     $full_name = $request->firstName . ' ' . $request->lastName;
-
-    //                     // Obtain Access Token
-    //                     $accessToken = $this->getAccessToken();
-    //                     // Prepare POST fields for creating an order
-    //                     $postFields = [
-    //                         'amount'              => $payable_ammount,
-    //                         'customerTrns'        => $productDescription,
-    //                         'customer'            => [
-    //                             'email'       => $request->email,
-    //                             'fullName'    => $full_name,
-    //                             'phone'       => $request->phone,
-    //                             'countryCode' => 'GB', // United Kingdom country code
-    //                             'requestLang' => 'en-GB', // Request language set to English (United Kingdom)
-    //                         ],
-    //                         'paymentTimeout'      => 1800,
-    //                         'preauth'             => false,
-    //                         'allowRecurring'      => false,
-    //                         'maxInstallments'     => 0,
-    //                         'paymentNotification' => true,
-    //                         'disableExactAmount'  => false,
-    //                         'disableCash'         => false,
-    //                         'disableWallet'       => false,
-    //                         'sourceCode'          => '1503',
-    //                         "merchantTrns" => "Short description of items/services purchased by customer",
-    //                         "tags" =>
-    //                         [
-    //                             "tags for grouping and filtering the transactions",
-    //                             "this tag can be searched on VivaWallet sales dashboard",
-    //                             "Sample tag 1",
-    //                             "Sample tag 2",
-    //                             "Another string"
-    //                         ],
-    //                     ];
-
-    //                     $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
-    //                     $responseData = json_decode($response, true);
-
-    //                     if (isset($responseData['orderCode'])) {
-
-    //                         $orderCode = $responseData['orderCode'];
-    //                         $temp_code = random_int(00000, 99999); //tesitng ..
-    //                         $temp_transetion = 'testing'; // testing purspose
-    //                         $payment_detials = [
-    //                             'order_id' => $order->id,
-    //                             'orderCode' => ($this->ENV == 'Live') ?  $orderCode : $temp_code,
-    //                             'amount' => $request->total_ammount
-    //                         ];
-
-    //                         $payment_init =  PaymentDetail::create($payment_detials);
-    //                         Order::where('id', $order->id)->update(['payment_id' => $payment_init->id]);
-    //                         if ($payment_init) {
-    //                             $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
-    //                             return response()->json(['redirectUrl' => $redirectUrl]);
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    protected function sendHttpRequest($url, $data, $endpoint)
+    public function payment(Request $request)
     {
-        $apiKey = env('SUPERPAYMENT_API_KEY');
-        $brandId = env('BRAND_ID');
-        
-        \Log::info('Sending request to Super Payments', [
-            'url' => $url,
-            'headers' => [
-                'Authorization' => $apiKey,
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json'
-            ],
-            'data' => json_encode(array_merge($data, ['brandId' => $brandId]))
-        ]);
-        
-        $response = Http::withHeaders([
-            'Authorization' => $apiKey,
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->post($url, $data); // Send data directly without additional json_encode
-        
-        \Log::info('Received response from Super Payments', [
-            'response' => $response->body(),
-            'status' => $response->status(),
-            'headers' => $response->headers()
-        ]);
-        
-        return $response->body();
-    }
-    
-    
-    
+        // dd($request->all());
+        $user = auth()->user() ?? [];
+        $data = $request->all();
+        $order_ids = $request->input('order_id.order_id', []);
+        // dd($order_ids);
 
-  public function payment(Request $request)
-{
-    $user = auth()->user() ?? [];
-    $data = $request->all();
-    $order_ids = $request->input('order_id.order_id', []);
-    $order = null;
+        if (!empty($order_ids)) {
+            $order = Order::whereIn('id', $order_ids)->get();
 
-    if (!empty($order_ids)) {
-        $order = Order::whereIn('id', $order_ids)->first();
-        if ($order) {
-            $order->update([
-                'user_id'       => $user->id ?? 'guest',
-                'email'         => $request->email,
-                'note'          => $request->note,
-                'shiping_cost'  => $request->shiping_cost,
-                'coupon_code'   => $request->coupon_code ?? null,
-                'coupon_value'  => $request->coupon_value ?? null,
-                'total_ammount' => $request->total_ammount ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-    } else {
-        $order = Order::create([
-            'user_id'        => $user->id ?? 'guest',
-            'email'          => $request->email,
-            'note'           => $request->note,
-            'shiping_cost'   => $request->shiping_cost,
-            'coupon_code'    => $request->coupon_code ?? null,
-            'coupon_value'   => $request->coupon_value ?? null,
-            'total_ammount'  => $request->total_ammount ?? null,
-        ]);
-    }
+            foreach ($order as $order) {
+                $order->update([
+                    'user_id'       => $user->id ?? 'guest',
+                    'email'         => $request->email,
+                    'note'          => $request->note,
+                    'shiping_cost'  => $request->shiping_cost,
+                    'coupon_code'   => $request->coupon_code ?? null,
+                    'coupon_value'  => $request->coupon_value ?? null,
+                    'total_ammount' => $request->total_ammount ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
 
-    if ($order) {
-        $order_details = [];
-        $index = 0;
-        $order_for = 'despensory';
-        
-        foreach ($request->order_details['product_id'] as $key => $ids) {
-            if (strpos($ids, '_') !== false) {
-                [$pro_id, $variant_id] = explode('_', $ids);
-            } else {
-                $pro_id = $ids;
-                $variant_id = null;
+                ]);
             }
-            $consultaion_type = 'one_over';
 
-            foreach (session('consultations') ?? [] as $key => $value) {
-                if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
-                    if (isset(session('consultations')[$key])) {
-                        $consultaion_type = session('consultations')[$key]['type'];
-                        $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : null;
-                        $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : null;
-                        if ($product_consultation != '""') {
-                            $order_for = 'doctor';
+            // dd($order);
+            if ($order) {
+                $order_details = [];
+                $index = 0;
+                $order_for = 'despensory';
+                foreach ($request->order_details['product_id'] as $key => $ids) {
+                    if (strpos($ids, '_') !== false) {
+                        [$pro_id, $variant_id] = explode('_', $ids);
+                    } else {
+                        $pro_id = $ids;
+                        $variant_id = NULL;
+                    }
+                    $consultaion_type = 'one_over';
+
+                    foreach (session('consultations') ?? [] as $key => $value) {
+                        if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
+                            if (isset(session('consultations')[$key])) {
+                                $consultaion_type = session('consultations')[$key]['type'];
+                                $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : NULL;
+                                $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : NULL;
+                                if ($product_consultation != '""') {
+                                    $order_for = 'doctor';
+                                }
+                                break;
+                            }
                         }
-                        break;
+                    }
+                    if ($variant_id) {
+                        $variant = ProductVariant::find($variant_id);
+                        $vart_type = explode(';', $variant->title);
+                        $vart_value = explode(';', $variant->value);
+                        $var_info = '';
+                        foreach ($vart_type as $key => $type) {
+                            $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                            if ($key < count($vart_type) - 1) {
+                                $var_info .= ', ';
+                            }
+                        }
+                    }
+
+                    $order_details[] = [
+                        'product_id' => $pro_id,
+                        'variant_id' => $variant_id ?? Null,
+                        'variant_details' => $var_info ?? Null,
+                        'weight' => Product::find($pro_id)->weight,
+                        'order_id' => $order->id,
+                        'product_price' => $request->order_details['product_price'][$index],
+                        'product_name' => $request->order_details['product_name'][$index],
+                        'product_qty' => $request->order_details['product_qty'][$index],
+                        'generic_consultation' => $generic_consultation ?? NULL,
+                        'product_consultation' => $product_consultation ?? NULL,
+                        'consultation_type' => $consultaion_type ?? NULL,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+
+                    $index++;
+                }
+                // dd($order_details);
+
+                // Update or create OrderDetail records
+                foreach ($order_details as $detail) {
+                    $inserted =  OrderDetail::updateOrCreate(
+                        ['order_id' => $detail['order_id']],
+                        $detail
+                    );
+                }
+                // dd ($order_detail_update);
+
+                Order::where(['id' => $order->id])->latest('created_at')->first()
+                    ->update(['order_for' => $order_for]);
+
+
+                // $inserted =  OrderDetail::insert($order_details);
+
+                // dd($request->all());
+                if ($inserted) {
+                    $shipping_details[] = [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id ?? '',
+                        'cost' => $request->shiping_cost,
+                        'method' => $request->shipping_method,
+                        'old_address' => $request->old_address ?? 'no',
+                        'firstName' => $request->firstName,
+                        'lastName' => $request->lastName,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'address' => $request->address,
+                        'address2' => $request->address2,
+                        'city' => $request->city,
+                        'state' => $request->state,
+                        'zip_code' => $request->zip_code,
+                    ];
+                    // $shiping =  ShipingDetail::create($shipping_details);
+                    foreach ($shipping_details as $detail) {
+                        $shiping =  ShipingDetail::updateOrCreate(
+                            ['order_id' => $detail['order_id']],
+                            $detail
+                        );
+                    }
+                    // dd($shiping);
+                    if ($shiping) {
+                        session()->put('order_id', $order->id);
+                        $payable_ammount = $request->total_ammount * 100;
+                        $productName = 'Pharmacy 4U';
+                        $productDescription = 'Pharmacy 4U';
+                        $full_name = $request->firstName . ' ' . $request->lastName;
+
+                        // Obtain Access Token
+                        $accessToken = $this->getAccessToken();
+                        // Prepare POST fields for creating an order
+                        $postFields = [
+                            'amount'              => $payable_ammount,
+                            'customerTrns'        => $productDescription,
+                            'customer'            => [
+                                'email'       => $request->email,
+                                'fullName'    => $full_name,
+                                'phone'       => $request->phone,
+                                'countryCode' => 'GB', // United Kingdom country code
+                                'requestLang' => 'en-GB', // Request language set to English (United Kingdom)
+                            ],
+                            'paymentTimeout'      => 1800,
+                            'preauth'             => false,
+                            'allowRecurring'      => false,
+                            'maxInstallments'     => 0,
+                            'paymentNotification' => true,
+                            'disableExactAmount'  => false,
+                            'disableCash'         => false,
+                            'disableWallet'       => false,
+                            'sourceCode'          => '1503',
+                            "merchantTrns" => "Short description of items/services purchased by customer",
+                            "tags" =>
+                            [
+                                "tags for grouping and filtering the transactions",
+                                "this tag can be searched on VivaWallet sales dashboard",
+                                "Sample tag 1",
+                                "Sample tag 2",
+                                "Another string"
+                            ],
+                        ];
+
+                        $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
+                        $responseData = json_decode($response, true);
+
+                        if (isset($responseData['orderCode'])) {
+
+                            $orderCode = $responseData['orderCode'];
+                            $temp_code = random_int(00000, 99999); //tesitng ..
+                            $temp_transetion = 'testing'; // testing purspose
+                            $payment_detials = [
+                                'order_id' => $order->id,
+                                'orderCode' => ($this->ENV == 'Live') ?  $orderCode : $temp_code,
+                                'amount' => $request->total_ammount
+                            ];
+
+                            $payment_init =  PaymentDetail::create($payment_detials);
+                            Order::where('id', $order->id)->update([
+                                'payment_id' => $payment_init->id,
+                                'payment_status' => 'Paid',
+                                'status' =>         'Received',
+                            ]);
+                            if ($payment_init) {
+                                $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
+                                return response()->json(['redirectUrl' => $redirectUrl]);
+                            }
+                        }
                     }
                 }
             }
-            
-            $var_info = null;
-            
-            if ($variant_id) {
-                $variant = ProductVariant::find($variant_id);
-                $vart_type = explode(';', $variant->title);
-                $vart_value = explode(';', $variant->value);
-                $var_info = '';
-                foreach ($vart_type as $key => $type) {
-                    $var_info .= "<b>$type:</b> {$vart_value[$key]}";
-                    if ($key < count($vart_type) - 1) {
-                        $var_info .= ', ';
-                    }
-                }
-            }
-
-            $order_details[] = [
-                'product_id' => $pro_id,
-                'variant_id' => $variant_id ?? null,
-                'variant_details' => $var_info ?? null,
-                'weight' => Product::find($pro_id)->weight,
-                'order_id' => $order->id,
-                'product_price' => $request->order_details['product_price'][$index],
-                'product_name' => $request->order_details['product_name'][$index],
-                'product_qty' => $request->order_details['product_qty'][$index],
-                'generic_consultation' => $generic_consultation ?? null,
-                'product_consultation' => $product_consultation ?? null,
-                'consultation_type' => $consultaion_type ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-            $index++;
         }
 
-        Order::where(['id' => $order->id])->latest('created_at')->first()
-            ->update(['order_for' => $order_for]);
-        OrderDetail::insert($order_details);
+        if (empty($order_ids)) {
 
-        $shipping_details = [
-            'order_id' => $order->id,
-            'user_id' => $user->id ?? '',
-            'cost' => $request->shiping_cost,
-            'method' => $request->shipping_method,
-            'old_address' => $request->old_address ?? 'no',
-            'firstName' => $request->firstName,
-            'lastName' => $request->lastName,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'address2' => $request->address2,
-            'city' => $request->city,
-            'state' => $request->state,
-            'zip_code' => $request->zip_code,
-        ];
-        ShipingDetail::create($shipping_details);
+            // dd($request->all());
+            $order =  Order::create([
+                'user_id'        => $user->id ?? 'guest',
+                'email'          => $request->email,
+                'note'           => $request->note,
+                'shiping_cost'   => $request->shiping_cost,
+                'coupon_code'    => $request->coupon_code ?? Null,
+                'coupon_value'   => $request->coupon_value ?? Null,
+                'total_ammount'  => $request->total_ammount ?? Null,
+            ]);
 
-        // Call Super Payments API for reward calculation
-        $rewardResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/reward-calculations', [
-            'amount' => $request->total_ammount * 100, 
-            'brandId' =>  env('BRAND_ID'),
-            'currency' => 'GBP'
-        ], 'reward');
+            if ($order) {
+                $order_details = [];
+                $index = 0;
+                $order_for = 'despensory';
+                foreach ($request->order_details['product_id'] as $key => $ids) {
+                    if (strpos($ids, '_') !== false) {
+                        [$pro_id, $variant_id] = explode('_', $ids);
+                    } else {
+                        $pro_id = $ids;
+                        $variant_id = NULL;
+                    }
+                    $consultaion_type = 'one_over';
 
-        $rewardData = json_decode($rewardResponse, true);
+                    foreach (session('consultations') ?? [] as $key => $value) {
+                        if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
+                            if (isset(session('consultations')[$key])) {
+                                $consultaion_type = session('consultations')[$key]['type'];
+                                $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : NULL;
+                                $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : NULL;
+                                if ($product_consultation != '""') {
+                                    $order_for = 'doctor';
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    if ($variant_id) {
+                        $variant = ProductVariant::find($variant_id);
+                        $vart_type = explode(';', $variant->title);
+                        $vart_value = explode(';', $variant->value);
+                        $var_info = '';
+                        foreach ($vart_type as $key => $type) {
+                            $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                            if ($key < count($vart_type) - 1) {
+                                $var_info .= ', ';
+                            }
+                        }
+                    }
 
-        if (isset($rewardData['id'])) {
-            $rewardCalculationId = $rewardData['id'];
+                    $order_details[] = [
+                        'product_id' => $pro_id,
+                        'variant_id' => $variant_id ?? Null,
+                        'variant_details' => $var_info ?? Null,
+                        'weight' => Product::find($pro_id)->weight,
+                        'order_id' => $order->id,
+                        'product_price' => $request->order_details['product_price'][$index],
+                        'product_name' => $request->order_details['product_name'][$index],
+                        'product_qty' => $request->order_details['product_qty'][$index],
+                        'generic_consultation' => $generic_consultation ?? NULL,
+                        'product_consultation' => $product_consultation ?? NULL,
+                        'consultation_type' => $consultaion_type ?? NULL,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
 
-            $baseUrl = 'https://onlinepharmacy-4u.co.uk/'; // Update with actual base URL
+                    $index++;
+                }
 
-            // Call Super Payments API to create a payment
-            $paymentResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/payments', [
-                "brandId" => env('BRAND_ID'),
-                'amount' => (int)$request->total_ammount * 100, 
-                'rewardCalculationId' => $rewardCalculationId,
-                'currency' => 'GBP',
-                'successUrl' =>strip_tags('https://onlinepharmacy-4u.co.uk/thankYou'),
-                'cancelUrl' =>strip_tags('https://onlinepharmacy-4u.co.uk/transetionFail'),
-                'failureUrl' => strip_tags('https://onlinepharmacy-4u.co.uk/transetionFail')
-            ], 'payment');
+                Order::where(['id' => $order->id])->latest('created_at')->first()
+                    ->update(['order_for' => $order_for]);
+                $inserted =  OrderDetail::insert($order_details);
+                if ($inserted) {
+                    $shipping_details = [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id ?? '',
+                        'cost' => $request->shiping_cost,
+                        'method' => $request->shipping_method,
+                        'old_address' => $request->old_address ?? 'no',
+                        'firstName' => $request->firstName,
+                        'lastName' => $request->lastName,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'address' => $request->address,
+                        'address2' => $request->address2,
+                        'city' => $request->city,
+                        'state' => $request->state,
+                        'zip_code' => $request->zip_code,
+                    ];
+                    $shiping =  ShipingDetail::create($shipping_details);
+                    if ($shiping) {
+                        session()->put('order_id', $order->id);
+                        $payable_ammount = $request->total_ammount * 100;
+                        $productName = 'Pharmacy 4U';
+                        $productDescription = 'Pharmacy 4U';
+                        $full_name = $request->firstName . ' ' . $request->lastName;
 
-            $paymentData = json_decode($paymentResponse, true);
+                        // Obtain Access Token
+                        $accessToken = $this->getAccessToken();
+                        // Prepare POST fields for creating an order
+                        $postFields = [
+                            'amount'              => $payable_ammount,
+                            'customerTrns'        => $productDescription,
+                            'customer'            => [
+                                'email'       => $request->email,
+                                'fullName'    => $full_name,
+                                'phone'       => $request->phone,
+                                'countryCode' => 'GB', // United Kingdom country code
+                                'requestLang' => 'en-GB', // Request language set to English (United Kingdom)
+                            ],
+                            'paymentTimeout'      => 1800,
+                            'preauth'             => false,
+                            'allowRecurring'      => false,
+                            'maxInstallments'     => 0,
+                            'paymentNotification' => true,
+                            'disableExactAmount'  => false,
+                            'disableCash'         => false,
+                            'disableWallet'       => false,
+                            'sourceCode'          => '1503',
+                            "merchantTrns" => "Short description of items/services purchased by customer",
+                            "tags" =>
+                            [
+                                "tags for grouping and filtering the transactions",
+                                "this tag can be searched on VivaWallet sales dashboard",
+                                "Sample tag 1",
+                                "Sample tag 2",
+                                "Another string"
+                            ],
+                        ];
 
-            if (isset($paymentData['redirectUrl'])) {
-                return response()->json(['redirectUrl' => $paymentData['redirectUrl']]);
+                        $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
+                        $responseData = json_decode($response, true);
+
+                        if (isset($responseData['orderCode'])) {
+
+                            $orderCode = $responseData['orderCode'];
+                            $temp_code = random_int(00000, 99999); //tesitng ..
+                            $temp_transetion = 'testing'; // testing purspose
+                            $payment_detials = [
+                                'order_id' => $order->id,
+                                'orderCode' => ($this->ENV == 'Live') ?  $orderCode : $temp_code,
+                                'amount' => $request->total_ammount
+                            ];
+
+                            $payment_init =  PaymentDetail::create($payment_detials);
+                            Order::where('id', $order->id)->update(['payment_id' => $payment_init->id]);
+                            if ($payment_init) {
+                                $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
+                                return response()->json(['redirectUrl' => $redirectUrl]);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
+//     protected function sendHttpRequest($url, $data, $endpoint)
+//     {
+//         $apiKey = env('SUPERPAYMENT_API_KEY');
+//         $brandId = env('BRAND_ID');
+        
+//         \Log::info('Sending request to Super Payments', [
+//             'url' => $url,
+//             'headers' => [
+//                 'Authorization' => $apiKey,
+//                 'Accept' => 'application/json',
+//                 'Content-Type' => 'application/json'
+//             ],
+//             'data' => json_encode(array_merge($data, ['brandId' => $brandId]))
+//         ]);
+        
+//         $response = Http::withHeaders([
+//             'Authorization' => $apiKey,
+//             'Accept' => 'application/json',
+//             'Content-Type' => 'application/json',
+//         ])->post($url, $data); // Send data directly without additional json_encode
+        
+//         \Log::info('Received response from Super Payments', [
+//             'response' => $response->body(),
+//             'status' => $response->status(),
+//             'headers' => $response->headers()
+//         ]);
+        
+//         return $response->body();
+//     }
+    
+    
+    
 
-    return redirect()->route('web.view.cart');
-}
+//   public function payment(Request $request)
+// {
+//     $user = auth()->user() ?? [];
+//     $data = $request->all();
+//     $order_ids = $request->input('order_id.order_id', []);
+//     $order = null;
+
+//     if (!empty($order_ids)) {
+//         $order = Order::whereIn('id', $order_ids)->first();
+//         if ($order) {
+//             $order->update([
+//                 'user_id'       => $user->id ?? 'guest',
+//                 'email'         => $request->email,
+//                 'note'          => $request->note,
+//                 'shiping_cost'  => $request->shiping_cost,
+//                 'coupon_code'   => $request->coupon_code ?? null,
+//                 'coupon_value'  => $request->coupon_value ?? null,
+//                 'total_ammount' => $request->total_ammount ?? null,
+//                 'created_at' => now(),
+//                 'updated_at' => now(),
+//             ]);
+//         }
+//     } else {
+//         $order = Order::create([
+//             'user_id'        => $user->id ?? 'guest',
+//             'email'          => $request->email,
+//             'note'           => $request->note,
+//             'shiping_cost'   => $request->shiping_cost,
+//             'coupon_code'    => $request->coupon_code ?? null,
+//             'coupon_value'   => $request->coupon_value ?? null,
+//             'total_ammount'  => $request->total_ammount ?? null,
+//         ]);
+//     }
+
+//     if ($order) {
+//         $order_details = [];
+//         $index = 0;
+//         $order_for = 'despensory';
+        
+//         foreach ($request->order_details['product_id'] as $key => $ids) {
+//             if (strpos($ids, '_') !== false) {
+//                 [$pro_id, $variant_id] = explode('_', $ids);
+//             } else {
+//                 $pro_id = $ids;
+//                 $variant_id = null;
+//             }
+//             $consultaion_type = 'one_over';
+
+//             foreach (session('consultations') ?? [] as $key => $value) {
+//                 if ($key == $pro_id || strpos($key, ',') !== false && in_array($pro_id, explode(',', $key))) {
+//                     if (isset(session('consultations')[$key])) {
+//                         $consultaion_type = session('consultations')[$key]['type'];
+//                         $generic_consultation = (isset(session('consultations')[$key]['gen_quest_ans'])) ? json_encode(session('consultations')[$key]['gen_quest_ans'], true) : null;
+//                         $product_consultation = (isset(session('consultations')[$key]['pro_quest_ans'])) ? json_encode(session('consultations')[$key]['pro_quest_ans'], true) : null;
+//                         if ($product_consultation != '""') {
+//                             $order_for = 'doctor';
+//                         }
+//                         break;
+//                     }
+//                 }
+//             }
+            
+//             $var_info = null;
+            
+//             if ($variant_id) {
+//                 $variant = ProductVariant::find($variant_id);
+//                 $vart_type = explode(';', $variant->title);
+//                 $vart_value = explode(';', $variant->value);
+//                 $var_info = '';
+//                 foreach ($vart_type as $key => $type) {
+//                     $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+//                     if ($key < count($vart_type) - 1) {
+//                         $var_info .= ', ';
+//                     }
+//                 }
+//             }
+
+//             $order_details[] = [
+//                 'product_id' => $pro_id,
+//                 'variant_id' => $variant_id ?? null,
+//                 'variant_details' => $var_info ?? null,
+//                 'weight' => Product::find($pro_id)->weight,
+//                 'order_id' => $order->id,
+//                 'product_price' => $request->order_details['product_price'][$index],
+//                 'product_name' => $request->order_details['product_name'][$index],
+//                 'product_qty' => $request->order_details['product_qty'][$index],
+//                 'generic_consultation' => $generic_consultation ?? null,
+//                 'product_consultation' => $product_consultation ?? null,
+//                 'consultation_type' => $consultaion_type ?? null,
+//                 'created_at' => now(),
+//                 'updated_at' => now(),
+//             ];
+
+//             $index++;
+//         }
+
+//         Order::where(['id' => $order->id])->latest('created_at')->first()
+//             ->update(['order_for' => $order_for]);
+//         OrderDetail::insert($order_details);
+
+//         $shipping_details = [
+//             'order_id' => $order->id,
+//             'user_id' => $user->id ?? '',
+//             'cost' => $request->shiping_cost,
+//             'method' => $request->shipping_method,
+//             'old_address' => $request->old_address ?? 'no',
+//             'firstName' => $request->firstName,
+//             'lastName' => $request->lastName,
+//             'email' => $request->email,
+//             'phone' => $request->phone,
+//             'address' => $request->address,
+//             'address2' => $request->address2,
+//             'city' => $request->city,
+//             'state' => $request->state,
+//             'zip_code' => $request->zip_code,
+//         ];
+//         ShipingDetail::create($shipping_details);
+
+//         // Call Super Payments API for reward calculation
+//         $rewardResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/reward-calculations', [
+//             'amount' => $request->total_ammount * 100, 
+//             'brandId' =>  env('BRAND_ID'),
+//             'currency' => 'GBP'
+//         ], 'reward');
+
+//         $rewardData = json_decode($rewardResponse, true);
+
+//         if (isset($rewardData['id'])) {
+//             $rewardCalculationId = $rewardData['id'];
+
+//             $baseUrl = 'https://onlinepharmacy-4u.co.uk/'; // Update with actual base URL
+
+//             // Call Super Payments API to create a payment
+//             $paymentResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/payments', [
+//                 "brandId" => env('BRAND_ID'),
+//                 'amount' => (int)$request->total_ammount * 100, 
+//                 'rewardCalculationId' => $rewardCalculationId,
+//                 'currency' => 'GBP',
+//                 'successUrl' =>strip_tags('https://onlinepharmacy-4u.co.uk/thankYou'),
+//                 'cancelUrl' =>strip_tags('https://onlinepharmacy-4u.co.uk/transetionFail'),
+//                 'failureUrl' => strip_tags('https://onlinepharmacy-4u.co.uk/transetionFail')
+//             ], 'payment');
+
+//             $paymentData = json_decode($paymentResponse, true);
+
+//             if (isset($paymentData['redirectUrl'])) {
+//                 return response()->json(['redirectUrl' => $paymentData['redirectUrl']]);
+//             }
+//         }
+//     }
+
+//     return redirect()->route('web.view.cart');
+// }
 
 
     private function getAccessToken()
@@ -1270,17 +1270,17 @@ class WebController extends Controller
         }
     }
 
-    // private function sendHttpRequest($url, $postFields, $accessToken)
-    // {
-    //     // Make an HTTP request with Laravel HTTP client
-    //     $response = Http::withHeaders([
-    //         'Authorization' => 'Bearer ' . $accessToken,
-    //         'Content-Type'  => 'application/json',
-    //     ])->post($url, $postFields);
+    private function sendHttpRequest($url, $postFields, $accessToken)
+    {
+        // Make an HTTP request with Laravel HTTP client
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $accessToken,
+            'Content-Type'  => 'application/json',
+        ])->post($url, $postFields);
 
-    //     // Return the response body
-    //     return $response->body();
-    // }
+        // Return the response body
+        return $response->body();
+    }
 
 
     // response example  url : https://onlinepharmacy-4u.co.uk/Completed-order?t=8cbe1c22-08bf-46f7-815a-b4edf9c76c22&s=7217646205950618&lang=en-GB&eventId=0&eci=1
