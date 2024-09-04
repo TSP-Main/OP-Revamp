@@ -159,7 +159,7 @@
             <a class="nav-link {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval','admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval', 'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated','admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail'])) ? '' : 'collapsed'}} " data-bs-target="#charts-nav" data-bs-toggle="collapse">
                 <i class="bi bi-bar-chart"></i><span>Orders</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="charts-nav" class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval','admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  " data-bs-parent="#sidebar-nav">
+            <ul id="charts-nav" class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  " data-bs-parent="#sidebar-nav">
                 @if(view_permission('admin.allOrders'))
                 <li>
                     <a class="{{(request()->routeIs(['admin.allOrders'])) ? 'nav-link ' : ''}}" href="{{route('admin.allOrders')}}">
@@ -221,6 +221,13 @@
                 <li>
                     <a class="{{(request()->routeIs(['admin.ordersShippingFail'])) ? 'nav-link ' : ''}}" href="{{route('admin.ordersShippingFail')}}">
                         <i class="bi bi-circle"></i><span>ShippingFail Orders</span>
+                    </a>
+                </li>
+                @endif
+                @if(view_permission('admin.unpaidOrders'))
+                <li>
+                    <a class="{{(request()->routeIs(['admin.unpaidOrders'])) ? 'nav-link ' : ''}}" href="{{route('admin.unpaidOrders')}}">
+                        <i class="bi bi-circle"></i><span>Unpaid Orders</span>
                     </a>
                 </li>
                 @endif

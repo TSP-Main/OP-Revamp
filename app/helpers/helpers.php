@@ -103,6 +103,7 @@ function view_permission($page_name)
                 case 'prodcuts':
                 case 'add_product':
                 case 'orders':
+                case 'admin.unpaidOrders':
                 case 'consultation_view':
                 case 'orders_shipped':
                 case 'orders_unshiped':

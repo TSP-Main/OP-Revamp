@@ -93,6 +93,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
 
     Route::get('/ordersReceived', [SystemController::class, 'orders_recieved'])->name('admin.ordersRecieved');
     Route::get('/ordersAll', [SystemController::class, 'all_orders'])->name('admin.allOrders');
+    Route::get('/ordersUnpaid', [SystemController::class, 'unpaid_orders'])->name('admin.unpaidOrders');
     Route::get('/ordersCreated', [SystemController::class, 'orders_created'])->name('admin.ordersCreated');
     Route::post('/duplicate-order', [SystemController::class, 'duplicate_Order'])->name('admin.duplicateOrder');
 
