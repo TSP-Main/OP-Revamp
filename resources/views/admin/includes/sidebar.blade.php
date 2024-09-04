@@ -225,11 +225,11 @@
                 </li>
                 @endif
                 @if(view_permission('admin.unpaidOrders'))
-                <li>
+                {{-- <li>
                     <a class="{{(request()->routeIs(['admin.unpaidOrders'])) ? 'nav-link ' : ''}}" href="{{route('admin.unpaidOrders')}}">
                         <i class="bi bi-circle"></i><span>Unpaid Orders</span>
                     </a>
-                </li>
+                </li> --}}
                 @endif
                 @if(view_permission('gpa_letters'))
                 <li>
