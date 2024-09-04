@@ -1707,6 +1707,24 @@ class SystemController extends Controller
         return view('admin.pages.order_all', $data);
     }
 
+    public function unpaid_orders()
+    {
+        $data['user'] = auth()->user();
+        $page_name = 'orders_recieved';
+        if (!view_permission($page_name)) {
+            return redirect()->back();
+        }
+        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid'])->latest('created_at')->get()->toArray();
+
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders);
+            $data['orders'] = $this->assign_order_types($orders);
+        }
+
+        // dd(  $data['orders']);
+        return view('admin.pages.order_unpaid', $data);
+    }
+
     public function orders_created()
     {
         $data['user'] = auth()->user();
