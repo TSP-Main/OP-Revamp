@@ -3,12 +3,12 @@
                          class="bi bi-three-dots"></i></a>
                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                      <li class="dropdown-header text-start">
-                         <h6>Filter{{$card}}</h6>
+                         <h6>Filter</h6>
                      </li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $lastDay }}`,'This Day',`{{$card}}`)">LastDay</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last7Day }}`,'This Week',`{{$card}}`)">Last7Days</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last30Day }}`,'This Month',`{{$card}}`)">Last30Days</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last90Day }}`,'This Year',`{{$card}}`)">Last90Days</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $lastDay }}`,'This Day',`{{$card}}`)">This Day</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last7Day }}`,'This Week',`{{$card}}`)">This Week</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last30Day }}`,'This Month',`{{$card}}`)">This Month</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last90Day }}`,'This Year',`{{$card}}`)">This Year</a></li>
                  </ul>
              </div>
              <script>

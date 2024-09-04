@@ -297,18 +297,21 @@
                                     let updatedCategories;
 
                                     if (period === 'weekly') {
-                                        updatedData = createSalesDataArray(generateDateArray(1), salesData["weeklyGraphData"]);
-                                        updatedCategories = generateDateArray(1);
+                                        // updatedData = createSalesDataArray(generateDateArray(1), salesData["weeklyGraphData"]);
+                                        // updatedCategories = generateDateArray(1);
+                                        updatedData = weeklySalesData;
+                                        updatedCategories = last7Days;
                                     } else if (period === 'monthly') {
                                         updatedData = monthlySalesData;
                                         updatedCategories = last30Days;
                                     } else if (period === 'yearly') {
                                         updatedData = yearlySalesData;
                                         updatedCategories = last90Days;
-                                    } else {
-                                        updatedData = weeklySalesData;
-                                        updatedCategories = last7Days;
                                     }
+                                    //  else {
+                                    //     updatedData = weeklySalesData;
+                                    //     updatedCategories = last7Days;
+                                    // }
 
                                     chart.updateSeries([{
                                         data: updatedData.map(data => data.total_sales)
