@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +20,51 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function scopeWeekly(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+            //    ->whereYear('created_at',Carbon::now()->year)
+            ->where('created_at','>', Carbon::now()->subDays(7));
+    }
+    public function scopeMonthly(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+            //    ->whereYear('created_at',Carbon::now()->year)
+            // ->whereMonth('created_at', Carbon::now()->month);
+            ->where( 'created_at', '>', Carbon::now()->subDays(30));
+    }
+    public function scopeYearly(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+                      ->where('created_at','>', Carbon::now()->subDays(365));
+    }
+    public function scopeLast90Days(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+                     ->where('created_at','>', Carbon::now()->subDays(90));
+    }
+    public function scopeDaily(Builder $builder,?string $status =null,?string $payment_status=null): void
+    {
+        $builder->conditions($status,$payment_status)
+                 ->whereYear('created_at',Carbon::now()->year)
+                 ->whereMonth('created_at', Carbon::now()->month)
+                 ->whereDay('created_at',Carbon::now()->day);
+    }
+
+    public function scopeConditions($builder,?string $status =null,?string $payment_status=null)
+    {
+       if($status || $payment_status)
+       {
+        $builder->when($status,function($q)use($status){
+            $q->where('order_for', $status);
+        })->when($payment_status,function($q)use($payment_status){
+            $q->where('payment_status', $payment_status);
+        });
+       }
+      
+    }
+
 
 
     public function shipingdetails()

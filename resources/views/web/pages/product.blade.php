@@ -380,7 +380,7 @@
             var combinedVariantVal = '';
             $('.variant_tag_active').each(function() {
                 var variantValue = $(this).data('variant_val');
-                variantValue =String(variantValue).replace(/;/g, '').replace(/ /g, '_');
+                variantValue = String(variantValue).replace(/;/g, '').replace(/ /g, '_');
                 combinedVariantVal += variantValue;
             });
             var current_variant = variantData[combinedVariantVal];
@@ -401,13 +401,17 @@
             } else {
                 $('#product_img').attr('src', image_src + '/' + mainImage);
             }
-            $('#product_price').text('£ ' + current_variant.price)
+            $('#product_price').text('£ ' + current_variant.price);
 
             if (current_variant.cut_price) {
-                $('#product_cut_price').text('£ ' + current_variant.cut_price)
+                $('#product_cut_price').text('£ ' + current_variant.cut_price);
             } else {
                 $('#product_cut_price').text('');
             }
+
+            // Update quantity limits
+            $('#min_buy').val(current_variant.min_buy || 1);
+            $('#max_buy').val(current_variant.max_buy || 999);
         }
 
         $(document).on('click', '.variants', updateVariant);
@@ -417,10 +421,23 @@
         if (activeVariant.length) {
             updateVariant.call(activeVariant);
         }
-    });
+
+        // Validate quantity
+        $(document).on('input', '.cart-plus-minus-box', function() {
+            var minBuy = parseInt($('#min_buy').val());
+            var maxBuy = parseInt($('#max_buy').val());
+            var qty = parseInt($(this).val());
+
+            if (qty < minBuy) {
+                alert('Minimum quantity is ' + minBuy);
+                $(this).val(minBuy);
+            } else if (qty > maxBuy) {
+                alert('Maximum quantity is ' + maxBuy);
+                $(this).val(maxBuy);
+            }
+        });
 
     function updateUrlParameter(url, key, value) {
-        // function for update url when variant change
         var urlParts = url.split('?');
         if (urlParts.length >= 2) {
             var prefix = encodeURIComponent(key) + '=';
@@ -438,5 +455,6 @@
         }
         return url;
     }
+});
 </script>
 @endPushOnce

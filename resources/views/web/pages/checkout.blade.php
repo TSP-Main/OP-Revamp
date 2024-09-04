@@ -147,6 +147,17 @@
                                     <div class="ml-4 mb-2 small">(1-2 working days)</div>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <div class="custom-control" style="display: flex; align-items:center;">
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="free_shipping" value="free" data-ship="0" required>
+                                        <label class="form-check-label" for="free_shipping"><img src="{{ url('img/freeshipping.png') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
+                                    </div>
+                                    <span class="float-right">Free Shipping (3-5 Working Days)</span>
+                                    <span class="float-right"> (£0.00)</span>
+                                    <div class="ml-4 mb-2 small">(For orders over £40)</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -224,107 +235,104 @@
     });
 </script>
 <script>
-    $('input[name="shipping_method"]').change(function() {
-        var shippingCost   = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
+$(document).ready(function() {
+    // Set initial shipping method
+    $('#fast_delivery').prop('checked', true);
+
+    // Function to update the shipping cost and order total
+    function updateShippingAndTotal() {
+        var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
-        var subTotal  = parseFloat(subTotalString) || 0;
+        var subTotal = parseFloat(subTotalString) || 0;
         var granTotal = parseFloat((shippingCost + subTotal).toFixed(2));
-        $('.shipping_cost').text('£'+shippingCost.toFixed(2));
-        $('.order_total').text('£'+granTotal.toFixed(2));
+        $('.shipping_cost').text('£' + shippingCost.toFixed(2));
+        $('.order_total').text('£' + granTotal.toFixed(2));
         $('#total_ammount').val(granTotal);
         $('#shiping_cost').val(shippingCost);
+    }
+
+    // Initialize shipping options
+    updateShippingAndTotal();
+
+    // Event listener for shipping method change
+    $('input[name="shipping_method"]').change(function() {
+        updateShippingAndTotal();
     });
 
-    $(document).ready(function() {
-
-        $('#fast_delivery').prop('checked', true);
-
-        function validateForm() {
-            var isValid = true;
-            var firstName = $('input[name="firstName"]').val().trim();
-            if (firstName === '') {
+    // Function to validate form
+    function validateForm() {
+        var isValid = true;
+        var fields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip_code'];
+        fields.forEach(function(field) {
+            var value = $('input[name="' + field + '"]').val().trim();
+            if (value === '') {
                 isValid = false;
-                $('input[name="firstName"]').addClass('is-invalid');
+                $('input[name="' + field + '"]').addClass('is-invalid');
             } else {
-                $('input[name="firstName"]').removeClass('is-invalid');
-            }
-            var lastName = $('input[name="lastName"]').val().trim();
-            if (lastName === '') {
-                isValid = false;
-                $('input[name="lastName"]').addClass('is-invalid');
-            } else {
-                $('input[name="lastName"]').removeClass('is-invalid');
-            }
-            var email = $('input[name="email"]').val().trim();
-            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (email === '' || !emailPattern.test(email)) {
-                isValid = false;
-                $('input[name="email"]').addClass('is-invalid');
-            } else {
-                $('input[name="email"]').removeClass('is-invalid');
-            }
-            var phone = $('input[name="phone"]').val().trim();
-            if (phone === '') {
-                isValid = false;
-                $('input[name="phone"]').addClass('is-invalid');
-            } else {
-                $('input[name="phone"]').removeClass('is-invalid');
-            }
-            var address = $('input[name="address"]').val().trim();
-            if (address === '') {
-                isValid = false;
-                $('input[name="address"]').addClass('is-invalid');
-            } else {
-                $('input[name="address"]').removeClass('is-invalid');
-            }
-            var city = $('input[name="city"]').val().trim();
-            if (city === '') {
-                isValid = false;
-                $('input[name="city"]').addClass('is-invalid');
-            } else {
-                $('input[name="city"]').removeClass('is-invalid');
-            }
-            var postalCode = $('input[name="zip_code"]').val().trim();
-            if (postalCode === '') {
-                isValid = false;
-                $('input[name="zip_code"]').addClass('is-invalid');
-            } else {
-                $('input[name="zip_code"]').removeClass('is-invalid');
-            }
-            return isValid;
-        }
-
-        $('#placeOrderBtn').on('click', function() {
-            if (validateForm()) {
-                $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-                $.ajax({
-                    url: $('#checkoutForm').attr('action'),
-                    type: 'POST',
-                    data: $('#checkoutForm').serialize(),
-                    success: function(response) {
-
-
-                        var redirectUrl = response.redirectUrl;
-                        var iframe = $('<iframe>', {
-                            src: redirectUrl,
-                            frameborder: '0',
-                            style: 'border: none; width: 100%; height: 100%;'
-                        });
-                        $('#checkoutForm').remove();
-                        $('#iframeContainer').html(iframe);
-
-                        var iframeTopPosition = $('#iframeContainer').offset().top;
-                        $('html, body').animate({
-                            scrollTop: iframeTopPosition
-                        }, 'slow');
-                    },
-                    error: function(xhr, status, error) {
-                        $('#placeOrderBtn').html('Proceed To Pay');
-                    }
-                });
+                $('input[name="' + field + '"]').removeClass('is-invalid');
             }
         });
 
+        // Validate email format
+        var email = $('input[name="email"]').val().trim();
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email === '' || !emailPattern.test(email)) {
+            isValid = false;
+            $('input[name="email"]').addClass('is-invalid');
+        } else {
+            $('input[name="email"]').removeClass('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    // Handle place order button click
+    $('#placeOrderBtn').on('click', function() {
+        if (validateForm()) {
+            $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            $.ajax({
+                url: $('#checkoutForm').attr('action'),
+                type: 'POST',
+                data: $('#checkoutForm').serialize(),
+                success: function(response) {
+                    var redirectUrl = response.redirectUrl;
+                    var iframe = $('<iframe>', {
+                        src: redirectUrl,
+                        frameborder: '0',
+                        style: 'border: none; width: 100%; height: 100%;'
+                    });
+                    $('#checkoutForm').remove();
+                    $('#iframeContainer').html(iframe);
+
+                    var iframeTopPosition = $('#iframeContainer').offset().top;
+                    $('html, body').animate({
+                        scrollTop: iframeTopPosition
+                    }, 'slow');
+                },
+                error: function(xhr, status, error) {
+                    $('#placeOrderBtn').html('Proceed To Pay');
+                }
+            });
+        }
     });
+
+    // Update shipping methods based on cart total
+    function updateShippingOptions() {
+        var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
+        var subTotal = parseFloat(subTotalString) || 0;
+
+        if (subTotal >= 40) {
+            $('#free_shipping').closest('.col-md-6').show();
+        } else {
+            $('#free_shipping').closest('.col-md-6').hide();
+            if ($('#free_shipping').is(':checked')) {
+                $('#fast_delivery').prop('checked', true).trigger('change');
+            }
+        }
+    }
+
+    updateShippingOptions();
+});
+
 </script>
 @endPushOnce

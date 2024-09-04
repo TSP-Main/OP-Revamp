@@ -1599,6 +1599,78 @@ class SystemController extends Controller
         }
     }
 
+    public function consultation_user_view(Request $request)
+    {
+        $data['user'] = auth()->user();
+        $page_name = 'consultation_view';
+        if (!view_permission($page_name)) {
+            return redirect()->back();
+        }
+        if ($request->odd_id) {
+            $odd_id = base64_decode($request->odd_id);
+            $user_result = [];
+            $prod_result = [];
+            $consultaion  = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
+            if ($consultaion) {
+                $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
+                $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
+                    return $value !== null;
+                }));
+                if ($consultaion->consultation_type == 'pmd') {
+                    $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+                } elseif ($consultaion->consultation_type == 'premd') {
+                    $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+                    $pro_quest_ans = json_decode($consultaion->product_consultation, true);
+                    $pro_quest_ids = array_keys(array_filter($pro_quest_ans, function ($value) {
+                        return $value !== null;
+                    }));
+                    $product_consultation = Question::whereIn('id', $pro_quest_ids)->orderBy('id')->get()->toArray();
+                    $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
+                        return [$item['id'] => $item];
+                    });
+
+                    foreach ($pro_quest_ans as $q_id => $answer) {
+                        if (isset($product_consultation[$q_id])) {
+                            $prod_result[] = [
+                                'id' => $q_id,
+                                'title' => $product_consultation[$q_id]['title'],
+                                'desc' => $product_consultation[$q_id]['desc'],
+                                'answer' => $answer,
+                            ];
+                        }
+                    }
+                }
+                $consult_questions = collect($consult_questions)->mapWithKeys(function ($item) {
+                    return [$item['id'] => $item];
+                });
+
+                foreach ($consutl_quest_ans as $quest_id => $ans) {
+                    if (isset($consult_questions[$quest_id])) {
+                        $user_result[] = [
+                            'id' => $quest_id,
+                            'title' => $consult_questions[$quest_id]['title'],
+                            'desc' => $consult_questions[$quest_id]['desc'],
+                            'answer' => $ans,
+                        ];
+                    }
+                }
+
+                $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
+                $data['order_user_detail'] =  ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
+                $data['user_profile_details'] =  (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+                $data['generic_consultation'] = $user_result;
+                $data['product_consultation'] = $prod_result ?? [];
+                return view('admin.pages.consultation_view', $data);
+            } else {
+                notify()->error('Consultaions Id Did not found. ⚡️');
+                return redirect()->back()->with('error', 'Transaction not found.');
+            }
+        } else {
+            notify()->error('Consultaions Id Did not found. ⚡️');
+            return redirect()->back();
+        }
+    }
+
     public function orders_recieved()
     {
         $data['user'] = auth()->user();
@@ -2087,62 +2159,83 @@ class SystemController extends Controller
         return redirect()->back();
     }
 
-    public function refund_order(Request $request)
-    {
-        $data['user'] = auth()->user();
-        $page_name = 'orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+   
+    
+//     public function refund_order(Request $request)
+// {
+//     $data['user'] = auth()->user();
+//     $page_name = 'orders';
+//     if (!view_permission($page_name)) {
+//         return redirect()->back();
+//     }
 
-        $validatedData = $request->validate([
-            'id' => 'required|exists:orders,id',
-            'status' => 'required',
-            'ammount' => 'required|numeric|gt:0',
-        ]);
+//     $validatedData = $request->validate([
+//         'id' => 'required|exists:orders,id',
+//         'status' => 'required',
+//         'ammount' => 'required|numeric|gt:0',
+//     ]);
 
-        $order = Order::with('paymentdetails')->findOrFail($validatedData['id']);
-        if ($order->paymentdetails) {
-            $ammount = $request->ammount;
-            $transetion_id = $order->paymentdetails->transactionId;
-            $source_code = 1503;
-            $username = '4ccbbd8e-7d30-4ca4-a78a-ecb5bfeee370';
-            $password = 'R9T8bWuH0UX50xpGV5wS0bF6639q0E';
-            $credentials = base64_encode($username . ':' . $password);
-            $curl = curl_init();
-            curl_setopt_array(
-                $curl,
-                array(
-                    CURLOPT_URL => "https://www.vivapayments.com/api/transactions/{$transetion_id}/?amount={$ammount}&sourceCode={$source_code}",
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_MAXREDIRS => 10,
-                    CURLOPT_TIMEOUT => 30,
-                    CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST => 'DELETE',
-                    CURLOPT_HTTPHEADER => array(
-                        'Authorization: Basic ' . $credentials
-                    ),
-                )
-            );
+//     $order = Order::with('paymentdetails')->findOrFail($validatedData['id']);
+//     if ($order->paymentdetails) {
+//         $amount = $validatedData['ammount'];
+//         $transactionId = $order->paymentdetails->transactionId;
 
-            $response = curl_exec($curl);
-            $responseData = json_decode($response, true);
-            curl_close($curl);
-            $update_payment = [
-                'statusId' => $responseData['StatusId'],
-            ];
-            $payment =   PaymentDetail::where('id', $order->paymentdetails->id)->update($update_payment);
-            $order->status = $validatedData['status'];
-            $update = $order->save();
-            if ($update) {
-                $msg = 'Order is ' . $validatedData['status'];
-                $status = 'success';
-                return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])->with('status', $status)->with('msg', $msg);
-            }
-        }
-        return redirect()->back();
-    }
+//         $apiKey = env('SUPERPAYMENTS_API_KEY');
+//         $brandId = env('BRAND_ID');
+
+//         $curl = curl_init();
+//         curl_setopt_array(
+//             $curl,
+//             array(
+//                 CURLOPT_URL => "https://api.superpayments.com/2024-02-01/refunds",
+//                 CURLOPT_RETURNTRANSFER => true,
+//                 CURLOPT_TIMEOUT => 30,
+//                 CURLOPT_POST => true,
+//                 CURLOPT_POSTFIELDS => json_encode([
+//                     'transactionId' => $transactionId,
+//                     'amount' => $amount * 100, // Assuming the amount is in dollars and the API expects cents
+//                     'currency' => 'GBP',
+//                     'externalReference' => 'refund' . $transactionId,
+//                     'brandId' => $brandId
+//                 ]),
+//                 CURLOPT_HTTPHEADER => [
+//                     'Authorization: APIKEY ' . $apiKey,
+//                     'Accept: application/json',
+//                     'Content-Type: application/json'
+//                 ]
+//             )
+//         );
+
+//         $response = curl_exec($curl);
+//         $responseData = json_decode($response, true);
+//         $curlError = curl_error($curl);
+//         curl_close($curl);
+
+//         if ($curlError) {
+//             // Handle the cURL error
+//             return redirect()->back()->with('status', 'error')->with('msg', 'Refund request failed: ' . $curlError);
+//         }
+
+//         if (isset($responseData['statusId']) && $responseData['statusId'] === 'success') {
+//             $update_payment = [
+//                 'statusId' => $responseData['statusId'],
+//             ];
+//             PaymentDetail::where('id', $order->paymentdetails->id)->update($update_payment);
+
+//             $order->status = $validatedData['status'];
+//             $order->save();
+
+//             $msg = 'Order is ' . $validatedData['status'];
+//             $status = 'success';
+//             return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])->with('status', $status)->with('msg', $msg);
+//         } else {
+//             return redirect()->back()->with('status', 'error')->with('msg', 'Refund request failed: ' . ($responseData['error'] ?? 'Unknown error'));
+//         }
+//     }
+
+//     return redirect()->back()->with('status', 'error')->with('msg', 'Order does not have payment details');
+// }
+
 
     public function create_shiping_order(Request $request)
     {

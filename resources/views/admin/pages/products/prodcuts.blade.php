@@ -164,9 +164,10 @@
     </div><!-- End Page Title -->
 
     <section class="section">
+        <div class="col-md-12 align-right mt-2 d-block">
+            <button id="export_csv" class=" btn btn-success">Export CSV</button>
+        </div>
         <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
                     <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"></div>
                     <div class="row mb-3 px-4">
                         <div class="col-md-4  mt-2 d-block">
@@ -382,6 +383,17 @@
             $('#edit_form_id_input').val(id);
             $('#edit_form').submit();
         });
+
+        $(document).ready(function() {
+        // Existing DataTable and event handlers...
+
+        // Handle Export CSV button click
+        $('#export_csv').on('click', function() {
+            window.location.href = "{{ route('admin.exportProductsCSV') }}";
+        });
+
+        // Existing event handlers...
+       });
 
         $(document).on('click', '.duplicate', function() {
             var id = $(this).data('id');
