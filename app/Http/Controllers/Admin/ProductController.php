@@ -662,8 +662,8 @@ class ProductController extends Controller
         // Add CSV header
         $csv->insertOne([
             'ID', 'Title', 'Slug', 'Short Description', 'Description', 'Main Image',
-            'Price', 'Stock', 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
-            'SKU', 'Barcode', 'Cut Price', 'Category ID', 'Sub Category', 'Child Category',
+            'SalenPrice', 'Stock', 'Stock Status' , 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
+            'SKU', 'Barcode', 'Price', 'Category ID', 'Sub Category', 'Child Category',
             'Product Template', 'Question Category', 'Status', 'Created By', 'Updated By',
             'Created At', 'Updated At'
         ]);
@@ -682,6 +682,7 @@ class ProductController extends Controller
                 $baseUrl . '/storage/product_image' . $product->main_image, // Full URL for main image
                 $product->price,
                 $product->stock,
+                $product->stock_status,
                 $product->weight,
                 $product->min_buy,
                 $product->max_buy,
