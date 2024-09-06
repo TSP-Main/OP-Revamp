@@ -213,83 +213,80 @@
 
 <script>
     $(document).ready(function() {
-        // Array of cities in the United Kingdom
-        var ukCities = @json($ukCities);
+        // Initialize Data Layer
+        window.dataLayer = window.dataLayer || [];
 
-        $("#cityInput").autocomplete({
-            source: ukCities
-        });
-
-        var ukPostalcode = @json($ukPostalcode);
-
-        $("#zip_code_input").autocomplete({
-            source: ukPostalcode
-        });
-
-        var ukAddress = @json($ukAddress);
-
-        $("#addressInput").autocomplete({
-            source: ukAddress
-        });
-
-    });
-</script>
-<script>
-$(document).ready(function() {
-    // Set initial shipping method
-    $('#fast_delivery').prop('checked', true);
-
-    // Function to update the shipping cost and order total
-    function updateShippingAndTotal() {
-        var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
-        var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
-        var subTotal = parseFloat(subTotalString) || 0;
-        var granTotal = parseFloat((shippingCost + subTotal).toFixed(2));
-        $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-        $('.order_total').text('£' + granTotal.toFixed(2));
-        $('#total_ammount').val(granTotal);
-        $('#shiping_cost').val(shippingCost);
-    }
-
-    // Initialize shipping options
-    updateShippingAndTotal();
-
-    // Event listener for shipping method change
-    $('input[name="shipping_method"]').change(function() {
-        updateShippingAndTotal();
-    });
-
-    // Function to validate form
-    function validateForm() {
-        var isValid = true;
-        var fields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip_code'];
-        fields.forEach(function(field) {
-            var value = $('input[name="' + field + '"]').val().trim();
-            if (value === '') {
-                isValid = false;
-                $('input[name="' + field + '"]').addClass('is-invalid');
-            } else {
-                $('input[name="' + field + '"]').removeClass('is-invalid');
+        // Populate dataLayer with checkout details
+        var orderDetails = {
+            'event': 'checkout',
+            'ecommerce': {
+                'checkout': {
+                    'actionField': {
+                        'step': 1 // Adjust this as needed
+                    },
+                    'products': []
+                }
             }
-        });
+        };
 
-        // Validate email format
-        var email = $('input[name="email"]').val().trim();
-        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (email === '' || !emailPattern.test(email)) {
-            isValid = false;
-            $('input[name="email"]').addClass('is-invalid');
-        } else {
-            $('input[name="email"]').removeClass('is-invalid');
-        }
+        @if (!empty(Cart::content()))
+            @foreach (Cart::content() as $item)
+            orderDetails.ecommerce.checkout.products.push({
+                'name': '{{ $item->name }}',
+                'id': '{{ $item->id }}',
+                'price': {{ $item->price }},
+                'quantity': {{ $item->qty }}
+            });
+            @endforeach
+        @endif
 
-        return isValid;
-    }
+        // Log the orderDetails object
+        console.log('Checkout Data Layer Details:', orderDetails);
 
-    // Handle place order button click
-    $('#placeOrderBtn').on('click', function() {
-        if (validateForm()) {
-            $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+        dataLayer.push(orderDetails);
+
+        // Handle form submission
+        $('#checkoutForm').on('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            var shippingMethod = $('input[name="shipping_method"]:checked').val();
+            var orderTotal = parseFloat($('.order_total').text().replace('£', ''));
+            var shippingCost = parseFloat($('#shiping_cost').val());
+            var transactionId = 'YOUR_TRANSACTION_ID'; // Replace with actual transaction ID if available
+
+            var formData = {
+                'event': 'purchase',
+                'ecommerce': {
+                    'purchase': {
+                        'actionField': {
+                            'id': transactionId, // Transaction ID
+                            'affiliation': 'Online Pharmacy 4u',
+                            'revenue': orderTotal,
+                            'tax': 0, // Adjust if tax is applicable
+                            'shipping': shippingCost
+                        },
+                        'products': []
+                    }
+                }
+            };
+
+            @if (!empty(Cart::content()))
+                @foreach (Cart::content() as $item)
+                formData.ecommerce.purchase.products.push({
+                    'name': '{{ $item->name }}',
+                    'id': '{{ $item->id }}',
+                    'price': {{ $item->price }},
+                    'quantity': {{ $item->qty }}
+                });
+                @endforeach
+            @endif
+
+            // Log the formData object
+            console.log('Purchase Data Layer Details:', formData);
+
+            dataLayer.push(formData);
+
+            // Submit form via AJAX
             $.ajax({
                 url: $('#checkoutForm').attr('action'),
                 type: 'POST',
@@ -313,26 +310,104 @@ $(document).ready(function() {
                     $('#placeOrderBtn').html('Proceed To Pay');
                 }
             });
+        });
+
+        // Shipping method change event
+        $('input[name="shipping_method"]').change(function() {
+            var shippingCost = parseFloat($(this).data('ship')) || 0;
+            var orderTotal = parseFloat($('.order_total').text().replace('£', ''));
+
+            var shippingChangeData = {
+                'event': 'shipping_method_changed',
+                'shippingMethod': $(this).val(),
+                'shippingCost': shippingCost,
+                'orderTotal': orderTotal
+            };
+
+            // Log the shippingChangeData object
+            console.log('Shipping Method Changed Data Layer Details:', shippingChangeData);
+
+            dataLayer.push(shippingChangeData);
+
+            updateShippingAndTotal();
+        });
+
+        // Update shipping cost and total
+        function updateShippingAndTotal() {
+            var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
+            var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
+            var subTotal = parseFloat(subTotalString) || 0;
+            var granTotal = parseFloat((shippingCost + subTotal).toFixed(2));
+            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
+            $('.order_total').text('£' + granTotal.toFixed(2));
+            $('#total_ammount').val(granTotal);
+            $('#shiping_cost').val(shippingCost);
         }
-    });
 
-    // Update shipping methods based on cart total
-    function updateShippingOptions() {
-        var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
-        var subTotal = parseFloat(subTotalString) || 0;
+        updateShippingAndTotal();
 
-        if (subTotal >= 40) {
-            $('#free_shipping').closest('.col-md-6').show();
-        } else {
-            $('#free_shipping').closest('.col-md-6').hide();
-            if ($('#free_shipping').is(':checked')) {
-                $('#fast_delivery').prop('checked', true).trigger('change');
+        // Form validation
+        function validateForm() {
+            var isValid = true;
+            var fields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip_code'];
+            fields.forEach(function(field) {
+                var value = $('input[name="' + field + '"]').val().trim();
+                if (value === '') {
+                    isValid = false;
+                    $('input[name="' + field + '"]').addClass('is-invalid');
+                } else {
+                    $('input[name="' + field + '"]').removeClass('is-invalid');
+                }
+            });
+
+            // Validate email format
+            var email = $('input[name="email"]').val().trim();
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email === '' || !emailPattern.test(email)) {
+                isValid = false;
+                $('input[name="email"]').addClass('is-invalid');
+            } else {
+                $('input[name="email"]').removeClass('is-invalid');
+            }
+
+            return isValid;
+        }
+
+        $('#placeOrderBtn').on('click', function() {
+            if (validateForm()) {
+                $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+                $('#checkoutForm').submit();
+            }
+        });
+
+        // Autocomplete initialization
+        var ukCities = @json($ukCities);
+        $("#cityInput").autocomplete({ source: ukCities });
+
+        var ukPostalcode = @json($ukPostalcode);
+        $("#zip_code_input").autocomplete({ source: ukPostalcode });
+
+        var ukAddress = @json($ukAddress);
+        $("#addressInput").autocomplete({ source: ukAddress });
+
+        // Update shipping options based on cart total
+        function updateShippingOptions() {
+            var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
+            var subTotal = parseFloat(subTotalString) || 0;
+
+            if (subTotal >= 40) {
+                $('#free_shipping').closest('.col-md-6').show();
+            } else {
+                $('#free_shipping').closest('.col-md-6').hide();
+                if ($('#free_shipping').is(':checked')) {
+                    $('#fast_delivery').prop('checked', true).trigger('change');
+                }
             }
         }
-    }
 
-    updateShippingOptions();
-});
-
+        updateShippingOptions();
+    });
 </script>
+
+
 @endPushOnce
