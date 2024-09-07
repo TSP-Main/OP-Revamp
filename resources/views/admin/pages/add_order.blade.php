@@ -114,7 +114,7 @@
                                                     <span id="total_items"> 0 </span> items
                                                 </div>
                                                 <div class="col-4 text-center ">
-                                                    <span id="total_price">0.00</span>£
+                                                    £<span id="total_price">0.00</span>
                                                 </div>
                                             </div>
                                             <div class="row mt-1">
@@ -123,7 +123,7 @@
                                                 </div>
                                                 <div class="col-4 text-center"> --------</div>
                                                 <div class="col-4 text-center">
-                                                    <span id="shiping_cost">0.00</span>£
+                                                    £<span id="shiping_cost">0.00</span>
                                                 </div>
                                             </div>
                                             <div class="row mt-1">
@@ -136,7 +136,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-4 text-center">
-                                                    <span id="discount_amount">0.00</span>£
+                                                    £<span id="discount_amount">0.00</span>
                                                 </div>
                                             </div>
                                             <div class="row mt-1">
@@ -145,7 +145,7 @@
                                                 </div>
                                                 <div class="col-4 text-center">--------</div>
                                                 <div class="col-4 text-center">
-                                                    <span id="total_amount">0.00</span>£
+                                                    £<span id="total_amount">0.00</span>
                                                 </div>
                                                 <input type="hidden" name="total_amount" id="total_amount_input" value="0.00">
                                             </div>
@@ -257,7 +257,7 @@
                                                 <div class="col-md-12 mt-2 d-flex justify-content-center gap-5">
                                                     <div class="form-check">
                                                         <div class="custom-control">
-                                                            <input class="form-check-input" type="radio" name="shiping_cost" id="fast_delivery" value="3.95" data-ship="3.95" checked="" required="">
+                                                            <input class="form-check-input" type="radio" name="shiping_cost" id="fast_delivery" value="3.95" data-ship="3.95" required="">
                                                             <label class="form-check-label" for="fast_delivery">Royal
                                                                 Mail Tracked 48
                                                                 <span class="float-right">£3.95</span>
@@ -271,6 +271,15 @@
                                                             <label class="form-check-label" for="express_delivery">Royal Mail Tracked 24
                                                                 <span class="float-right">£4.95</span>
                                                                 <div class="ml-4 mb-2 small">(1-2 working days)</div>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <div class="custom-control">
+                                                            <input class="form-check-input" type="radio" name="shiping_cost" id="express_delivery" value="0.00" data-ship="4.95" checked="" required="">
+                                                            <label class="form-check-label" for="express_delivery">Free Shipping
+                                                                <span class="float-right">£0.00</span>
+                                                                <div class="ml-4 mb-2 small">(3-5 working days)</div>
                                                             </label>
                                                         </div>
                                                     </div>

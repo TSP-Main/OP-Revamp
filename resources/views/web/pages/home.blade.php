@@ -183,7 +183,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card card-radius">
-                    <a href="{{ url('/collections/chronic-conditions/diabetes-medication') }}"><img src="img/product/chan.webp" class="card-img-top card-radius" alt="..." style="border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;"></a>
+                    <a href="{{ url('/chronic-conditions/diabetes-medication') }}"><img src="img/product/chan.webp" class="card-img-top card-radius" alt="..." style="border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;"></a>
                     <div class="card-body tabPadding" style="text-align: center;">
                         <!-- <h5 class="card-title">Sleep</h5> -->
                         <p class="card-text" style="font-size: 12px;">Easily monitor your blood sugar levels with the Freestyle Libre 2 Sensor – no finger pricks needed.</p>
@@ -193,7 +193,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card card-radius">
-                    <a href="{{ url('/collections/pharmacy-shop') }}"><img src="img/product/jungle formula.webp" class="card-img-top card-radius" alt="..." style="border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;"></a>
+                    <a href="{{ url('/pharmacy-shop') }}"><img src="img/product/jungle formula.webp" class="card-img-top card-radius" alt="..." style="border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;"></a>
                     <div class="card-body tabPadding" style="text-align: center;">
                         <!-- <h5 class="card-title">Diabetes</h5> -->
                         <p class="card-text" style="font-size: 12px;">Choose the right protection with IRF, offering up to 9 hours of defense against biting insects.</p>

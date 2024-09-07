@@ -663,7 +663,7 @@ class ProductController extends Controller
         $csv->insertOne([
             'ID', 'Title', 'Slug', 'Short Description', 'Description', 'Main Image',
             'Sale Price', 'Stock', 'Availability' , 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
-            'SKU', 'Barcode', 'Price', 'Category', 'Sub Category', 'Child Category',
+            'SKU', 'Barcode', 'Price', 'Product Type', 'Sub Category', 'Child Category',
             'Product Template', 'Question Category', 'Status', 'Created By', 'Updated By',
             'Created At', 'Updated At'
         ]);
