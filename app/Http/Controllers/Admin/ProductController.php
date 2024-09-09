@@ -655,44 +655,53 @@ class ProductController extends Controller
     {
         // Fetch product details
         $products = Product::all();
-
+    
         // Create CSV writer instance
         $csv = Writer::createFromFileObject(new SplTempFileObject());
-
+    
         // Add CSV header
         $csv->insertOne([
             'ID', 'Title', 'Slug', 'Short Description', 'Description', 'Main Image',
-            'SalenPrice', 'Stock', 'Stock Status' , 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
-            'SKU', 'Barcode', 'Price', 'Category ID', 'Sub Category', 'Child Category',
+            'Sale Price', 'Stock', 'Availability' , 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
+            'SKU', 'Barcode', 'Price', 'Product Type', 'Sub Category', 'Child Category',
             'Product Template', 'Question Category', 'Status', 'Created By', 'Updated By',
             'Created At', 'Updated At'
         ]);
-
+    
         // Define base URL for slug and main image
         $baseUrl = 'https://onlinepharmacy-4u.co.uk';
-
+    
+        // Fetch categories and their names for lookup
+        $categories = Category::all()->keyBy('id');
+        $subCategories = SubCategory::all()->keyBy('id');
+        $childCategories = ChildCategory::all()->keyBy('id');
+    
         // Add product data
         foreach ($products as $product) {
+            $categoryName = $categories->get($product->category_id)->name ?? 'N/A';
+            $subCategoryName = $subCategories->get($product->sub_category_id)->name ?? 'N/A';
+            $childCategoryName = $childCategories->get($product->child_category_id)->name ?? 'N/A';
+    
             $csv->insertOne([
                 $product->id,
                 $product->title,
                 $baseUrl . '/product/' . $product->slug, // Full URL for slug
-                $product->short_desc,
-                $product->desc,
-                $baseUrl . '/storage/product_image' . $product->main_image, // Full URL for main image
+                strip_tags($product->short_desc), // Remove HTML tags
+                strip_tags($product->desc), // Remove HTML tags
+                $baseUrl . '/storage/' . $product->main_image, // Full URL for main image
                 $product->price,
                 $product->stock,
                 $product->stock_status,
-                $product->weight,
+                $product->weight . '(g)',
                 $product->min_buy,
                 $product->max_buy,
                 $product->comb_variants,
                 $product->SKU,
                 $product->barcode,
                 $product->cut_price,
-                $product->category_id,
-                $product->sub_category,
-                $product->child_category,
+                $categoryName,
+                $subCategoryName,
+                $childCategoryName,
                 $product->product_template,
                 $product->question_category,
                 $product->status,
@@ -702,14 +711,15 @@ class ProductController extends Controller
                 $product->updated_at
             ]);
         }
-
+    
         // Prepare the CSV for download
         $csvData = $csv->toString();
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="products.csv"',
         ];
-
+    
         return Response::make($csvData, 200, $headers);
     }
+    
 }

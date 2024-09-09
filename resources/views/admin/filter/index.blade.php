@@ -5,10 +5,10 @@
                      <li class="dropdown-header text-start">
                          <h6>Filter</h6>
                      </li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $lastDay }}`,'This Day',`{{$card}}`)">This Day</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last7Day }}`,'This Week',`{{$card}}`)">This Week</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last30Day }}`,'This Month',`{{$card}}`)">This Month</a></li>
-                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last90Day }}`,'This Year',`{{$card}}`)">This Year</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $lastDay }}`,'This Day',`{{$card}}`)">Today</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last7Day }}`,'This Week',`{{$card}}`)">Last 7 Days</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last30Day }}`,'This Month',`{{$card}}`)">Last 30 Days</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="dayWise(`{{ $last90Day }}`,'This Year',`{{$card}}`)">Last Year</a></li>
                  </ul>
              </div>
              <script>

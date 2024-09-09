@@ -128,7 +128,7 @@
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <div class="custom-control" style="display: flex; align-items:center;">
-                                        <input class="form-check-input" type="radio" name="shipping_method" id="fast_delivery" value="fast" data-ship="3.95" required checked>
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="fast_delivery" value="fast" data-ship="3.95" required>
                                         <label class="form-check-label" for="fast_delivery"><img src="{{ url('img/48-hours.jpg') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
                                     </div>
                                     <span class="float-right">Royal Mail Tracked 48</span>
@@ -150,7 +150,7 @@
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <div class="custom-control" style="display: flex; align-items:center;">
-                                        <input class="form-check-input" type="radio" name="shipping_method" id="free_shipping" value="free" data-ship="0" required>
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="free_shipping" value="free" data-ship="0" required checked>
                                         <label class="form-check-label" for="free_shipping"><img src="{{ url('img/freeshipping.png') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
                                     </div>
                                     <span class="float-right">Free Shipping (3-5 Working Days)</span>
@@ -191,6 +191,7 @@
                     </div>
                 </div>
             </div>
+            <input type="hidden" id="paymentStatus" value="unpaid">
             <div style="float: right;">
                 <button id="placeOrderBtn" class="btn theme-btn-1 btn-effect-1 text-uppercase" type="button" style="margin-top: 30px;">Procceed To Pay</button>
             </div>
@@ -211,103 +212,135 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
+
 <script>
     $(document).ready(function() {
         // Initialize Data Layer
         window.dataLayer = window.dataLayer || [];
 
-        // Populate dataLayer with checkout details
-        var orderDetails = {
-            'event': 'checkout',
-            'ecommerce': {
-                'checkout': {
-                    'actionField': {
-                        'step': 1 // Adjust this as needed
-                    },
-                    'products': []
-                }
-            }
-        };
+        function updateShippingAndTotal() {
+            var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
+            var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
+            var subTotal = parseFloat(subTotalString) || 0;
+            var granTotal = parseFloat((shippingCost + subTotal).toFixed(2));
+            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
+            $('.order_total').text('£' + granTotal.toFixed(2));
+            $('#total_ammount').val(granTotal);
+            $('#shiping_cost').val(shippingCost);
+        }
 
-        @if (!empty(Cart::content()))
-            @foreach (Cart::content() as $item)
-            orderDetails.ecommerce.checkout.products.push({
-                'name': '{{ $item->name }}',
-                'id': '{{ $item->id }}',
-                'price': {{ $item->price }},
-                'quantity': {{ $item->qty }}
-            });
-            @endforeach
-        @endif
+        // Update totals initially
+        updateShippingAndTotal();
 
-        // Log the orderDetails object
-        console.log('Checkout Data Layer Details:', orderDetails);
-
-        dataLayer.push(orderDetails);
-
-        // Handle form submission
         $('#checkoutForm').on('submit', function(e) {
             e.preventDefault(); // Prevent default form submission
 
-            var shippingMethod = $('input[name="shipping_method"]:checked').val();
-            var orderTotal = parseFloat($('.order_total').text().replace('£', ''));
-            var shippingCost = parseFloat($('#shiping_cost').val());
-            var transactionId = 'YOUR_TRANSACTION_ID'; // Replace with actual transaction ID if available
+            var isValid = validateForm();
+            if (!isValid) {
+                return; // Exit if form validation fails
+            }
 
-            var formData = {
-                'event': 'purchase',
-                'ecommerce': {
-                    'purchase': {
-                        'actionField': {
-                            'id': transactionId, // Transaction ID
-                            'affiliation': 'Online Pharmacy 4u',
-                            'revenue': orderTotal,
-                            'tax': 0, // Adjust if tax is applicable
-                            'shipping': shippingCost
-                        },
-                        'products': []
-                    }
-                }
-            };
+            $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
 
-            @if (!empty(Cart::content()))
-                @foreach (Cart::content() as $item)
-                formData.ecommerce.purchase.products.push({
-                    'name': '{{ $item->name }}',
-                    'id': '{{ $item->id }}',
-                    'price': {{ $item->price }},
-                    'quantity': {{ $item->qty }}
-                });
-                @endforeach
-            @endif
+            var formData = $(this).serialize();
 
-            // Log the formData object
-            console.log('Purchase Data Layer Details:', formData);
-
-            dataLayer.push(formData);
-
-            // Submit form via AJAX
             $.ajax({
-                url: $('#checkoutForm').attr('action'),
+                url: $(this).attr('action'),
                 type: 'POST',
-                data: $('#checkoutForm').serialize(),
+                data: formData,
                 success: function(response) {
-                    var redirectUrl = response.redirectUrl;
-                    var iframe = $('<iframe>', {
-                        src: redirectUrl,
-                        frameborder: '0',
-                        style: 'border: none; width: 100%; height: 100%;'
-                    });
-                    $('#checkoutForm').remove();
-                    $('#iframeContainer').html(iframe);
+                    // Assuming response contains the transaction ID and payment status
+                    var transactionId = response.transactionId;
+                    var paymentStatus = response.paymentStatus; // This should be provided by your payment gateway
 
-                    var iframeTopPosition = $('#iframeContainer').offset().top;
-                    $('html, body').animate({
-                        scrollTop: iframeTopPosition
-                    }, 'slow');
+                    if (paymentStatus === 'paid') {
+                        // Set payment status to paid
+                        $('#paymentStatus').val('paid');
+
+                        // Add data to data layer only if payment is successful
+                        var orderDetails = {
+                            'event': 'checkout',
+                            'ecommerce': {
+                                'checkout': {
+                                    'actionField': {
+                                        'step': 1 // Adjust this as needed
+                                    },
+                                    'products': []
+                                }
+                            }
+                        };
+
+                        @if (!empty(Cart::content()))
+                            @foreach (Cart::content() as $item)
+                            orderDetails.ecommerce.checkout.products.push({
+                                'name': '{{ $item->name }}',
+                                'id': '{{ $item->id }}',
+                                'price': {{ $item->price }},
+                                'quantity': {{ $item->qty }}
+                            });
+                            @endforeach
+                        @endif
+
+                        // Log the orderDetails object
+                        console.log('Checkout Data Layer Details:', orderDetails);
+
+                        dataLayer.push(orderDetails);
+
+                        var formDataForPurchase = {
+                            'event': 'purchase',
+                            'ecommerce': {
+                                'purchase': {
+                                    'actionField': {
+                                        'id': transactionId, // Transaction ID
+                                        'affiliation': 'Online Pharmacy 4u',
+                                        'revenue': parseFloat($('.order_total').text().replace('£', '')),
+                                        'tax': 0, // Adjust if tax is applicable
+                                        'shipping': parseFloat($('#shiping_cost').val())
+                                    },
+                                    'products': []
+                                }
+                            }
+                        };
+
+                        @if (!empty(Cart::content()))
+                            @foreach (Cart::content() as $item)
+                            formDataForPurchase.ecommerce.purchase.products.push({
+                                'name': '{{ $item->name }}',
+                                'id': '{{ $item->id }}',
+                                'price': {{ $item->price }},
+                                'quantity': {{ $item->qty }}
+                            });
+                            @endforeach
+                        @endif
+
+                        // Log the formDataForPurchase object
+                        console.log('Purchase Data Layer Details:', formDataForPurchase);
+
+                        dataLayer.push(formDataForPurchase);
+
+                        // Redirect to payment page or show confirmation
+                        var redirectUrl = response.redirectUrl;
+                        var iframe = $('<iframe>', {
+                            src: redirectUrl,
+                            frameborder: '0',
+                            style: 'border: none; width: 100%; height: 100%;'
+                        });
+                        $('#checkoutForm').remove();
+                        $('#iframeContainer').html(iframe);
+
+                        var iframeTopPosition = $('#iframeContainer').offset().top;
+                        $('html, body').animate({
+                            scrollTop: iframeTopPosition
+                        }, 'slow');
+                    } else {
+                        // Handle failed payment
+                        $('#placeOrderBtn').html('Proceed To Pay');
+                        alert('Payment failed. Please try again.');
+                    }
                 },
                 error: function(xhr, status, error) {
                     $('#placeOrderBtn').html('Proceed To Pay');
+                    alert('An error occurred. Please try again.');
                 }
             });
         });
@@ -332,21 +365,7 @@
             updateShippingAndTotal();
         });
 
-        // Update shipping cost and total
-        function updateShippingAndTotal() {
-            var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
-            var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
-            var subTotal = parseFloat(subTotalString) || 0;
-            var granTotal = parseFloat((shippingCost + subTotal).toFixed(2));
-            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-            $('.order_total').text('£' + granTotal.toFixed(2));
-            $('#total_ammount').val(granTotal);
-            $('#shiping_cost').val(shippingCost);
-        }
-
-        updateShippingAndTotal();
-
-        // Form validation
+        // Form validation function
         function validateForm() {
             var isValid = true;
             var fields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip_code'];
@@ -372,13 +391,6 @@
 
             return isValid;
         }
-
-        $('#placeOrderBtn').on('click', function() {
-            if (validateForm()) {
-                $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-                $('#checkoutForm').submit();
-            }
-        });
 
         // Autocomplete initialization
         var ukCities = @json($ukCities);
@@ -408,6 +420,4 @@
         updateShippingOptions();
     });
 </script>
-
-
 @endPushOnce

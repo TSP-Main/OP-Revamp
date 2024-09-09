@@ -46,7 +46,7 @@
                         <div class="card info-card revenue-card">
                             @include('admin.filter.index',['card'=>'card1','lastDay' => 'salesThisDay','last7Day' => 'salesThisWeek','last30Day' => 'salesThisMonth','last90Day' => 'salesThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card1">Revenue <span>| This Month</span></h5>
+                                <h5 class="card-title card1">Revenue <span></span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
