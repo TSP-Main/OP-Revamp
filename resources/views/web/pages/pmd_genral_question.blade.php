@@ -267,6 +267,27 @@
                         </div>
                     </div>
 
+                    <div class="form-group Indpendent_q px-3" id="question_14" style="display:none;">
+                        <div class="d-flex align-items-start">
+                            <p class="me-auto " style="font-weight: 400;">You agree that you have not placed multiple orders recently of this item.</p>
+                            <label class="btn" style="padding: 0;">
+                                <input type="radio" name="quest_14" class="btn-radio" value="Yes" data-label="Yes" required>
+                            </label>
+                            <label class="btn" style="padding: 0;">
+                                <input type="radio" name="quest_14" class="btn-radio" value="No" data-label="No" required>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="alert_2" class="px-1" style="display:none;">
+                        <hr style="height:2px;" class="mb-2 mt-0 bg-dark">
+                        <div class="mb-0">
+                            <div class="alert py-4  bg-warning ">
+                                <p class="px-2  fw-semibold text-white">Please note that you will be charged a £2.00 admin fee and this order will be rejected</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group Indpendent_q px-3" style="margin-bottom: 15px; display:none;">
                         <div class="d-flex align-items-start">
                             <p class="me-auto " style="font-weight: 400;">{{$questions[11]['title'] ?? '' }}</p>
@@ -421,6 +442,16 @@
             } else {
                 $(".alert").removeClass('alert-danger');
                 $("#alert_1").hide().slideUp('fast');
+            }
+        });
+
+        $("input[name='quest_14']").change(function() {
+            if ($(this).val() === 'No') {
+                $(".alert").addClass('alert-danger');
+                $("#alert_2").show().slideDown('fast');
+            } else {
+                $(".alert").removeClass('alert-danger');
+                $("#alert_2").hide().slideUp('fast');
             }
         });
 

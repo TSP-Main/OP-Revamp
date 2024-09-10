@@ -93,6 +93,12 @@ return [
             'title' => 'This medicine should only be used for short term relief.If your symptoms persist you should  consult your GP.By confirming below, you are stating that you understand this medicine is for short term use only.',
             'desc' => '',
             'order' => '13',
+        ],
+        [
+            'id' => 14,
+            'title' => 'You agree that you have not placed multiple orders recently of this item',
+            'desc' => '',
+            'order' => '14',
         ]
     ],
 
