@@ -1955,15 +1955,23 @@ class SystemController extends Controller
         if (!view_permission($page_name)) {
             return redirect()->back();
         }
-        $orders = Order::with('user', 'shipingdetails', 'orderdetails:id,order_id,consultation_type')->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
+    
+        $orders = Order::with('user', 'shipingdetails', 'orderdetails:id,order_id,product_name')
+            ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
+            ->latest('created_at')
+            ->get()
+            ->toArray();
+    
         $data['filters'] = [];
+        $postalCodeProductCount = [];
+    
         if ($orders) {
             $combined = array_map(function ($order) {
                 return $order['shipingdetails']['address'] . '_chapi_' . $order['shipingdetails']['zip_code'];
             }, $orders);
-
+    
             $uniqueCombined = array_unique($combined);
-
+    
             $filters = array_map(function ($item) {
                 $parts = explode('_chapi_', $item, 2);
                 return [
@@ -1971,12 +1979,31 @@ class SystemController extends Controller
                     'postal_code' => $parts[1]
                 ];
             }, $uniqueCombined);
+    
             $data['filters'] = $filters;
+    
+            // Aggregate product counts by postal code
+            foreach ($orders as $order) {
+                $postalCode = $order['shipingdetails']['zip_code'];
+                foreach ($order['orderdetails'] as $detail) {
+                    if (!isset($postalCodeProductCount[$postalCode])) {
+                        $postalCodeProductCount[$postalCode] = [];
+                    }
+                    $productId = $detail['product_name'];
+                    if (!isset($postalCodeProductCount[$postalCode][$productId])) {
+                        $postalCodeProductCount[$postalCode][$productId] = 0;
+                    }
+                    $postalCodeProductCount[$postalCode][$productId]++;
+                }
+            }
+    
+            $data['postalCodeProductCount'] = $postalCodeProductCount;
             $data['orders'] = $this->assign_order_types($orders);
         }
-
+    
         return view('admin.pages.orders_audit', $data);
     }
+    
 
     public function add_order(Request $request)
     {

@@ -350,7 +350,7 @@ class CartController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Order items added to cart',
-            'redirect' => route('web.view.cart') . '?order_type=pom/reorder' 
+            'redirect' => route('web.view.cart')
         ]);
     }
     
