@@ -289,6 +289,7 @@ class CartController extends Controller
             return response()->json(['status' => false, 'message' => 'Order not found']);
         }
     
+        // Prepare to add items to cart
         foreach ($order->orderdetails as $detail) {
             // Find the product using the product ID from the order details
             $product = Product::find($detail->product_id); // Assuming `product_id` is the column in `orderdetails`
@@ -309,7 +310,8 @@ class CartController extends Controller
             // Prepare data for cart
             $cartData = [
                 'productImage' => $product->main_image ?? '',
-                'slug' => $product->slug
+                'slug' => $product->slug,
+                'order_type' => 'pom/reorder' // Add the order type
             ];
     
             if ($variant) {
@@ -331,7 +333,7 @@ class CartController extends Controller
                     $product->title,
                     $detail->product_qty,
                     $variant->price,
-                    ['productImage' => $product->main_image ?? '', 'variant_info' => $variant, 'slug' => $product->slug]
+                    array_merge($cartData, ['variant_info' => $variant])
                 );
             } else {
                 // Add to cart without variant
@@ -348,9 +350,10 @@ class CartController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Order items added to cart',
-            'redirect' => route('web.view.cart')
+            'redirect' => route('web.view.cart') . '?order_type=pom/reorder' 
         ]);
     }
+    
     
     
     
