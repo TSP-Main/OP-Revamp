@@ -113,7 +113,17 @@
                                 @endforeach
                             </select>
                         </div>
-
+                        <div class="col-md-3 d-block">
+                            <label for="products" class="form-label fw-bold">Filter by Product</label>
+                            <select id="products" class="form-select select2" data-placeholder="search product...">
+                                <option value="All">All</option>
+                                @foreach ($filters ?? [] as $filter)
+                                    @foreach ($postalCodeProductCount[$filter['postal_code']] ?? [] as $productName => $count)
+                                        <option value="{{ $productName }}">{{ $productName }}</option>
+                                    @endforeach
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="col-md-12 mt-3 text-center d-block">
                             <label for="search" class="form-label fw-bold">Search From Table </label>
                             <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
@@ -128,6 +138,7 @@
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
                                     <th>Postal Code</th>
+                                    <th>Product Name</th>
                                     <th>Address</th>
                                     <th>Order Status</th>
                                 </tr>
@@ -144,6 +155,11 @@
                                     <td>{{ isset($val['created_at']) ? date('Y-m-d h:i A', strtotime($val['created_at'])) : '' }}</td>
                                     <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
                                     <td>{{$val['shipingdetails']['zip_code'] ?? ''}}</td>
+                                    <td>
+                                        @foreach($val['orderdetails'] as $detail)
+                                            {{ $detail['product_name'] }}@if (!$loop->last), @endif
+                                        @endforeach
+                                    </td>
                                     <td>{{$val['shipingdetails']['address'] ?? ''}}</td>
                                     <th> <button class="btn btn-success rounded-pill text-center"> {{$val['status'] ?? ''}} </button></th>
                                 </tr>
@@ -217,45 +233,72 @@
     });
 
     $(document).ready(function() {
-        var tableApi = $('#tbl_data').DataTable();
-        $('#addresses').on('change', function() {
-            var category = $(this).val();
-            if (category == 'All') {
-                tableApi.column(5).search('').draw();
-            } else {
-                tableApi.column(5).search(category).draw();
-            }
-        });
+    var tableApi = $('#tbl_data').DataTable();
 
-        $('#postal_codes').on('change', function() {
-            let type = $(this).val();
-            if (type == 'All') {
-                tableApi.column(4).search('').draw();
-            } else {
-                tableApi.column(4).search(type).draw();
-            }
-        });
-
-        $('#search').on('input', function() {
-            let text = $(this).val();
-            if (text === '') {
-                tableApi.search('').draw();
-            } else {
-                tableApi.search(text).draw();
-            }
-        });
-
-        $(document).on('click', '.edit', function() {
-            var id = $(this).data('id');
-            $('#edit_form_id_input').val(id);
-            $('#edit_form').submit();
-        });
-
-        $(document).on('click', '.delete', function() {
-            var id = $(this).data('id');
-            $('#edit_form_id_input').val(id);
-            $('#edit_form').submit();
-        });
+    // Date Range Filter
+    $('#startDate, #endDate').change(function() {
+        tableApi.draw();
     });
+
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            var min = $('#startDate').val();
+            var max = $('#endDate').val();
+            var date = data[2] || ''; // Date is in the 3rd column (index 2)
+            var startDate = new Date(min);
+            var endDate = new Date(max);
+            var currentDate = new Date(date);
+
+            if ((min === "" || startDate <= currentDate) &&
+                (max === "" || currentDate <= endDate)) {
+                return true;
+            }
+            return false;
+        }
+    );
+
+    // Filter by Address
+    $('#addresses').on('change', function() {
+        var address = $(this).val();
+        var addressColumnIndex = 6; // Address column is index 6
+        tableApi.column(addressColumnIndex).search(address === 'All' ? '' : address).draw();
+    });
+
+    // Filter by Postal Code
+    $('#postal_codes').on('change', function() {
+        var postalCode = $(this).val();
+        var postalCodeColumnIndex = 4; // Postal Code column is index 4
+        tableApi.column(postalCodeColumnIndex).search(postalCode === 'All' ? '' : postalCode).draw();
+    });
+
+    // Filter by Product
+    $('#products').on('change', function() {
+        var product = $(this).val();
+        console.log('Filtering by product:', product); // Debugging
+        var productColumnIndex = 5; // Product Name column is index 5
+        tableApi.column(productColumnIndex).search(product === 'All' ? '' : product).draw();
+    });
+
+    // General Search
+    $('#search').on('input', function() {
+        var text = $(this).val();
+        tableApi.search(text).draw();
+    });
+
+    // Edit and Delete Button Handling
+    $(document).on('click', '.edit', function() {
+        var id = $(this).data('id');
+        $('#edit_form_id_input').val(id);
+        $('#edit_form').submit();
+    });
+
+    $(document).on('click', '.delete', function() {
+        var id = $(this).data('id');
+        $('#edit_form_id_input').val(id);
+        $('#edit_form').submit();
+    });
+});
+
+
 </script>
 @endPushOnce
