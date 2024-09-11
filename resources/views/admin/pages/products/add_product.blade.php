@@ -385,7 +385,7 @@
                 </div>
                 <div class="col-md-4 mt-2">
                     <label for="weight" class="form-label">Weight (gm) - If Weight is zero, enter '0' (not '0.0')</label>
-                    <input type="text" name="weight" id="weight" value="{{  $product['weight'] ?? old('weight') }}" class="form-control">
+                    <input type="number" min="0" name="weight" id="weight" value="{{  $product['weight'] ?? old('weight') }}" class="form-control">
                     <div class="invalid-feedback">Enter product weight!</div>
                     @error('weight')
                     <div class="alert-danger text-danger ">{{ $message }}</div>

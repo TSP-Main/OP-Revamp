@@ -213,7 +213,7 @@
                                 @endif
                             </tbody>
                         </table>
-                        @if((isset($user->role) && $user->role != user_roles('4')) && ($order->status == 'Received' || $order->status == 'Not_Approved' ))
+                        @if((isset($user->role) && $user->role != user_roles('4' , '2')) && ($order->status == 'Received' || $order->status == 'Not_Approved' || $order->status == 'Approved'))
                         <div class="card mt-4">
                             <div class="card-body d-flex justify-content-center align-items-center py-3">
                                 <button class="btn btn-success rounded-pill px-5 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#doctor_remarks">

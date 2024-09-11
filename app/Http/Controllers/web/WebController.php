@@ -1625,11 +1625,28 @@ class WebController extends Controller
 
     public function thank_you(Request $request)
     {
+        // Retrieve user information if available
         $data['user'] = auth()->user() ?? [];
+        
+        // Retrieve other query parameters
         $name = $request->query('n');
         $data['name'] = $name ?? 'Guest';
+    
+        // Example of fetching or setting transaction details
+        // These should be replaced with actual data retrieval logic
+        $transactionId = ''; // Replace with the actual transaction ID
+        $transactionTotal = ''; // Replace with the actual transaction total
+        $currency = 'GBP'; // Replace with the actual currency
+    
+        // Add transaction details to the data array
+        $data['transactionId'] = $transactionId;
+        $data['transactionTotal'] = $transactionTotal;
+        $data['currency'] = $currency;
+    
+        // Return the view with the data
         return view('web.pages.completed_order', $data);
     }
+    
 
     public function transetion_fail(Request $request)
     {
