@@ -46,7 +46,7 @@
                         <div class="card info-card revenue-card">
                             @include('admin.filter.index',['card'=>'card1','lastDay' => 'salesThisDay','last7Day' => 'salesThisWeek','last30Day' => 'salesThisMonth','last90Day' => 'salesThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card1">Revenue <span></span></h5>
+                                <h5 class="card-title card1">Revenue <span>| This Month</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -693,25 +693,52 @@
         dashboard();
     });
 
-    function dashboard() {
-        $.ajax({
-            url: "{{ route('admin.dashboard.detail') }}",
-            type: "GET",
-            success: function(data) {
-                console.log(data.doctorOrdersThisMonth);
-                window.localStorage.setItem("statistic", JSON.stringify(data));
-                $('#total-revenue').text('£' + data.salesThisMonth.toFixed(2));
-                $('#orders-doctors').text(data.doctorOrdersThisMonth);
-                $('#orders-dispensaries').text(data.despensoryOrdersThisMonth);
-                $('#total-orders').text(data.totalOrdersThisMonth);
-                $('#pending-orders').text(data.pendingOrdersThisMonth);
-                $('#paid-orders').text(data.paidOrdersThisMonth);
-            },
-            error: function(error) {
-                console.error("There was an error fetching the dashboard details:", error);
-            }
-        });
-    }
+// Function to format number with commas
+function formatNumberWithCommas(number) {
+    // Ensure the number is a float to handle decimal numbers
+    let numParts = number.toString().split('.');
+    numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return numParts.join('.');
+}
+
+// Function to update dashboard values
+function updateDashboard(data) {
+    console.log(data.doctorOrdersThisMonth);
+
+    // Format numbers with commas
+    let formattedSales = formatNumberWithCommas(parseFloat(data.salesThisMonth).toFixed(2));
+    let formattedDoctorOrders = formatNumberWithCommas(parseFloat(data.doctorOrdersThisMonth));
+    let formattedDispensaryOrders = formatNumberWithCommas(parseFloat(data.despensoryOrdersThisMonth));
+    let formattedTotalOrders = formatNumberWithCommas(parseFloat(data.totalOrdersThisMonth));
+    let formattedPendingOrders = formatNumberWithCommas(parseFloat(data.pendingOrdersThisMonth));
+    let formattedPaidOrders = formatNumberWithCommas(parseFloat(data.paidOrdersThisMonth));
+
+    // Update the HTML elements with formatted values
+    $('#total-revenue').text('£' + formattedSales);
+    $('#orders-doctors').text(formattedDoctorOrders);
+    $('#orders-dispensaries').text(formattedDispensaryOrders);
+    $('#total-orders').text(formattedTotalOrders);
+    $('#pending-orders').text(formattedPendingOrders);
+    $('#paid-orders').text(formattedPaidOrders);
+}
+
+function dashboard() {
+    $.ajax({
+        url: "{{ route('admin.dashboard.detail') }}",
+        type: "GET",
+        success: function(data) {
+            window.localStorage.setItem("statistic", JSON.stringify(data));
+            updateDashboard(data);
+        },
+        error: function(error) {
+            console.error("There was an error fetching the dashboard details:", error);
+        }
+    });
+}
+
+// Call the dashboard function to initialize
+dashboard();
+
 </script>
 
 @endPushOnce

@@ -1644,7 +1644,7 @@ class WebController extends Controller
         $data['currency'] = $currency;
     
         // Return the view with the data
-        return view('web.pages.completed_order', $data);
+        return view('web.pages.thankyou', $data);
     }
     
 
