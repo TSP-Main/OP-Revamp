@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Mail\OTPMail;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\UserProfile;
@@ -16,6 +17,29 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        $this->user = auth()->user();
+        $this->status = config('constants.USER_STATUS');
+
+        $this->menu_categories = Category::where('status', 'Active')
+            ->with([
+                'subcategory' => function ($query) {
+                    $query->where('status', 'Active')
+                        ->with([
+                            'childCategories' => function ($query) {
+                                $query->where('status', 'Active');
+                            }
+                        ]);
+                }
+            ])
+            ->where('publish', 'Publish')
+            ->latest('id')
+            ->get()
+            ->toArray();
+
+        view()->share('menu_categories', $this->menu_categories);
+    }
     public function registerUser(RegisterUserRequest $request)
     {
         if (!auth()->check()) {
