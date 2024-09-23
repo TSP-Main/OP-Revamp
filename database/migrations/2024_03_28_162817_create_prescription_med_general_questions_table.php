@@ -16,7 +16,7 @@ return new class extends Migration
 
         Schema::create('prescription_med_general_questions', function (Blueprint $table) {
             $table->id();
-            $table->text('title')->unique();
+            $table->string('title')->unique();
             $table->text('desc')->nullable();
             $table->text('order');
             $table->string('status')->default('Active');

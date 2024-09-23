@@ -296,7 +296,7 @@ class WebController extends Controller
             redirect()->back();
         }
     }
-    
+
 
 
     public function consultation_form(Request $request)
@@ -1054,9 +1054,9 @@ class WebController extends Controller
     }
 //     protected function sendHttpRequest($url, $data, $endpoint)
 //     {
-//         $apiKey = env('SUPERPAYMENT_API_KEY');
-//         $brandId = env('BRAND_ID');
-        
+//         $apiKey = .env('SUPERPAYMENT_API_KEY');
+//         $brandId = .env('BRAND_ID');
+
 //         \Log::info('Sending request to Super Payments', [
 //             'url' => $url,
 //             'headers' => [
@@ -1066,24 +1066,24 @@ class WebController extends Controller
 //             ],
 //             'data' => json_encode(array_merge($data, ['brandId' => $brandId]))
 //         ]);
-        
+
 //         $response = Http::withHeaders([
 //             'Authorization' => $apiKey,
 //             'Accept' => 'application/json',
 //             'Content-Type' => 'application/json',
 //         ])->post($url, $data); // Send data directly without additional json_encode
-        
+
 //         \Log::info('Received response from Super Payments', [
 //             'response' => $response->body(),
 //             'status' => $response->status(),
 //             'headers' => $response->headers()
 //         ]);
-        
+
 //         return $response->body();
 //     }
-    
-    
-    
+
+
+
 
 //   public function payment(Request $request)
 // {
@@ -1123,7 +1123,7 @@ class WebController extends Controller
 //         $order_details = [];
 //         $index = 0;
 //         $order_for = 'despensory';
-        
+
 //         foreach ($request->order_details['product_id'] as $key => $ids) {
 //             if (strpos($ids, '_') !== false) {
 //                 [$pro_id, $variant_id] = explode('_', $ids);
@@ -1146,9 +1146,9 @@ class WebController extends Controller
 //                     }
 //                 }
 //             }
-            
+
 //             $var_info = null;
-            
+
 //             if ($variant_id) {
 //                 $variant = ProductVariant::find($variant_id);
 //                 $vart_type = explode(';', $variant->title);
@@ -1205,8 +1205,8 @@ class WebController extends Controller
 
 //         // Call Super Payments API for reward calculation
 //         $rewardResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/reward-calculations', [
-//             'amount' => $request->total_ammount * 100, 
-//             'brandId' =>  env('BRAND_ID'),
+//             'amount' => $request->total_ammount * 100,
+//             'brandId' =>  .env('BRAND_ID'),
 //             'currency' => 'GBP'
 //         ], 'reward');
 
@@ -1219,8 +1219,8 @@ class WebController extends Controller
 
 //             // Call Super Payments API to create a payment
 //             $paymentResponse = $this->sendHttpRequest('https://api.superpayments.com/2024-02-01/payments', [
-//                 "brandId" => env('BRAND_ID'),
-//                 'amount' => (int)$request->total_ammount * 100, 
+//                 "brandId" => .env('BRAND_ID'),
+//                 'amount' => (int)$request->total_ammount * 100,
 //                 'rewardCalculationId' => $rewardCalculationId,
 //                 'currency' => 'GBP',
 //                 'successUrl' =>strip_tags('https://onlinepharmacy-4u.co.uk/thankYou'),
@@ -1627,26 +1627,26 @@ class WebController extends Controller
     {
         // Retrieve user information if available
         $data['user'] = auth()->user() ?? [];
-        
+
         // Retrieve other query parameters
         $name = $request->query('n');
         $data['name'] = $name ?? 'Guest';
-    
+
         // Example of fetching or setting transaction details
         // These should be replaced with actual data retrieval logic
         $transactionId = ''; // Replace with the actual transaction ID
         $transactionTotal = ''; // Replace with the actual transaction total
         $currency = 'GBP'; // Replace with the actual currency
-    
+
         // Add transaction details to the data array
         $data['transactionId'] = $transactionId;
         $data['transactionTotal'] = $transactionTotal;
         $data['currency'] = $currency;
-    
+
         // Return the view with the data
         return view('web.pages.thankyou', $data);
     }
-    
+
 
     public function transetion_fail(Request $request)
     {
@@ -1659,7 +1659,7 @@ class WebController extends Controller
     public function store_human_form(Request $request)
     {
         $user = auth()->user();
-        
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'phone' => 'required',
@@ -1667,65 +1667,65 @@ class WebController extends Controller
             'title' => 'required',
             'message' => 'required',
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-    
+
         $data = $request->all();
         $data['user_id'] = $user->id ?? Null;
-    
+
         if ($request->hasFile('file')) {
             $fileValidator = Validator::make($request->all(), [
                 'file' => 'required',
             ]);
-    
+
             if ($fileValidator->fails()) {
                 return redirect()->back()->withErrors($fileValidator)->withInput();
             }
-    
+
             $HumanRequestFormFile = $request->file('file');
             $HumanRequestFormFileName = time() . '_' . uniqid('', true) . '.' . $HumanRequestFormFile->getClientOriginalExtension();
             $HumanRequestFormFile->storeAs('human_request_file/', $HumanRequestFormFileName, 'public');
             $data['file'] = 'human_request_file/' . $HumanRequestFormFileName;
         }
-    
+
         $question = HumanRequestForm::updateOrCreate(
             ['id' => $request->id ?? null],
             $data
         );
-    
+
         if ($question->id) {
             $message = "Query is submitted successfully";
             return redirect()->back()->with(['msg' => $message]);
         }
     }
-    
+
 
     public function successfully_refunded(Request $request)
     {
         return 'ammount is refunded';
     }
 
-    
+
     public function sitemap()
     {
-        
+
         return view('web.pages.sitemap');
     }
     public function pagesitemap()
     {
-        
+
         return view('web.pages.pagesitemap');
     }
     public function productsitemap()
     {
-        
+
         return view('web.pages.productsitemap');
     }
     public function categoriessitemap()
     {
-        
+
         return view('web.pages.categoriessitemap');
     }
 }

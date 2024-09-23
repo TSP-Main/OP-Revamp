@@ -255,7 +255,7 @@ class SystemUserManagmentController extends Controller
 
                     if ($request->delete_all_user) {
                         User::where(['role' => user_roles('3'), 'admin_id' => $request->id])->update(['status' => $status['Deleted'], 'updated_by' => $request->deleted_by]);
-                        $message .= "\nAll Users deleted successfully";
+                        $message .= "\nAll UserSeeder deleted successfully";
                     }
 
                     if ($save) {

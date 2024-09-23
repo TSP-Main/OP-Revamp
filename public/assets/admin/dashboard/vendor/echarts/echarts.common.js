@@ -16848,7 +16848,7 @@
         // Should better not to auto generate style name by auto-increment number here.
         // Because this util is usually called in tooltip formatter, which is probably
         // called repeatedly when mouse move and the auto-increment number increases fast.
-        // Users can make their own style name by theirselves, make it unique and readable.
+        // UserSeeder can make their own style name by theirselves, make it unique and readable.
         var markerId = opt.markerId || 'markerX';
         return {
           renderMode: renderMode,
@@ -17455,7 +17455,7 @@
 
       ComponentModel.prototype.getDefaultOption = function () {
         var ctor = this.constructor; // If using class declaration, it is different to travel super class
-        // in legacy env and auto merge defaultOption. So if using class
+        // in legacy .env and auto merge defaultOption. So if using class
         // declaration, defaultOption should be merged manually.
 
         if (!isExtendedClass(ctor)) {
@@ -21430,7 +21430,7 @@
             name: name,
             displayName: dimDef.displayName
           };
-          dimensions.push(dimDefExt); // Users probably do not specify dimension name. For simplicity, data transform
+          dimensions.push(dimDefExt); // UserSeeder probably do not specify dimension name. For simplicity, data transform
           // does not generate dimension name.
 
           if (name != null) {
@@ -56220,7 +56220,7 @@
               cbParams.axisValue = getAxisRawValue(axisModel.axis, {
                 value: axisValue
               });
-              cbParams.axisValueLabel = axisValueLabel; // Pre-create marker style for makers. Users can assemble richText
+              cbParams.axisValueLabel = axisValueLabel; // Pre-create marker style for makers. UserSeeder can assemble richText
               // text in `formatter` callback and use those markers style.
 
               cbParams.marker = markupStyleCreator.makeTooltipMarker('item', convertToColorString(cbParams.color), renderMode);
@@ -56289,7 +56289,7 @@
         }
 
         var params = dataModel.getDataParams(dataIndex, dataType);
-        var markupStyleCreator = new TooltipMarkupStyleCreator(); // Pre-create marker style for makers. Users can assemble richText
+        var markupStyleCreator = new TooltipMarkupStyleCreator(); // Pre-create marker style for makers. UserSeeder can assemble richText
         // text in `formatter` callback and use those markers style.
 
         params.marker = markupStyleCreator.makeTooltipMarker('item', convertToColorString(params.color), renderMode);

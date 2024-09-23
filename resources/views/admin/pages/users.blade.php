@@ -1,5 +1,5 @@
 @extends('admin.layouts.default')
-@section('title', 'Users')
+@section('title', 'UserSeeder')
 @section('content')
 <!-- main stated -->
 <main id="main" class="main">
@@ -145,7 +145,7 @@
                 // {
                 //     extend: 'excel',
                 //     text: 'Donwload Excel ',
-                //     className: 'btn-blue', 
+                //     className: 'btn-blue',
                 // },
 
                 {

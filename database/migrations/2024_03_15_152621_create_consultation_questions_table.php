@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('consultation_questions', function (Blueprint $table) {
             $table->id();
-            $table->text('title')->unique();
+            $table->string('title')->unique();
             $table->text('desc')->nullable();
             $table->string('status')->default('Active');
             $table->unsignedBigInteger('created_by')->nullable();

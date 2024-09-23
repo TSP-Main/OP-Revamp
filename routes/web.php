@@ -6,6 +6,7 @@ use App\Http\Controllers\web\WebController;
 use App\Http\Controllers\web\CartController;
 use App\Http\Controllers\Admin\DefualtController;
 use App\Http\Controllers\GoogleMerchantController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,12 +19,23 @@ use App\Http\Controllers\GoogleMerchantController;
 |
 */
 
+//Route::group(['middleware' => ['role:super_admin']], function () {
+//    Route::get('/admin/dashboard', 'AdminController@dashboard');
+//});
+
+
 Route::get('/', [HomeController::class, 'index'])->name('web.index');
 Route::match(['get', 'post'], '/account', [WebController::class, 'account'])->name('web.account');
-Route::match(['get', 'post'], '/login', [DefualtController::class, 'login'])->name('login');
-Route::match(['get', 'post'], '/register', [DefualtController::class, 'registration_form'])->name('register');
-Route::match(['get', 'post'], '/regisrationFrom', [DefualtController::class, 'user_register'])->name('web.user_register');
-Route::match(['get', 'post'], '/logout', [DefualtController::class, 'logout'])->name('web.logout');
+Route::match(['get', 'post'], '/login', [AuthController::class, 'login'])->name('login');
+Route::match(['get', 'post'], '/register', [AuthController::class, 'registration_form'])->name('register');
+Route::match(['get', 'post'], '/regisrationFrom', [AuthController::class, 'registerUser'])->name('web.user_register');
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('web.logout');
+// forgot password
+Route::match(['get', 'post'], '/forgotPassword', [AuthController::class, 'forgot_password'])->name('forgotPassword');
+Route::match(['get', 'post'], '/sendOtp', [AuthController::class, 'send_otp'])->name('sendOtp');
+Route::match(['get', 'post'], '/verifyOtp', [AuthController::class, 'verify_otp'])->name('verifyOtp');
+Route::match(['get', 'post'], '/changePassword', [AuthController::class, 'change_password'])->name('changePassword');
+
 
 Route::get('/shop', [WebController::class, 'shop'])->name('shop');
 Route::get('/product/{id:slug}', [WebController::class, 'product_detail'])->name('web.product');
@@ -119,13 +131,6 @@ Route::get('/conditions', [WebController::class, 'conditions'])->name('web.condi
 // temporary route for generating slugs for existing products
 Route::get('/generate_slug_existing', [WebController::class, 'generate_slug_existing']);
 Route::get('/generate_slug_variants_existing', [WebController::class, 'generate_slug_variants_existing']);
-
-// forgot password
-Route::match(['get', 'post'], '/forgotPassword', [DefualtController::class, 'forgot_password'])->name('forgotPassword');
-Route::match(['get', 'post'], '/sendOtp', [DefualtController::class, 'send_otp'])->name('sendOtp');
-Route::match(['get', 'post'], '/verifyOtp', [DefualtController::class, 'verify_otp'])->name('verifyOtp');
-Route::match(['get', 'post'], '/changePassword', [DefualtController::class, 'change_password'])->name('changePassword');
-
 
 Route::get('/dashboard/details', [DefualtController::class, 'dashboard_details'])->name('dashboard.details');
 Route::match(['get', 'post'], '/storeHumanForm', [WebController::class, 'store_human_form'])->name('storeHumanForm');

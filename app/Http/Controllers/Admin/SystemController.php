@@ -1955,23 +1955,23 @@ class SystemController extends Controller
         if (!view_permission($page_name)) {
             return redirect()->back();
         }
-    
+
         $orders = Order::with('user', 'shipingdetails', 'orderdetails:id,order_id,product_name')
             ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
             ->latest('created_at')
             ->get()
             ->toArray();
-    
+
         $data['filters'] = [];
         $postalCodeProductCount = [];
-    
+
         if ($orders) {
             $combined = array_map(function ($order) {
                 return $order['shipingdetails']['address'] . '_chapi_' . $order['shipingdetails']['zip_code'];
             }, $orders);
-    
+
             $uniqueCombined = array_unique($combined);
-    
+
             $filters = array_map(function ($item) {
                 $parts = explode('_chapi_', $item, 2);
                 return [
@@ -1979,9 +1979,9 @@ class SystemController extends Controller
                     'postal_code' => $parts[1]
                 ];
             }, $uniqueCombined);
-    
+
             $data['filters'] = $filters;
-    
+
             // Aggregate product counts by postal code
             foreach ($orders as $order) {
                 $postalCode = $order['shipingdetails']['zip_code'];
@@ -1996,14 +1996,14 @@ class SystemController extends Controller
                     $postalCodeProductCount[$postalCode][$productId]++;
                 }
             }
-    
+
             $data['postalCodeProductCount'] = $postalCodeProductCount;
             $data['orders'] = $this->assign_order_types($orders);
         }
-    
+
         return view('admin.pages.orders_audit', $data);
     }
-    
+
 
     public function add_order(Request $request)
     {
@@ -2204,8 +2204,8 @@ class SystemController extends Controller
         return redirect()->back();
     }
 
-   
-    
+
+
 //     public function refund_order(Request $request)
 // {
 //     $data['user'] = auth()->user();
@@ -2225,8 +2225,8 @@ class SystemController extends Controller
 //         $amount = $validatedData['ammount'];
 //         $transactionId = $order->paymentdetails->transactionId;
 
-//         $apiKey = env('SUPERPAYMENTS_API_KEY');
-//         $brandId = env('BRAND_ID');
+//         $apiKey = .env('SUPERPAYMENTS_API_KEY');
+//         $brandId = .env('BRAND_ID');
 
 //         $curl = curl_init();
 //         curl_setopt_array(
