@@ -120,6 +120,12 @@
                             </ul>
                         </div>
                     </div>
+                    <div class="col">
+                        <div class="site-logo">
+                            <a class="web-logo" href="/"><img src="{{ asset('img/newlogo.png') }}" width="100px" alt="Logo"></a>
+                            <a class="mobile-logo" href="/"><img src="{{ asset('img/newlogo.png') }}" width="100px" alt="Logo"></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
