@@ -301,7 +301,7 @@ unset($__errorArgs, $__bag); ?>
 
 <?php $__env->stopSection(); ?>
 
-<?php if (! $__env->hasRenderedOnce('efda48a3-2928-4085-a9ed-3cf07d8edf3a')): $__env->markAsRenderedOnce('efda48a3-2928-4085-a9ed-3cf07d8edf3a');
+<?php if (! $__env->hasRenderedOnce('73b4658d-ad6d-4e11-8754-3a5566d88d01')): $__env->markAsRenderedOnce('73b4658d-ad6d-4e11-8754-3a5566d88d01');
 $__env->startPush('scripts'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -315,4 +315,5 @@ $__env->startPush('scripts'); ?>
 
 
 <?php $__env->stopPush(); endif; ?>
+
 <?php echo $__env->make('web.layouts.default', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\laragon\www\OP-Phill\resources\views/web/pages/registration_form.blade.php ENDPATH**/ ?>

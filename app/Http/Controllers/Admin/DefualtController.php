@@ -40,9 +40,6 @@ class DefualtController extends Controller
     protected $user;
     private $menu_categories;
 
-
-
-
     public function __construct()
     {
         $this->user = auth()->user();

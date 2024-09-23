@@ -21,9 +21,21 @@
                     <div class="col-md-12">
                         <div class="ltn__top-bar-menu text-center">
                             <ul>
-                                <li><a href="#" class="text-white font-weight-400  poppins-thin "><i class="fas fa-comment-medical" class="text-white"></i>Dispensed by Regulated UK Pharmacists</a></li>
-                                <li><a href="#" class="text-white  poppins-thin "><i class="far fa-certificate" class="text-white font-weight-400"></i> Registered Pharmacy: 9011972</a></li>
-                                <li class="#"><a href="#" class="text-white  pl-2 poppins-regular"> Social Media Link:</a> <a href="https://www.facebook.com/Online-Pharmacy4U-114908691196467" class="top-social-links"><i class="fab fa-facebook-f"></i></a> <a href="https://twitter.com/4uPharmacy" class="top-social-links"><i class="fab fa-twitter"></i></a> <a href="https://www.linkedin.com/company/74292944" class="top-social-links"><i class="fab fa-linkedin-in"></i></a> <a href="https://www.tiktok.com/@online.pharmacy4u" class="top-social-links"><i class="fab fa-tiktok"></i></a></li>
+                                <li><a href="#" class="text-white font-weight-400  poppins-thin "><i
+                                            class="fas fa-comment-medical" class="text-white"></i>Dispensed by Regulated
+                                        UK Pharmacists</a></li>
+                                <li><a href="#" class="text-white  poppins-thin "><i class="far fa-certificate"
+                                                                                     class="text-white font-weight-400"></i>
+                                        Registered Pharmacy: 9011972</a></li>
+                                <li class="#"><a href="#" class="text-white  pl-2 poppins-regular"> Social Media
+                                        Link:</a> <a href="https://www.facebook.com/Online-Pharmacy4U-114908691196467"
+                                                     class="top-social-links"><i class="fab fa-facebook-f"></i></a> <a
+                                        href="https://twitter.com/4uPharmacy" class="top-social-links"><i
+                                            class="fab fa-twitter"></i></a> <a
+                                        href="https://www.linkedin.com/company/74292944" class="top-social-links"><i
+                                            class="fab fa-linkedin-in"></i></a> <a
+                                        href="https://www.tiktok.com/@online.pharmacy4u" class="top-social-links"><i
+                                            class="fab fa-tiktok"></i></a></li>
                             </ul>
                         </div>
                     </div>
@@ -37,8 +49,10 @@
                 <div class="row">
                     <div class="col">
                         <div class="site-logo">
-                            <a class="web-logo" href="/"><img src="{{ asset('img/main-logo.webp') }}" width="100px" alt="Logo"></a>
-                            <a class="mobile-logo" href="/"><img src="{{ asset('img/mobile-logo.png') }}" width="100px" alt="Logo"></a>
+                            <a class="web-logo" href="/"><img src="{{ asset('img/main-logo.webp') }}" width="100px"
+                                                              alt="Logo"></a>
+                            <a class="mobile-logo" href="/"><img src="{{ asset('img/mobile-logo.png') }}" width="100px"
+                                                                 alt="Logo"></a>
                         </div>
                     </div>
                     <div class="col header-contact-serarch-column d-none d-xl-block">
@@ -56,7 +70,7 @@
                             <!-- header-search-2 -->
                             <div class="header-search-2">
                                 <form method="get" action="{{route('web.search')}}">
-                                    <input type="text" name="q" value="{{ Request('q')}}" placeholder="Search here..." />
+                                    <input type="text" name="q" value="{{ Request('q')}}" placeholder="Search here..."/>
                                     <button type="submit">
                                         <span><i class="icon-search"></i></span>
                                     </button>
@@ -79,7 +93,8 @@
                                         </div>
                                         <div class="header-search-1-form">
                                             <form method="get" action="{{route('web.search')}}">
-                                                <input class=" poppins-thin " type="text" name="q" value="" placeholder="Search here..." />
+                                                <input class=" poppins-thin " type="text" name="q" value=""
+                                                       placeholder="Search here..."/>
                                                 <button type="submit">
                                                     <span><i class="icon-search"></i></span>
                                                 </button>
@@ -95,11 +110,11 @@
                                                 <a href="#" class=" poppins-thin "><i class="icon-user"></i></a>
                                                 <ul>
                                                     @if(auth()->user())
-                                                    <li><a href="{{ route('admin.index') }}">My Account</a></li>
-                                                    <li><a href="/logout">Sign Out</a></li>
+                                                        <li><a href="{{ route('admin.index') }}">My Account</a></li>
+                                                        <li><a href="/logout">Sign Out</a></li>
                                                     @else
-                                                    <li><a href="/login">Sign in</a></li>
-                                                    <li><a href="/register">Register</a></li>
+                                                        <li><a href="/login">Sign in</a></li>
+                                                        <li><a href="/register">Register</a></li>
                                                     @endif
                                                 </ul>
                                             </li>
@@ -118,6 +133,14 @@
                                     </div>
                                 </li>
                             </ul>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="site-logo">
+                            <a class="web-logo" href="/"><img src="{{ asset('img/newlogo.jpeg') }}" width="100px"
+                                                              alt="Logo"></a>
+                            <a class="mobile-logo" href="/"><img src="{{ asset('img/newlogo.jpeg') }}" width="100px"
+                                                                 alt="Logo"></a>
                         </div>
                     </div>
                 </div>
@@ -360,7 +383,7 @@
             }
 
 
-            @media only screen and (max-width:500px) {
+            @media only screen and (max-width: 500px) {
                 .mobile-res-secton {
                     display: block !important;
                 }
@@ -373,53 +396,56 @@
                     display: none;
                 }
             }
+
             .menu-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 0; /* Adjust padding as needed */
-}
+                display: flex;
+                align-items: center;
+                padding: 10px 0; /* Adjust padding as needed */
+            }
 
-.menu-item img {
-    margin-right: 10px;
-    vertical-align: middle;
-}
+            .menu-item img {
+                margin-right: 10px;
+                vertical-align: middle;
+            }
 
-.menu-item a {
-    background: none !important;
-    font-weight: 600;
-    text-align: left;
-    text-decoration: none;
-}
+            .menu-item a {
+                background: none !important;
+                font-weight: 600;
+                text-align: left;
+                text-decoration: none;
+            }
 
-.menu-item a.child-link {
-    font-size: 12px;
-    font-weight: 500;
-}
+            .menu-item a.child-link {
+                font-size: 12px;
+                font-weight: 500;
+            }
 
-.mega-menu {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
+            .mega-menu {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
 
-.mega-menu > li {
-    margin-bottom: 10px; /* Adjust margin as needed */
-}
+            .mega-menu > li {
+                margin-bottom: 10px; /* Adjust margin as needed */
+            }
 
-.mega-menu > li > ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    margin-left: 20px; /* Adjust margin as needed */
-}
-@media (max-width: 991px) and (min-width: 501px) {
-    .header-search-column, .header-menu-column {
-        display: block;
-    }
-}
-body {
-    overflow-x: hidden;
-}
+            .mega-menu > li > ul {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+                margin-left: 20px; /* Adjust margin as needed */
+            }
+
+            @media (max-width: 991px) and (min-width: 501px) {
+                .header-search-column, .header-menu-column {
+                    display: block;
+                }
+            }
+
+            body {
+                overflow-x: hidden;
+            }
         </style>
 
         <!-- MOBILE MENU START -->
@@ -437,7 +463,8 @@ body {
             </div>
 
             <div class="menu px-3 py-4" id="myMenu">
-                <a href="#" class="closebtn mb-2" onclick="toggleMenu()"><i class="fa fa-times" aria-hidden="true"></i> Back</a>
+                <a href="#" class="closebtn mb-2" onclick="toggleMenu()"><i class="fa fa-times" aria-hidden="true"></i>
+                    Back</a>
                 <div class="search-container">
                     <form method="get" action="{{route('web.search')}}">
                         <input type="text" name="q" value="{{ Request('q')}}" placeholder="Search...">
@@ -445,33 +472,37 @@ body {
                     </form>
                 </div>
                 @foreach ($menu_categories as $key => $val)
-                <div class="custom-spec" style="display: flex !important; justify-content: space-between;align-items: center; padding:5px 10px;">
-                    <a href="{{ route('web.collections', ['main_category' => $val['slug']]) }}">
-                        <span class="plus-minus-icon">{{ $val['name'] }}</span>
-                    </a>
-                    @if($val['subcategory'])
-                    <i class="fa plus-icon" onclick="toggleSubMenu({{++$key}})"></i>
-                    @endif
-                </div>
-
-                <div class="submenu" id="mySubMenu{{$key}}">
-                    <a href="#" class="closebtn" onclick="toggleSubMenu({{$key}})"><i class="fa fa-times" aria-hidden="true"></i> Back</a>
-                    @foreach($val['subcategory'] as $key1 => $val1)
-                    <div style="display: flex !important; justify-content: space-between;align-items: center; padding:5px 10px;">
-                        <a href="{{ route('web.collections', ['main_category' => $val['slug'],'sub_category' => $val1['slug']]) }}">
-                            <span class="plus-minus-icon">{{ $val1['name'] }}</span>
+                    <div class="custom-spec"
+                         style="display: flex !important; justify-content: space-between;align-items: center; padding:5px 10px;">
+                        <a href="{{ route('web.collections', ['main_category' => $val['slug']]) }}">
+                            <span class="plus-minus-icon">{{ $val['name'] }}</span>
                         </a>
-                        @if($val1['child_categories'])
-                        <i class="fa plus-icon" onclick="toggleSubChild({{$key}}, {{++$key1}})"></i>
+                        @if($val['subcategory'])
+                            <i class="fa plus-icon" onclick="toggleSubMenu({{++$key}})"></i>
                         @endif
                     </div>
-                    <div class="subchild" id="subChild{{$key}}_{{$key1}}">
-                        @foreach($val1['child_categories'] as $key2 => $val2)
-                        <a href="{{ route('category.products', ['main_category' => $val['slug'],'sub_category' => $val1['slug'], 'child_category' => $val2['slug']]) }}">{{ $val2['name'] }}</a>
+
+                    <div class="submenu" id="mySubMenu{{$key}}">
+                        <a href="#" class="closebtn" onclick="toggleSubMenu({{$key}})"><i class="fa fa-times"
+                                                                                          aria-hidden="true"></i>
+                            Back</a>
+                        @foreach($val['subcategory'] as $key1 => $val1)
+                            <div
+                                style="display: flex !important; justify-content: space-between;align-items: center; padding:5px 10px;">
+                                <a href="{{ route('web.collections', ['main_category' => $val['slug'],'sub_category' => $val1['slug']]) }}">
+                                    <span class="plus-minus-icon">{{ $val1['name'] }}</span>
+                                </a>
+                                @if($val1['child_categories'])
+                                    <i class="fa plus-icon" onclick="toggleSubChild({{$key}}, {{++$key1}})"></i>
+                                @endif
+                            </div>
+                            <div class="subchild" id="subChild{{$key}}_{{$key1}}">
+                                @foreach($val1['child_categories'] as $key2 => $val2)
+                                    <a href="{{ route('category.products', ['main_category' => $val['slug'],'sub_category' => $val1['slug'], 'child_category' => $val2['slug']]) }}">{{ $val2['name'] }}</a>
+                                @endforeach
+                            </div>
                         @endforeach
                     </div>
-                    @endforeach
-                </div>
                 @endforeach
 
                 <div class="ltn__utilize-buttons ltn__utilize-buttons-2">
@@ -509,83 +540,101 @@ body {
 
         </div>
         <!-- MOBILE MENU END -->
-       <!-- header-bottom-area start -->
-       <div class="header-bottom-area ltn__border-top--- ltn__header-sticky  ltn__sticky-bg-white ltn__primary-bg---- menu-color-white---- d-none--- d-lg-block">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="col--- header-menu-column justify-content-center---">
-                        <div class="header-menu header-menu-2 text-start">
-                            <nav>
-                                <div class="ltn__main-menu text-center">
-                                    <ul>
-                                        <li><a style="background: none !important;" href="/" class="poppins-thin">Home</a></li>
-                                        @foreach ($menu_categories as $key => $val)
-                                                                                      
-    <li class="menu-item">
-        <a href="{{ route('web.collections', ['main_category' => $val['slug']]) }}">{{ $val['name'] }}</a>
-        <ul class="mega-menu">
-            @foreach($val['subcategory'] as $key1 => $val1)
-                                                                @php
-                                                    $path_sub_icon = asset('img/online-pharmacy.png');
-                                                    if($val1['icon'] ?? NULL){
-                                                    $path_sub_icon = asset('storage/'.$val1['icon']);
-                                                    }
-                                                    @endphp
-                <li>
-                    <div class="link-container">
-                        <a class="custom-link" href="{{ route('web.collections', ['main_category' => $val['slug'],'sub_category' => $val1['slug']]) }}">
-                            <img src="{{ $path_sub_icon }}" height="27" width="27">{{ $val1['name'] }}
-                        </a>
-                    </div>
-                    <ul>
-                        @foreach($val1['child_categories'] as $key2 => $val2)
-                                                                                    @php
-                                                            $path_child_icon = asset('img/drug.png');
-                                                            if($val2['icon'] ?? NULL){
-                                                            $path_child_icon = asset('storage/'.$val2['icon']);
-                                                            }
-                                                            @endphp
-                            <li class="menu-item">
-                                <img src="{{ $path_child_icon }}" height="27" width="27">
-                                <a class="custom-link child-link" href="{{ route('category.products', ['main_category' => $val['slug'],'sub_category' => $val1['slug'], 'child_category' => $val2['slug']]) }}">{{ $val2['name'] }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </li>
-            @endforeach
-        </ul>
-    </li>
-@endforeach
-
-                                        <li><a style="background: none !important;" href="/work" class="poppins-thin">How it work's</a></li>
-                                        <li><a style="background: none !important;" href="/help" class="poppins-thin">Help</a></li>
-                                    </ul>
-                                </div>
-                            </nav>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- header-bottom-area end -->
-
-        <div class="ltn__header-bottom-area border-bottom top-area-color-white---  d-none">
-            <div class="container">
+        <!-- header-bottom-area start -->
+        <div
+            class="header-bottom-area ltn__border-top--- ltn__header-sticky  ltn__sticky-bg-white ltn__primary-bg---- menu-color-white---- d-none--- d-lg-block">
+            <div class="container-fluid">
                 <div class="row">
-                    <div class="col-md-12">
-                        <div class="ltn__top-bar-menu">
-                            <ul>
-                                <li><a href="#" class="text-white font-weight-400"><i class="fas fa-plus"></i><strong class="font-bold">Regulated</strong> Pharmacy </a></li>
-                                <li><a href="#" class="text-white"><i class="fas fa-box"></i><span class="text-black"><strong class="font-bold">Discreet</strong> Packaging </span></a></li>
-                                <li><a href="#" class="text-white"><i class="fas fa-truck"></i><span class="text-black"> <strong class="font-bold">Free Delivery</strong> on orders over £40* </span></a></li>
-                                <li><a href="#" class="text-white">Excellent<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half"></i><strong>4.4</strong> based on <strong>1,421</strong> reviews</a></li>
+                    <div class="col-lg-12">
+                        <div class="col--- header-menu-column justify-content-center---">
+                            <div class="header-menu header-menu-2 text-start">
+                                <nav>
+                                    <div class="ltn__main-menu text-center">
+                                        <ul>
+                                            <li><a style="background: none !important;" href="/" class="poppins-thin">Home</a>
+                                            </li>
+                                            @foreach ($menu_categories as $key => $val)
+
+                                                <li class="menu-item">
+                                                    <a href="{{ route('web.collections', ['main_category' => $val['slug']]) }}">{{ $val['name'] }}</a>
+                                                    <ul class="mega-menu">
+                                                        @foreach($val['subcategory'] as $key1 => $val1)
+                                                            @php
+                                                                $path_sub_icon = asset('img/online-pharmacy.png');
+                                                                if($val1['icon'] ?? NULL){
+                                                                $path_sub_icon = asset('storage/'.$val1['icon']);
+                                                                }
+                                                            @endphp
+                                                            <li>
+                                                                <div class="link-container">
+                                                                    <a class="custom-link"
+                                                                       href="{{ route('web.collections', ['main_category' => $val['slug'],'sub_category' => $val1['slug']]) }}">
+                                                                        <img src="{{ $path_sub_icon }}" height="27"
+                                                                             width="27">{{ $val1['name'] }}
+                                                                    </a>
+                                                                </div>
+                                                                <ul>
+                                                                    @foreach($val1['child_categories'] as $key2 => $val2)
+                                                                        @php
+                                                                            $path_child_icon = asset('img/drug.png');
+                                                                            if($val2['icon'] ?? NULL){
+                                                                            $path_child_icon = asset('storage/'.$val2['icon']);
+                                                                            }
+                                                                        @endphp
+                                                                        <li class="menu-item">
+                                                                            <img src="{{ $path_child_icon }}"
+                                                                                 height="27" width="27">
+                                                                            <a class="custom-link child-link"
+                                                                               href="{{ route('category.products', ['main_category' => $val['slug'],'sub_category' => $val1['slug'], 'child_category' => $val2['slug']]) }}">{{ $val2['name'] }}</a>
+                                                                        </li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </li>
+                                            @endforeach
+
+                                            <li><a style="background: none !important;" href="/work"
+                                                   class="poppins-thin">How it work's</a></li>
+                                            <li><a style="background: none !important;" href="/help"
+                                                   class="poppins-thin">Help</a></li>
+                                        </ul>
+                                    </div>
+                                </nav>
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <!-- header-bottom-area end -->
+
+            <div class="ltn__header-bottom-area border-bottom top-area-color-white---  d-none">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="ltn__top-bar-menu">
+                                <ul>
+                                    <li><a href="#" class="text-white font-weight-400"><i
+                                                class="fas fa-plus"></i><strong class="font-bold">Regulated</strong>
+                                            Pharmacy </a></li>
+                                    <li><a href="#" class="text-white"><i class="fas fa-box"></i><span
+                                                class="text-black"><strong class="font-bold">Discreet</strong> Packaging </span></a>
+                                    </li>
+                                    <li><a href="#" class="text-white"><i class="fas fa-truck"></i><span
+                                                class="text-black"> <strong class="font-bold">Free Delivery</strong> on orders over £40* </span></a>
+                                    </li>
+                                    <li><a href="#" class="text-white">Excellent<i class="fas fa-star"></i><i
+                                                class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                                class="fas fa-star"></i><i
+                                                class="fas fa-star-half"></i><strong>4.4</strong> based on
+                                            <strong>1,421</strong> reviews</a></li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </header>
     <!-- HEADER AREA END -->
 
@@ -598,18 +647,22 @@ body {
             </div>
             <div class="mini-cart-product-area ltn__scrollbar">
                 @if(!empty(Cart::content()))
-                @foreach(Cart::content() as $item)
-                <div class="mini-cart-item clearfix">
-                    <div class="mini-cart-img">
-                        <a href="#"><img src="{{ asset('storage/'.$item->options->productImage)}}" alt="Image"></a>
-                        <span class="mini-cart-item-delete"><a href="javascript:void(0)" onclick="deleteItem('{{$item->rowId}}', true);"><i class="icon-cancel"></i></a></span>
-                    </div>
-                    <div class="mini-cart-info">
-                        <h6><a href="#">{!! $item->name !!} {!! $item->options->variant_info ? $item->options->variant_info->new_var_info : '' !!} </a></h6>
-                        <span class="mini-cart-quantity">{{ $item->qty }} x {{ $item->price}}</span>
-                    </div>
-                </div>
-                @endforeach
+                    @foreach(Cart::content() as $item)
+                        <div class="mini-cart-item clearfix">
+                            <div class="mini-cart-img">
+                                <a href="#"><img src="{{ asset('storage/'.$item->options->productImage)}}" alt="Image"></a>
+                                <span class="mini-cart-item-delete"><a href="javascript:void(0)"
+                                                                       onclick="deleteItem('{{$item->rowId}}', true);"><i
+                                            class="icon-cancel"></i></a></span>
+                            </div>
+                            <div class="mini-cart-info">
+                                <h6>
+                                    <a href="#">{!! $item->name !!} {!! $item->options->variant_info ? $item->options->variant_info->new_var_info : '' !!} </a>
+                                </h6>
+                                <span class="mini-cart-quantity">{{ $item->qty }} x {{ $item->price}}</span>
+                            </div>
+                        </div>
+                    @endforeach
                 @endif
             </div>
             <div class="mini-cart-footer">
@@ -661,10 +714,18 @@ body {
                 <div class="col-md-12">
                     <div class="ltn__top-bar-menu">
                         <ul>
-                            <li><a href="#" class="text-white font-weight-400"><i class="fas fa-plus"></i><strong class="font-bold">Regulated</strong> Pharmacy </a></li>
-                            <li><a href="#" class="text-white"><i class="fas fa-box"></i><span class="text-black"><strong class="font-bold">Discreet</strong> Packaging </span></a></li>
-                            <li><a href="#" class="text-white"><i class="fas fa-truck"></i><span class="text-black"> <strong class="font-bold">Free Delivery</strong> on orders over £40* </span></a></li>
-                            <li><a href="#" class="text-white">Excellent<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half"></i><strong>4.4</strong> based on <strong>1,421</strong> reviews</a></li>
+                            <li><a href="#" class="text-white font-weight-400"><i class="fas fa-plus"></i><strong
+                                        class="font-bold">Regulated</strong> Pharmacy </a></li>
+                            <li><a href="#" class="text-white"><i class="fas fa-box"></i><span
+                                        class="text-black"><strong class="font-bold">Discreet</strong> Packaging </span></a>
+                            </li>
+                            <li><a href="#" class="text-white"><i class="fas fa-truck"></i><span
+                                        class="text-black"> <strong class="font-bold">Free Delivery</strong> on orders over £40* </span></a>
+                            </li>
+                            <li><a href="#" class="text-white">Excellent<i class="fas fa-star"></i><i
+                                        class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                        class="fas fa-star-half"></i><strong>4.4</strong> based on
+                                    <strong>1,421</strong> reviews</a></li>
                     </div>
                 </div>
             </div>
@@ -682,18 +743,22 @@ body {
             </div>
             <div class="mini-cart-product-area ltn__scrollbar">
                 @if(!empty(Cart::content()))
-                @foreach(Cart::content() as $item)
-                <div class="mini-cart-item clearfix">
-                    <div class="mini-cart-img">
-                        <a href="#"><img src="{{ asset('storage/'.$item->options->productImage)}}" alt="Image"></a>
-                        <span class="mini-cart-item-delete"><a href="javascript:void(0)" onclick="deleteItem('{{$item->rowId}}', true);"><i class="icon-cancel"></i></a></span>
-                    </div>
-                    <div class="mini-cart-info">
-                        <h6><a href="#">{!! $item->name !!} {!! $item->options->variant_info ? $item->options->variant_info->new_var_info : '' !!} </a></h6>
-                        <span class="mini-cart-quantity">{{ $item->qty }} x {{ $item->price}}</span>
-                    </div>
-                </div>
-                @endforeach
+                    @foreach(Cart::content() as $item)
+                        <div class="mini-cart-item clearfix">
+                            <div class="mini-cart-img">
+                                <a href="#"><img src="{{ asset('storage/'.$item->options->productImage)}}" alt="Image"></a>
+                                <span class="mini-cart-item-delete"><a href="javascript:void(0)"
+                                                                       onclick="deleteItem('{{$item->rowId}}', true);"><i
+                                            class="icon-cancel"></i></a></span>
+                            </div>
+                            <div class="mini-cart-info">
+                                <h6>
+                                    <a href="#">{!! $item->name !!} {!! $item->options->variant_info ? $item->options->variant_info->new_var_info : '' !!} </a>
+                                </h6>
+                                <span class="mini-cart-quantity">{{ $item->qty }} x {{ $item->price}}</span>
+                            </div>
+                        </div>
+                    @endforeach
                 @endif
             </div>
             <div class="mini-cart-footer">

@@ -79,17 +79,17 @@ class CartController extends Controller
                 ]);
             }
         }
-        
+
         // // Retrieve the product
         // $product = Product::find($cartItems->id);
-    
+
         // if (!$product) {
         //     return response()->json([
         //         'status' => false,
         //         'message' => 'Product not found'
         //     ]);
         // }
-    
+
         // if(Cart::count() > 0){
         //     $cartContent = Cart::content();
         //     $productAlreadyExist = false;
@@ -155,33 +155,33 @@ class CartController extends Controller
         ]);
     }
 
-    
+
 
     public function updateCart(Request $request)
     {
         $rowId = $request->input('rowId');
         $qty = $request->input('qty');
-    
+
         // Retrieve the cart item
         $cartItem = Cart::get($rowId);
-    
+
         if (!$cartItem) {
             return response()->json([
                 'status' => false,
                 'message' => 'Product not found in cart'
             ]);
         }
-    
+
         // // Retrieve the product
         // $product = Product::find($cartItem->id);
-    
+
         // if (!$product) {
         //     return response()->json([
         //         'status' => false,
         //         'message' => 'Product not found'
         //     ]);
         // }
-    
+
         // // Validate quantity against limits
         // if ($qty < $product->min_buy) {
         //     return response()->json([
@@ -189,26 +189,26 @@ class CartController extends Controller
         //         'message' => 'Minimum quantity is ' . $product->min_buy
         //     ]);
         // }
-    
+
         // if ($qty > $product->max_buy) {
         //     return response()->json([
         //         'status' => false,
         //         'message' => 'Maximum quantity is ' . $product->max_buy
         //     ]);
         // }
-    
+
         // Update the cart with the validated quantity
         Cart::update($rowId, $qty);
-    
+
         $message = 'Cart updated successfully';
         session()->flash('success', $message);
-    
+
         return response()->json([
             'status' => true,
             'message' => $message
         ]);
     }
-    
+
 
     public function deleteItem(Request $request)
     {
@@ -281,39 +281,39 @@ class CartController extends Controller
     public function reorder(Request $request)
     {
         $orderId = $request->input('order_id');
-        
+
         // Fetch the order and its details
         $order = Order::with('orderdetails')->find($orderId);
-        
+
         if (!$order) {
             return response()->json(['status' => false, 'message' => 'Order not found']);
         }
-    
+
         // Prepare to add items to cart
         foreach ($order->orderdetails as $detail) {
             // Find the product using the product ID from the order details
             $product = Product::find($detail->product_id); // Assuming `product_id` is the column in `orderdetails`
-    
+
             if (!$product) {
                 // Log the ID for debugging
                 \Log::error('Product not found for ID: ' . $detail->product_id);
-    
+
                 continue; // Skip if product not found
             }
-    
+
             $variant = null;
             if ($detail->variant_id) {
                 // Find the variant if there is one
                 $variant = ProductVariant::find($detail->variant_id);
             }
-    
+
             // Prepare data for cart
             $cartData = [
                 'productImage' => $product->main_image ?? '',
                 'slug' => $product->slug,
                 'order_type' => 'pom/reorder' // Add the order type
             ];
-    
+
             if ($variant) {
                 // Prepare variant information
                 $vart_type = explode(';', $variant->title);
@@ -326,7 +326,7 @@ class CartController extends Controller
                     }
                 }
                 $variant['new_var_info'] = $var_info;
-    
+
                 // Add to cart with variant
                 Cart::add(
                     $product->id . '_' . $variant->id,
@@ -346,15 +346,15 @@ class CartController extends Controller
                 );
             }
         }
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Order items added to cart',
             'redirect' => route('web.view.cart')
         ]);
     }
-    
-    
-    
-    
+
+
+
+
 }
