@@ -12,7 +12,7 @@ function date_time_uk($datetime)
 {
 
     $date= isset($datetime) ? date('d-m-y H:i:s', strtotime($datetime)) : '';
- 
+
     if ($date) {
         return $date;
     } else {
@@ -106,7 +106,7 @@ function view_permission($page_name)
                 case 'admin.unpaidOrders':
                 case 'consultation_view':
                 case 'orders_shipped':
-                case 'orders_unshiped':
+                case 'orders_unshipped':
                 case 'orders_created':
                 case 'orders_refunded':
                 case 'orders_audit':
@@ -145,7 +145,7 @@ function view_permission($page_name)
                 case 'dispensary_approval':
                 case 'doctors_approval':
                 case 'orders_shipped':
-                case 'orders_unshiped':
+                case 'orders_unshipped':
                 case 'consultation_view':
                 case 'contact':
                 case 'setting':
@@ -159,8 +159,8 @@ function view_permission($page_name)
             switch ($page_name) {
                 case 'dashboard':
                 case 'comment_store':
-                case 'orders_shipped':    
-                case 'sops':    
+                case 'orders_shipped':
+                case 'sops':
                 case 'store_query':
                 case 'orders':
                 case 'gp_locations':

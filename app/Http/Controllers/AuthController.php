@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -43,7 +44,9 @@ class AuthController extends Controller
     public function registerUser(RegisterUserRequest $request)
     {
         if (!auth()->check()) {
-            DB::transaction(function () use ($request) {
+            try {
+                DB::beginTransaction();
+
                 // Convert DOB to YYYY-MM-DD format
                 $dob = "{$request->year}-{$request->month}-{$request->day}";
 
@@ -74,6 +77,8 @@ class AuthController extends Controller
                 // Assign role using Spatie, if provided
                 if ($request->has('role')) {
                     $user->assignRole($request->role);
+                } else {
+                    $user->assignRole('user');
                 }
 
                 // Create or update the user profile
@@ -104,18 +109,33 @@ class AuthController extends Controller
                 // Log in the user if authentication is successful
                 if (Auth::attempt($request->only('email', 'password'))) {
                     $token = auth()->user()->createToken('MyApp')->plainTextToken;
+
+                    DB::commit();
+
+                    // Handle redirection
+                    $intendedUrl = session('intended_url');
+                    session()->forget('intended_url');
+                    return redirect($intendedUrl ? route('web.consultationForm') : '/admin');
+                } else {
+                    // Rollback if login fails
+                    DB::rollBack();
+                    return redirect()->back()->withErrors('Login failed after registration.');
                 }
 
-                // Handle redirection
-                $intendedUrl = session('intended_url');
-                session()->forget('intended_url');
-                return redirect($intendedUrl ? route('web.consultationForm') : '/admin');
-            });
+            } catch (\Exception $e) {
+                // Rollback the transaction if any error occurs
+                DB::rollBack();
 
+                // Log the error for debugging purposes
+                Log::error('Registration Error: ' . $e->getMessage());
+
+                return redirect()->back()->withErrors('Registration failed, please try again.');
+            }
         } else {
             return redirect()->back();
         }
     }
+
 
     public function registration_form(Request $request)
     {

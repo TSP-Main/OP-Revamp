@@ -373,8 +373,6 @@ class WebController extends Controller
 
     public function consultation_store(Request $request)
     {
-
-        // dd($request->all());
         $consultations = Session::get('consultations', []);
         $questionAnswers = [];
         foreach ($request->all() as $key => $value) {

@@ -38,7 +38,6 @@ class HomeController extends Controller
 
     public function __construct()
     {
-//        dd('homecontroller');
         $this->status = config('constants.STATUS');
         $this->menu_categories = Category::where('status', 'Active')
             ->with(['subcategory' => function ($query) {

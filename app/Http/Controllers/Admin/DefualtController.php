@@ -69,24 +69,29 @@ class DefualtController extends Controller
         $user = auth()->user();
 
         if ($user) {
-            $page_name = 'dashboard';
-            if (!view_permission($page_name)) {
-                return redirect()->back();
+            if (!$user->can('dashboard')) {
+                return redirect()->back()->with('error', 'You do not have permission to view this page.');
             }
+
+            // Store user details in session
             session(['user_details' => $user]);
+
             $data['user'] = $user;
-            $data['role'] = user_role_no($user->role);
-            // User roles: 1 for Super Admin, 2 for Despensory, 3 for Doctor, 4 User
-            if (isset($user->role) && $user->role == user_roles('1')) {
+            $data['role'] = $user->getRoleNames()->first(); // Get the first role name assigned to the user
+
+            // User role handling with Spatie
+            if ($user->hasRole('super_admin')) {
                 return view('admin.pages.dashboard', $data);
-            } else if (isset($user->role) && $user->role == user_roles('2')) {
-                return view('admin.pages.despensory_dashboard', $data);
-            } else if (isset($user->role) && $user->role == user_roles('3')) {
+            } elseif ($user->hasRole('dispensary')) {
+                return view('admin.pages.dispensary_dashboard', $data);
+            } elseif ($user->hasRole('doctor')) {
                 return view('admin.pages.doctor_dashboard', $data);
-            } else if (isset($user->role) && $user->role == user_roles('4')) {
-                // return redirect('/');
+            } elseif ($user->hasRole('user')) {
                 return view('admin.pages.profile_setting', $data);
             }
+
+            // Default case if no roles match (optional)
+            return redirect('/login');
         } else {
             return redirect('/login');
         }

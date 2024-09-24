@@ -182,6 +182,7 @@ unset($__errorArgs, $__bag); ?>
                                 <p style="color: #3d7de8 ;">* Make a strong password</p>
                             </div>
                             <input type="password" name="password" placeholder="Password*" value="<?php echo e(old('password')); ?>" required>
+                            <input type="password" name="password_confirmation" placeholder="Password*" value="<?php echo e(old('password')); ?>" required>
                             <div class="invalid-feedback">Please enter your password!</div>
                             <?php $__errorArgs = ['password'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -301,7 +302,7 @@ unset($__errorArgs, $__bag); ?>
 
 <?php $__env->stopSection(); ?>
 
-<?php if (! $__env->hasRenderedOnce('73b4658d-ad6d-4e11-8754-3a5566d88d01')): $__env->markAsRenderedOnce('73b4658d-ad6d-4e11-8754-3a5566d88d01');
+<?php if (! $__env->hasRenderedOnce('3cb99849-155c-4309-8c16-470af4147336')): $__env->markAsRenderedOnce('3cb99849-155c-4309-8c16-470af4147336');
 $__env->startPush('scripts'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

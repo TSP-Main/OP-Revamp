@@ -1896,7 +1896,7 @@ class SystemController extends Controller
         return view('admin.pages.orders_shiped', $data);
     }
 
-    public function orders_unshiped()
+    public function orders_unshipped()
     {
         $data['user'] = auth()->user();
         $page_name = 'orders_shipped';
@@ -1909,7 +1909,7 @@ class SystemController extends Controller
             $data['orders'] = $this->assign_order_types($orders);
         }
 
-        return view('admin.pages.orders_unshiped', $data);
+        return view('admin.pages.orders_unshipped', $data);
     }
 
     public function gpa_letters()
