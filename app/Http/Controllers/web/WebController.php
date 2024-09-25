@@ -1249,6 +1249,7 @@ class WebController extends Controller
             $level = 'main';
         }
 
+        //switches
         switch ($level) {
             case 'main':
                 $products = Product::where(['status' => $this->status['Active'], 'category_id' => $category])->where('id', '!=', $product->id)->latest('id')->get();

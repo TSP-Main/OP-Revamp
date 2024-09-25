@@ -34,6 +34,7 @@ class HomeController extends Controller
         view()->share('menu_categories', $this->menu_categories);
     }
 
+    //index
     public function index(Request $request)
     {
         $data['user'] = auth()->user() ?? [];
