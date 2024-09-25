@@ -3,10 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dashboard\StoreCompanyDetailsRequest;
+use App\Http\Requests\Dashboard\StoreQueryRequest;
+use App\Models\ClientQuery;
+use App\Models\CompanyDetail;
 use App\Models\Order;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -15,8 +20,6 @@ class DashboardController extends Controller
 {
     protected $status;
     protected $user;
-    private $menu_categories;
-
     public function index()
     {
         $user = auth()->user();
@@ -116,32 +119,31 @@ class DashboardController extends Controller
 
     public function dashboard_details(Request $request)
     {
-        // Retrieve the role value from the request
-        // User roles: 1 for Super Admin, 2 for Despensory, 3 for Doctor, 4 User
-        $role = $request->input('role');
+        $user = auth()->user();
 
-        // Initialize $user variable
-        $user = '';
+        // Initialize the variable for storing the role
+        $orderFor = '';
 
-        // Set $user based on role
-        if ($role == '2') {
-            $user = 'Despensory';
-        } elseif ($role == '3') {
-            $user = 'Doctor';
+        // Check user role using Spatie and set $orderFor accordingly
+        if ($user->hasRole('dispensary')) {
+            $orderFor = 'dispensary';
+        } elseif ($user->hasRole('Doctor')) {
+            $orderFor = 'Doctor';
+        } else {
+            // Handle case for Super Admin or User role
+            return response()->json(['error' => 'Unauthorized access or no orders available for this role.'], 403);
         }
 
-        // Retrieve order details based on $user
-        $totalOrders = Order::where('order_for', $user)->count();
-        $paidOrders = Order::where('payment_status', 'paid')->where('order_for', $user)->count();
-        $unpaidOrders = Order::where('payment_status', 'Unpaid')->where('order_for', $user)->count();
-        $shippedOrders = Order::where('status', 'Shipped')->where('order_for', $user)->count();
-        $receivedOrders = Order::where('status', 'Received')->where('order_for', $user)->count();
-        $refundOrders = Order::where('status', 'Refund')->where('order_for', $user)->count();
-        $notApprovedOrders = Order::where('status', 'Not_Approved')->where('order_for', $user)->count();
+        // Retrieve order details based on the role (Despensory or Doctor)
+        $totalOrders = Order::where('order_for', $orderFor)->count();
+        $paidOrders = Order::where('payment_status', 'paid')->where('order_for', $orderFor)->count();
+        $unpaidOrders = Order::where('payment_status', 'Unpaid')->where('order_for', $orderFor)->count();
+        $shippedOrders = Order::where('status', 'Shipped')->where('order_for', $orderFor)->count();
+        $receivedOrders = Order::where('status', 'Received')->where('order_for', $orderFor)->count();
+        $refundOrders = Order::where('status', 'Refund')->where('order_for', $orderFor)->count();
+        $notApprovedOrders = Order::where('status', 'Not_Approved')->where('order_for', $orderFor)->count();
         // $totalAmount = Order::where('order_for', $user)->sum('total_ammount');
-        $totalAmount = number_format(Order::where('order_for', $user)->sum('total_ammount'), 2);
-
-        // dd($totalAmount, $user, $totalOrders, $paidOrders, $unpaidOrders, $shippedOrders, $receivedOrders, $refundOrders, $notApprovedOrders);
+        $totalAmount = number_format(Order::where('order_for', $orderFor)->sum('total_ammount'), 2);
 
         // Return JSON response with order details
         return response()->json([
@@ -156,60 +158,110 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function profile_setting(Request $request)
+    public function contact()
     {
         $user = auth()->user();
-        $page_name = 'setting';
-        if (!view_permission($page_name)) {
+        if ($user->hasPermissionTo('store_query'))
+        {
             return redirect()->back();
         }
-        if ($request->all()) {
-            $rules = [
-                'name' => 'required',
-                'phone' => 'required|digits:11',
-                'address' => 'required',
-                'email' => [
-                    'required',
-                    'email',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-            ];
 
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
+        // Store the authenticated user in $data
+        $data['user'] = $user;
 
-            $data['user'] = auth()->user();
-
-            if ($request->file('user_pic')) {
-                $image = $request->file('user_pic');
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->storeAs('user_images', $imageName, 'public');
-                $ImagePath = 'user_images/' . $imageName;
-            }
-            $updateData = [
-                'name' => ucwords($request->name),
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'user_pic' => $ImagePath ?? $user->user_pic,
-                'address' => $request->address,
-                'short_bio' => $request->short_bio,
-                'status' => $this->status['Active'],
-                'created_by' => $user->id,
-            ];
-            $saved = User::updateOrCreate(
-                ['id' => $user->id ?? NULL],
-                $updateData
-            );
-            $message = "profile" . ($user->id ? "Updated" : "Saved") . " Successfully";
-            if ($saved) {
-                return redirect()->route('admin.profileSetting')->with(['msg' => $message]);
-            }
+        if ($user->hasRole('super_admin')) {
+            // Super Admin can view all queries
+            $data['queries'] = ClientQuery::all()->toArray();
+        } else {
+            // Other users can only view their own queries
+            $data['queries'] = ClientQuery::where('user_id', $user->id)->get()->toArray();
         }
 
-        $data['user'] = $user;
-        return view('admin.pages.profile_setting', $data);
+        // Retrieve company contact details
+        $data['contact_details'] = CompanyDetail::all()->keyBy('content_type')->toArray();
+
+        // Render the contact view with the data
+        return view('admin.pages.contact', $data);
+    }
+    public function faq()
+    {
+        return view('admin.pages.faq');
+    }
+    public function read_notifications()
+    {
+        auth()->user()->unreadNotifications->markAsRead();
+        return redirect()->back();
+    }
+
+    public function get_unread_notifications()
+    {
+        $unreadNotifications = Auth::user()->unreadNotifications;
+        if ($unreadNotifications) {
+            // notify()->success('New order received. ⚡️');
+        }
+        return response()->json($unreadNotifications);
+    }
+    public function store_query(StoreQueryRequest $request)
+    {
+        $user = auth()->user();
+        $this->authorize('store_query');
+
+        $query_data = [
+            'user_id'    => $user->id,
+            'name'       => ucwords($request->name),
+            'email'      => $request->email,
+            'subject'    => $request->subject,
+            'message'    => $request->message,
+            'type'       => $request->type,
+            'created_by' => $user->id,
+        ];
+
+        $saved = ClientQuery::create($query_data);
+
+        // Message based on whether it's a new query or an update
+        $message = "Your Query has been " . ($request->id ? "Updated" : "Sent") . " Successfully. ⚡️";
+
+        // Check if the query was saved and return a response
+        if ($saved) {
+            notify()->success($message);
+            return redirect()->back()->with(['msg' => $message]);
+        }
+
+        // If not saved, return an error message
+        notify()->error("There was an issue submitting your query. Please try again. ⚡️");
+        return redirect()->back()->withInput();
+    }
+
+    public function store_company_details(StoreCompanyDetailsRequest $request)
+    {
+        $user = auth()->user();
+        if (!$user->can('update_company_details')) {
+            return redirect()->back()->withErrors(['error' => 'You do not have permission to perform this action.']);
+        }
+
+        // Loop through all form data and update or create the company details
+        $data = $request->except(['_token', 'detail_type']); // Exclude _token and detail_type from processing
+        $detailType = ucwords($request->detail_type);
+
+        foreach ($data as $key => $value) {
+            $query_data = [
+                'detail_type'  => $detailType,
+                'content_type' => $key,
+                'content'      => $value ?? null,
+                'created_by'   => $user->id,
+                'updated_by'   => $user->id,
+            ];
+
+            CompanyDetail::updateOrCreate(
+                ['content_type' => $key],
+                $query_data
+            );
+        }
+
+        // Notify and redirect with success message
+        $message = "Your Details have been updated successfully. ⚡️";
+        notify()->success($message);
+        return redirect()->back()->with(['msg' => $message]);
     }
 
 }

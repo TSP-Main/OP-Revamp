@@ -5,28 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="19a36da7-852a-4c64-9d65-447a5acf2fd8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Http/Controllers/Admin/DefualtController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/Admin/DefualtController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Http/Controllers/AuthController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/AuthController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Requests/Auth/RegisterUserRequest.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Requests/Auth/RegisterUserRequest.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Models/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Models/User.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/migrations/2014_10_12_000001_create_user_addresses_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2014_10_12_000001_create_user_addresses_table.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/seeders/UserSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/seeders/UserSeeder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/admin/pages/profile_setting.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/admin/pages/profile_setting.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/web/includes/header.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/web/includes/header.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/web/pages/change_password.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/web/pages/change_password.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/web/pages/login.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/web/pages/login.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/admin/includes/header.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/admin/includes/header.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/web/pages/registration_form.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/web/pages/registration_form.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/admin.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/admin.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/framework/views/3d9b4b85fe54399f4052481cfbbac460e2eaa2bb.php" beforeDir="false" afterPath="$PROJECT_DIR$/storage/framework/views/3d9b4b85fe54399f4052481cfbbac460e2eaa2bb.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/framework/views/877ebbf43b6e94a48c3c643948449321c3133a7e.php" beforeDir="false" afterPath="$PROJECT_DIR$/storage/framework/views/877ebbf43b6e94a48c3c643948449321c3133a7e.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/framework/views/91d9b2f42578dbab3f4ac460011058b00bc7996d.php" beforeDir="false" afterPath="$PROJECT_DIR$/storage/framework/views/91d9b2f42578dbab3f4ac460011058b00bc7996d.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/framework/views/deea3ec37561540110fadb0a5d0c9f47302ee132.php" beforeDir="false" afterPath="$PROJECT_DIR$/storage/framework/views/deea3ec37561540110fadb0a5d0c9f47302ee132.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/logs/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/logs/laravel.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/logs/laravel.log" beforeDir="false" afterPath="$PROJECT_DIR$/storage/logs/laravel.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -250,7 +238,7 @@
       <workItem from="1727067565018" duration="22057000" />
       <workItem from="1727153300372" duration="16509000" />
       <workItem from="1727174827307" duration="12508000" />
-      <workItem from="1727238763763" duration="15555000" />
+      <workItem from="1727238763763" duration="21820000" />
     </task>
     <servers />
   </component>
