@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginUserRequest;
+use App\Http\Requests\Auth\ProfileRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Mail\OTPMail;
 use App\Models\Category;
@@ -13,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -41,6 +41,7 @@ class AuthController extends Controller
 
         view()->share('menu_categories', $this->menu_categories);
     }
+
     public function registerUser(RegisterUserRequest $request)
     {
         if (!auth()->check()) {
@@ -123,12 +124,7 @@ class AuthController extends Controller
                 }
 
             } catch (\Exception $e) {
-                // Rollback the transaction if any error occurs
                 DB::rollBack();
-
-                // Log the error for debugging purposes
-                Log::error('Registration Error: ' . $e->getMessage());
-
                 return redirect()->back()->withErrors('Registration failed, please try again.');
             }
         } else {
@@ -147,6 +143,11 @@ class AuthController extends Controller
         }
     }
 
+    public function loginForm()
+    {
+        return view('web.pages.login');
+    }
+
     public function login(LoginUserRequest $request)
     {
         // Check if user is already authenticated
@@ -154,47 +155,53 @@ class AuthController extends Controller
             return $this->redirectBasedOnRole(auth()->user());
         }
 
-        $credentials = $request->only('email', 'password');
+        $authenticatedUser = auth()->user();
+        if (!$authenticatedUser) {
+            if ($credentials = $request->only('email', 'password')) {
 
-        // Find the user by email
-        $user = User::where('email', $credentials['email'])->first();
+                // Find the user by email
+                $user = User::where('email', $credentials['email'])->first();
+                if (!$user) {
+                    return redirect()->back()->with([
+                        'status' => 'noexistence',
+                        'message' => 'User does not exist',
+                        'email' => $credentials['email']
+                    ], 401);
+                }
 
-        if (!$user) {
-            return redirect()->back()->with([
-                'status' => 'noexistence',
-                'message' => 'User does not exist',
-                'email' => $credentials['email']
-            ], 401);
-        }
+                // Check if the user is authorized to log in (check user status)
+                if (!in_array($user->status, auth_users())) {
+                    $statusMessages = [
+                        4 => 'User is unverified, please check your email',
+                        'default' => 'You are unauthorized to log in',
+                    ];
+                    $message = $statusMessages[$user->status] ?? $statusMessages['default'];
 
-        // Check if the user is authorized to log in (check user status)
-        if (!in_array($user->status, auth_users())) {
-            $statusMessages = [
-                4 => 'User is unverified, please check your email',
-                'default' => 'You are unauthorized to log in',
-            ];
-            $message = $statusMessages[$user->status] ?? $statusMessages['default'];
+                    return redirect()->back()->with([
+                        'status' => 'Deactive',
+                        'message' => $message,
+                        'email' => $credentials['email']
+                    ]);
+                }
 
-            return redirect()->back()->with([
-                'status' => 'Deactive',
-                'message' => $message,
-                'email' => $credentials['email']
-            ]);
-        }
+                // Attempt to log the user in
+                if (Auth::attempt($credentials)) {
+                    // Create a token for the user
+                    $token = $user->createToken('MyApp')->plainTextToken;
 
-        // Attempt to log the user in
-        if (Auth::attempt($credentials)) {
-            // Create a token for the user
-            $token = $user->createToken('MyApp')->plainTextToken;
+                    // Redirect based on role
+                    return $this->redirectBasedOnRole($user);
+                } else {
+                    return redirect()->back()->with([
+                        'status' => 'invalid',
+                        'message' => 'Invalid credentials',
+                        'email' => $credentials['email']
+                    ]);
+                }
+            }
 
-            // Redirect based on role
-            return $this->redirectBasedOnRole($user);
         } else {
-            return redirect()->back()->with([
-                'status' => 'invalid',
-                'message' => 'Invalid credentials',
-                'email' => $credentials['email']
-            ]);
+            return view('web.pages.login');
         }
     }
 
@@ -202,21 +209,21 @@ class AuthController extends Controller
     {
         // Redirect users based on their role using Spatie
         if ($user->hasRole('super_admin')) {
-            return redirect('/admin');
+            return redirect('/dashboard');
         }
 
         if ($user->hasRole('dispensary')) {
-            return redirect('/admin');
+            return redirect('/dashboard');
         }
 
         if ($user->hasRole('doctor')) {
-            return redirect('/admin');
+            return redirect('/dashboard');
         }
 
         if ($user->hasRole('user')) {
             $intendedUrl = session('intended_url');
             session()->forget('intended_url');
-            return $intendedUrl ? redirect()->route('web.consultationForm') : redirect('/admin');
+            return $intendedUrl ? redirect()->route('web.consultationForm') : redirect('/dashboard');
         }
 
         return redirect('/');
@@ -307,6 +314,55 @@ class AuthController extends Controller
             }
         } else {
             return redirect()->back();
+        }
+    }
+
+    public function profile_setting(ProfileRequest $request)
+    {
+        $user = auth()->user();
+
+        // Check if user has permission to access settings
+        if (!$user->hasPermissionTo('setting')) {
+            return redirect()->back();
+        }
+        DB::beginTransaction();
+        try {
+            $updateUserData = [
+                'name' => ucwords($request->name),
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'image' => $user->image, // Set the existing picture by default
+                'created_by' => $user->id,
+            ];
+
+            if ($request->hasFile('user_pic')) {
+                $image = $request->file('user_pic');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $image->storeAs('user_images', $imageName, 'public');
+                $updateUserData['image'] = 'user_images/' . $imageName;
+            }
+            $user->update($updateUserData);
+            // Update the bio in the `userprofile` table
+            $user->profile()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'phone' => $request->phone,
+                    'short_bio' => $request->short_bio
+                ]
+            );
+            // Update the address in the `useraddress` table
+            $user->address()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['address' => $request->address]
+            );
+            DB::commit();
+
+            $message = "profile" . ($user->id ? "Updated" : "Saved") . " Successfully";
+            return redirect()->route('admin.profileSetting')->with(['msg' => $message]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()->with('error', 'Failed to update profile.');
         }
     }
 

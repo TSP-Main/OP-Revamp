@@ -113,7 +113,7 @@
                                                         <li><a href="{{ route('admin.index') }}">My Account</a></li>
                                                         <li><a href="/logout">Sign Out</a></li>
                                                     @else
-                                                        <li><a href="/login">Sign in</a></li>
+                                                        <li><a href="{{ route('sign_in') }}">Sign in</a></li>
                                                         <li><a href="/register">Register</a></li>
                                                     @endif
                                                 </ul>
