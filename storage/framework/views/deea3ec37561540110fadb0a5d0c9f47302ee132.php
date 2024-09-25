@@ -113,7 +113,7 @@
                                                         <li><a href="<?php echo e(route('admin.index')); ?>">My Account</a></li>
                                                         <li><a href="/logout">Sign Out</a></li>
                                                     <?php else: ?>
-                                                        <li><a href="/login">Sign in</a></li>
+                                                        <li><a href="<?php echo e(route('sign_in')); ?>">Sign in</a></li>
                                                         <li><a href="/register">Register</a></li>
                                                     <?php endif; ?>
                                                 </ul>

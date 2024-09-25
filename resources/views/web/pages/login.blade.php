@@ -59,7 +59,7 @@
                                     </div>
                                     @endif
 
-                                    @if(session('status') === 'noexitance')
+                                    @if(session('status') === 'noexistence')
                                     <div class="alert alert-danger">
                                         <strong>Error:</strong> {{ session('message') }}
                                     </div>

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\UserProfile;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -15,6 +16,14 @@ class UserSeeder extends Seeder
      *
      * @return void
      */
+    public function __construct()
+    {
+        $this->quoteStatus = config('constants.QUOTE_STATUS');
+        $this->currencyTypes = config('constants.CURRENCY_TYPES');
+        $this->currencies = config('constants.CURRENCIES');
+        $this->curFormatDate = Carbon::now()->format('Y-m-d');
+    }
+
     public function run(): void
     {
         // Create Super Admin user with profile and address
