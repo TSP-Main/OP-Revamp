@@ -82,7 +82,7 @@ class WebController extends Controller
             ->where('publish', 'Publish')
             ->latest('id')
             ->get()
-            ->toArray();;
+            ->toArray();
 
         view()->share('menu_categories', $this->menu_categories);
         $this->ENV = env('PAYMENT_ENV', 'Live') ?? 'Live'; //1. Live, 2. Local.
@@ -373,8 +373,6 @@ class WebController extends Controller
 
     public function consultation_store(Request $request)
     {
-
-        // dd($request->all());
         $consultations = Session::get('consultations', []);
         $questionAnswers = [];
         foreach ($request->all() as $key => $value) {

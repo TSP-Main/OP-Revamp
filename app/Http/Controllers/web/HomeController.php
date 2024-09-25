@@ -35,7 +35,7 @@ class HomeController extends Controller
 {
     private $menu_categories;
     protected $status;
-    
+
     public function __construct()
     {
         $this->status = config('constants.STATUS');
@@ -51,7 +51,6 @@ class HomeController extends Controller
             ->get()
             ->toArray();
 
-
         view()->share('menu_categories', $this->menu_categories);
     }
 
@@ -64,7 +63,7 @@ class HomeController extends Controller
         foreach ($featuredProducts as $featuredProduct) {
             $products[] = $featuredProduct->product;
         }
-    
+
         $data['products'] = $products;
         return view('web.pages.home', $data);
     }
@@ -85,7 +84,7 @@ class HomeController extends Controller
         return view('web.pages.blogs');
     }
 
-    
+
     public function blog_details(Request $request)
     {
         return view('web.pages.blog_details');

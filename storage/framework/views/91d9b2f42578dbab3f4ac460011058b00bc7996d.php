@@ -182,6 +182,7 @@ unset($__errorArgs, $__bag); ?>
                                 <p style="color: #3d7de8 ;">* Make a strong password</p>
                             </div>
                             <input type="password" name="password" placeholder="Password*" value="<?php echo e(old('password')); ?>" required>
+                            <input type="password" name="password_confirmation" placeholder="Password*" value="<?php echo e(old('password')); ?>" required>
                             <div class="invalid-feedback">Please enter your password!</div>
                             <?php $__errorArgs = ['password'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -301,7 +302,7 @@ unset($__errorArgs, $__bag); ?>
 
 <?php $__env->stopSection(); ?>
 
-<?php if (! $__env->hasRenderedOnce('efda48a3-2928-4085-a9ed-3cf07d8edf3a')): $__env->markAsRenderedOnce('efda48a3-2928-4085-a9ed-3cf07d8edf3a');
+<?php if (! $__env->hasRenderedOnce('3cb99849-155c-4309-8c16-470af4147336')): $__env->markAsRenderedOnce('3cb99849-155c-4309-8c16-470af4147336');
 $__env->startPush('scripts'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -315,4 +316,5 @@ $__env->startPush('scripts'); ?>
 
 
 <?php $__env->stopPush(); endif; ?>
+
 <?php echo $__env->make('web.layouts.default', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\laragon\www\OP-Phill\resources\views/web/pages/registration_form.blade.php ENDPATH**/ ?>

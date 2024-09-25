@@ -133,6 +133,7 @@
                                 <p style="color: #3d7de8 ;">* Make a strong password</p>
                             </div>
                             <input type="password" name="password" placeholder="Password*" value="{{ old('password') }}" required>
+                            <input type="password" name="password_confirmation" placeholder="Password*" value="{{ old('password') }}" required>
                             <div class="invalid-feedback">Please enter your password!</div>
                             @error('password')
                             <div class="alert-danger text-danger ">{{ $message }}</div>

@@ -32,7 +32,7 @@ class RegisterUserRequest extends FormRequest
                 $this->id ? 'nullable' : 'required', // Password is required only if creating a new user
                 'string',
                 'min:8',
-                'confirmed'  // Ensures that a password confirmation field exists and matches
+               'confirmed'  // Ensures that a password confirmation field exists and matches
             ],
 
             // Role (optional)

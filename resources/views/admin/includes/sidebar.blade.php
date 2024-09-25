@@ -217,7 +217,7 @@
                     </a>
                 </li>
                 @endif
-                @if(view_permission('orders_unshiped'))
+                @if(view_permission('orders_unshipped'))
                 <li>
                     <a class="{{(request()->routeIs(['admin.ordersShippingFail'])) ? 'nav-link ' : ''}}" href="{{route('admin.ordersShippingFail')}}">
                         <i class="bi bi-circle"></i><span>ShippingFail Orders</span>
@@ -318,7 +318,7 @@
         </li>
         @endif
 
-        @if(view_permission('prescription_orders')) 
+        @if(view_permission('prescription_orders'))
         <li class="nav-item">
             <a class="nav-link {{(request()->routeIs('admin.prescriptionOrders')) ? '' : 'collapsed'}}  " href="{{route('admin.prescriptionOrders')}}">
                 <i class="bi bi-bar-chart"></i><span>Prescription Orders</span>
@@ -385,7 +385,7 @@
                 <i class="bi bi-person"></i><span>SOP's</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="siderbar-users" class="nav-content {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapse'}} " data-bs-parent="#sidebar-nav">
-            @if(isset($user->role) && $user->role == user_roles('1'))   
+            @if(isset($user->role) && $user->role == user_roles('1'))
             <li>
                     <a class="{{(request()->routeIs(['admin.addSOP'])) ? 'nav-link ' : ''}} " href="{{route('admin.addSOP')}}">
                         <i class="bi bi-circle"></i><span>Add SOP</span>
