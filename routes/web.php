@@ -7,6 +7,7 @@ use App\Http\Controllers\web\CartController;
 use App\Http\Controllers\Admin\DefualtController;
 use App\Http\Controllers\GoogleMerchantController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,9 +27,10 @@ use App\Http\Controllers\AuthController;
 
 Route::get('/', [HomeController::class, 'index'])->name('web.index');
 Route::match(['get', 'post'], '/account', [WebController::class, 'account'])->name('web.account');
-Route::match(['get', 'post'], '/login', [AuthController::class, 'login'])->name('login');
+Route::get('/sign-in', [AuthController::class, 'loginForm'])->name('sign_in');
+Route::match(['get', 'post'],'/login', [AuthController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/register', [AuthController::class, 'registration_form'])->name('register');
-Route::match(['get', 'post'], '/regisrationFrom', [AuthController::class, 'registerUser'])->name('web.user_register');
+Route::match(['get', 'post'], '/registrationFrom', [AuthController::class, 'registerUser'])->name('web.user_register');
 Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('web.logout');
 // forgot password
 Route::match(['get', 'post'], '/forgotPassword', [AuthController::class, 'forgot_password'])->name('forgotPassword');
@@ -132,7 +134,7 @@ Route::get('/conditions', [WebController::class, 'conditions'])->name('web.condi
 Route::get('/generate_slug_existing', [WebController::class, 'generate_slug_existing']);
 Route::get('/generate_slug_variants_existing', [WebController::class, 'generate_slug_variants_existing']);
 
-Route::get('/dashboard/details', [DefualtController::class, 'dashboard_details'])->name('dashboard.details');
+Route::get('/dashboard/details', [DashboardController::class, 'dashboard_details'])->name('dashboard.details');
 Route::match(['get', 'post'], '/storeHumanForm', [WebController::class, 'store_human_form'])->name('storeHumanForm');
 Route::match(['get', 'post'],'/humanRequestForm', [HomeController::class, 'human_request_form'])->name('web.humanRequestForm');
 
@@ -157,7 +159,7 @@ Route::match(['get', 'post'], '/categorydetail', [WebController::class, 'categor
 Route::get('/{main_category?}/{sub_category?}/{child_category?}', [WebController::class, 'show_categories'])->name('web.collections');
 
 
-Route::get('/google-products', [GoogleMerchantController::class, 'listProducts']);
+//Route::get('/google-products', [GoogleMerchantController::class, 'listProducts']);
 
 
 
