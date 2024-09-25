@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginUserRequest;
+use App\Http\Requests\Auth\PasswordChangeRequest;
 use App\Http\Requests\Auth\ProfileRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Mail\OTPMail;
@@ -116,7 +117,7 @@ class AuthController extends Controller
                     // Handle redirection
                     $intendedUrl = session('intended_url');
                     session()->forget('intended_url');
-                    return redirect($intendedUrl ? route('web.consultationForm') : '/admin');
+                    return redirect($intendedUrl ? route('web.consultationForm') : '/dashboard');
                 } else {
                     // Rollback if login fails
                     DB::rollBack();
@@ -131,8 +132,6 @@ class AuthController extends Controller
             return redirect()->back();
         }
     }
-
-
     public function registration_form(Request $request)
     {
         $data['user'] = auth()->user() ?? [];
@@ -366,4 +365,29 @@ class AuthController extends Controller
         }
     }
 
+    public function password_change(PasswordChangeRequest $request)
+    {
+        $user = auth()->user();
+
+        // Use Spatie to check if the user has permission to change the password
+        if (!$user->can('update_setting')) {
+            return redirect()->back()->withErrors(['error' => 'You do not have permission to perform this action.']);
+        }
+
+        // Check if the current password matches the user's current password
+        if (!Hash::check($request->current_password, $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.'])->withInput();
+        }
+
+        // Update password
+        $user->password = Hash::make($request->password);
+        $user->updated_by = $user->id;
+        $user->save();
+
+        // Notify and redirect with success message
+        $message = "Password updated successfully.";
+        notify()->success($message);
+
+        return redirect()->route('admin.profileSetting')->with(['msg' => $message]);
+    }
 }

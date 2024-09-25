@@ -39,7 +39,7 @@ $totalNotifications = auth()->user()->unreadNotifications->count();
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications" style="height:70vh; overflow-y:auto;">
           <li class="dropdown-header">
             You have <span id="total-unread-notifications">{{ $totalUnreadNotifications ?? 0 }}</span> new notifications
-            <a href="{{ route('admin.allreadNotifications') }}"><span class="badge rounded-pill bg-primary p-2 ms-2">Mark all</span></a>
+            <a href="{{ route('admin.allReadNotifications') }}"><span class="badge rounded-pill bg-primary p-2 ms-2">Mark all</span></a>
           </li>
           <li>
             <hr class="dropdown-divider">
