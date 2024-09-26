@@ -6,6 +6,7 @@ use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\PasswordChangeRequest;
 use App\Http\Requests\Auth\ProfileRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
+use App\Http\Requests\Auth\OtpVerifiedRequest;
 use App\Mail\OTPMail;
 use App\Models\Category;
 use App\Models\User;
@@ -17,8 +18,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
+
 class AuthController extends Controller
 {
+    private $menu_categories;
+    protected $status;
+    protected $ENV;
     public function __construct()
     {
         $this->user = auth()->user();
@@ -167,6 +172,14 @@ class AuthController extends Controller
                         'email' => $credentials['email']
                     ], 401);
                 }
+                // Verify the password using Hash::check
+                if (!Hash::check($credentials['password'], $user->password)) {
+                    return redirect()->back()->with([
+                        'status' => 'invalid',
+                        'message' => 'Invalid password',
+                        'email' => $credentials['email']
+                    ])->withInput();
+                }
 
                 // Check if the user is authorized to log in (check user status)
                 if (!in_array($user->status, auth_users())) {
@@ -289,32 +302,28 @@ class AuthController extends Controller
         }
     }
 
-    public function verify_otp(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|digits:6',
-            'password' => 'required|min:8',
-        ]);
-
-        $user = auth()->user();
-        if (!$user) {
-            $user = User::where('email', $request->email)->first();
-            if ($user) {
-                if ($user->otp == trim($request->otp)) {
-                    $user->password = Hash::make($request->password);
-                    $user->save();
-                    return redirect()->route('login')->with(['status' => 'success', 'message' => "Password updated successfully."]);
-                } else {
-                    return redirect()->back()->withInput()->withErrors(['otp' => 'The provided OTP is incorrect.']);
-                }
+public function verify_otp(OtpVerifiedRequest $request)
+{
+    $user = auth()->user();
+    if (!$user) {
+        $user = User::where('email', $request->email)->first();
+        if ($user) {
+            if ($user->otp == trim($request->otp)) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+                // dd($request->all(), $user);
+                return redirect()->route('sign_in_form')->with(['status' => 'success', 'message' => "Password updated successfully."]);
             } else {
-                return redirect()->back()->withInput()->withErrors(['email' => 'The provided email is incorrect.']);
+                return redirect()->back()->withInput()->withErrors(['otp' => 'The provided OTP is incorrect.']);
             }
         } else {
-            return redirect()->back();
+            return redirect()->back()->withInput()->withErrors(['email' => 'The provided email is incorrect.']);
         }
+    } else {
+        return redirect()->back();
     }
+}
+
 
     public function profile_setting(ProfileRequest $request)
     {

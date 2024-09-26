@@ -106,6 +106,7 @@
                                               $user->address->country])) }}
                                         </div>
                                     </div>
+                                </div>
 
                                     <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
 
@@ -164,9 +165,7 @@
                                                 <label for="about"
                                                        class="col-md-4 col-lg-3 col-form-label">About</label>
                                                 <div class="col-md-8 col-lg-9">
-                      <textarea name="short_bio" class="form-control" id="about" style="height: 100px">
-                      {{$user->short_bio }}
-                      </textarea>
+                                                <textarea name="short_bio" class="form-control" id="about" style="height: 100px">{{$user->short_bio }}</textarea>
                                                 </div>
                                             </div>
 
@@ -175,7 +174,7 @@
                                                        class="col-md-4 col-lg-3 col-form-label">Phone</label>
                                                 <div class="col-md-8 col-lg-9">
                                                     <input name="phone" type="text" min="11" max="11"
-                                                           class="form-control" id="Phone" value="{{$user->phone }}"
+                                                           class="form-control" id="Phone" value="{{ $user->profile->phone }}"
                                                            required>
                                                     <div class="invalid-feedback">Please enter phone!</div>
                                                     @error('phone')
@@ -183,13 +182,16 @@
                                                     @enderror
                                                 </div>
                                             </div>
+                                            
 
                                             <div class="row mb-3">
                                                 <label for="Address"
                                                        class="col-md-4 col-lg-3 col-form-label">Address</label>
                                                 <div class="col-md-8 col-lg-9">
                                                     <input name="address" type="text" class="form-control" id="Address"
-                                                           value="{{$user->address ?? ''}}" required>
+                                                           value="{{ implode(', ', array_filter([$user->address->apartment, $user->address->address,
+                                                           $user->address->city, $user->address->state, $user->address->zip_code,
+                                                           $user->address->country])) }}" required>
                                                     <div class="invalid-feedback">Please enter address!</div>
                                                     @error('address')
                                                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -213,7 +215,7 @@
                                             @csrf
                                             <div class="row mb-3">
                                                 <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Current
-                                                    Passworddiugharis</label>
+                                                    Password</label>
                                                 <div class="col-md-8 col-lg-9">
                                                     <input name="current_password" type="text" class="form-control"
                                                            id="currentPassword"

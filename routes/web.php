@@ -26,7 +26,7 @@ use App\Http\Controllers\DashboardController;
 
 Route::get('/', [HomeController::class, 'index'])->name('web.index');
 Route::match(['get', 'post'], '/account', [WebController::class, 'account'])->name('web.account');
-Route::get('/sign-in', [AuthController::class, 'loginForm'])->name('sign_in');
+Route::get('/sign-in', [AuthController::class, 'loginForm'])->name('sign_in_form');
 Route::match(['get', 'post'],'/login', [AuthController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/register', [AuthController::class, 'registration_form'])->name('register');
 Route::match(['get', 'post'], '/registrationFrom', [AuthController::class, 'registerUser'])->name('web.user_register');
