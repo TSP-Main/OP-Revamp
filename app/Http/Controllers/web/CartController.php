@@ -80,53 +80,6 @@ class CartController extends Controller
             }
         }
 
-        // // Retrieve the product
-        // $product = Product::find($cartItems->id);
-
-        // if (!$product) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'Product not found'
-        //     ]);
-        // }
-
-        // if(Cart::count() > 0){
-        //     $cartContent = Cart::content();
-        //     $productAlreadyExist = false;
-
-        //     foreach($cartContent as $item){
-        //         if($item->id == $product->id){
-        //             $productAlreadyExist = true;
-        //         }
-        //     }
-
-        //     if($productAlreadyExist == false){
-        //         if($variant){
-        //             Cart::add($variant->id, $product->title, $quantity, $variant->price, ['productImage' => (!empty($product->main_image)) ? $product->main_image : '']);
-        //         }
-        //         else{
-        //             Cart::add($product->id, $product->title, $quantity, $product->price, ['productImage' => (!empty($product->main_image)) ? $product->main_image : '']);
-        //         }
-
-        //         $status = true;
-        //         $message = $product->title . " added in cart 1";
-        //     } else {
-        //         $status = false;
-        //         $message = $product->title . " already added in cart";
-        //     }
-        // } else {
-
-        //     if($variant){
-        //         Cart::add($variant->id, $product->title, $quantity, $variant->price, ['productImage' => (!empty($product->main_image)) ? $product->main_image : '']);
-        //     }
-        //     else{
-        //         Cart::add($product->id, $product->title, $quantity, $product->price, ['productImage' => (!empty($product->main_image)) ? $product->main_image : '']);
-        //     }
-
-        //     $status = true;
-        //     $message = $product->title . " added in cart 2";
-        // }
-
         if ($variant) {
             $vart_type = explode(';', $variant->title);
             $vart_value = explode(';', $variant->value);
@@ -155,8 +108,6 @@ class CartController extends Controller
         ]);
     }
 
-
-
     public function updateCart(Request $request)
     {
         $rowId = $request->input('rowId');
@@ -171,31 +122,6 @@ class CartController extends Controller
                 'message' => 'Product not found in cart'
             ]);
         }
-
-        // // Retrieve the product
-        // $product = Product::find($cartItem->id);
-
-        // if (!$product) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'Product not found'
-        //     ]);
-        // }
-
-        // // Validate quantity against limits
-        // if ($qty < $product->min_buy) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'Minimum quantity is ' . $product->min_buy
-        //     ]);
-        // }
-
-        // if ($qty > $product->max_buy) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'Maximum quantity is ' . $product->max_buy
-        //     ]);
-        // }
 
         // Update the cart with the validated quantity
         Cart::update($rowId, $qty);
@@ -261,8 +187,6 @@ class CartController extends Controller
         // Fetch the order details with related models
         $order = Order::with('orderDetails', 'shippingDetail')->find($decoded_order_id);
 
-         // Dump and die to inspect shipping details
-    // dd($order->payment_status);
         if (!$order) {
             return redirect()->back()->withErrors(['error' => 'Order not found']);
         }
@@ -295,9 +219,6 @@ class CartController extends Controller
             $product = Product::find($detail->product_id); // Assuming `product_id` is the column in `orderdetails`
 
             if (!$product) {
-                // Log the ID for debugging
-                \Log::error('Product not found for ID: ' . $detail->product_id);
-
                 continue; // Skip if product not found
             }
 
@@ -353,8 +274,5 @@ class CartController extends Controller
             'redirect' => route('web.view.cart')
         ]);
     }
-
-
-
 
 }

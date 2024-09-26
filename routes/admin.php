@@ -8,14 +8,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.index');
-
 Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     //Auth
     Route::match(['get', 'post'], '/passwordChange', [AuthController::class, 'password_change'])->name('admin.passwordChange');
     Route::match(['get', 'post'], '/setting', [AuthController::class, 'profile_setting'])->name('admin.profileSetting');
 
     //Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.index');
     Route::get('/faq', [DashboardController::class, 'faq'])->name('admin.faq');
     Route::get('/allReadNotifications', [DashboardController::class, 'read_notifications'])->name('admin.allreadNotifications');
     Route::get('/notifications/unread', [DashboardController::class, 'get_unread_notifications'])->name('admin.notifications.unread');
@@ -24,32 +23,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'admin_dashboard_detail'])->name('admin.dashboard.detail');
     Route::get('/contact', [DashboardController::class, 'contact'])->name('admin.contact');
 
-
-    Route::get('/doctors', [SystemController::class, 'doctors'])->name('admin.doctors');
-    Route::match(['get', 'post'], '/addDoctor',   [SystemController::class, 'add_doctor'])->name('admin.addDoctor');
-    Route::match(['get', 'post'], '/storeDoctor', [SystemController::class, 'store_doctor'])->name('admin.storeDoctor');
-    Route::get('/categories', [SystemController::class, 'categories'])->name('admin.categories');
-    Route::match(['get', 'post'], '/addCategory', [SystemController::class, 'add_category'])->name('admin.addCategory');
-
-
-    Route::match(['get', 'post'], '/deleteSOP/{id}', [SystemController::class, 'delete_sop'])->name('admin.deleteSOP');
-    Route::match(['get', 'post'], '/addSOP/{id?}', [SystemController::class, 'add_sop'])->name('admin.addSOP');
-    Route::match(['get', 'post'], '/storeSOP', [SystemController::class, 'store_sop'])->name('admin.storeSOP');
-    Route::get('/sops', [SystemController::class, 'sops'])->name('admin.sops');
-
-    Route::match(['get', 'post'], '/storeCategory', [SystemController::class, 'store_category'])->name('admin.storeCategory');
-    Route::get('/subCategories', [SystemController::class, 'sub_categories'])->name('admin.subCategories');
-    Route::get('/childCategories', [SystemController::class, 'child_categories'])->name('admin.childCategories');
-    Route::get('/getParentCategory', [SystemController::class, 'get_parent_category'])->name('admin.getParentCategory');
-    Route::get('/getSubCategory', [SystemController::class, 'get_sub_category'])->name('admin.getSubCategory');
-    Route::get('/getChildCategory', [SystemController::class, 'get_child_category'])->name('admin.getChildCategory');
-    Route::match(['get', 'post'], '/dellCategory', [SystemController::class, 'delete_category'])->name('admin.dellCategory');
-    Route::match(['get', 'post'], '/categoriesTrash/{cat_type}', [SystemController::class, 'trash_categories'])->name('admin.categoriesTrash');
-
-    Route::get('/collections', [SystemController::class, 'collections'])->name('admin.collections');
-    Route::match(['get', 'post'], '/addCollection', [SystemController::class, 'add_collection'])->name('admin.addCollection');
-    Route::match(['get', 'post'], '/storeCollection', [SystemController::class, 'store_collection'])->name('admin.storeCollection');
-
+    //Product Controller
     Route::match(['get', 'post'], '/products', [ProductController::class, 'products'])->name('admin.prodcuts');
     Route::match(['get', 'post'], '/proTrash', [ProductController::class, 'product_trash'])->name('admin.proTrash');
     Route::match(['get', 'post'], '/productsLimits', [ProductController::class, 'products_limits'])->name('admin.prodcutsLimits');
@@ -66,7 +40,14 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/updateStatus', [ProductController::class, 'update_status'])->name('admin.updateStatus');
     Route::match(['get', 'post'], '/searchProducts', [ProductController::class, 'search_products'])->name('admin.searchProducts');
     Route::match(['get', 'post'], '/exportProductsCSV', [ProductController::class, 'exportCSV'])->name('admin.exportProductsCSV');
+    Route::delete('/deleteVariant', [ProductController::class, 'delete_variant'])->name('admin.deleteVariant');
 
+    //Order controller
+    Route::get('/prescriptionOrders', [OrderController::class, 'prescription_orders'])->name('admin.prescriptionOrders');
+    Route::get('/onlineClinicOrders', [OrderController::class, 'online_clinic_orders'])->name('admin.onlineClinicOrders');
+    Route::get('/shopOrders', [OrderController::class, 'shop_orders'])->name('admin.shopOrders');
+
+    //System Controller
     Route::get('/admins', [SystemController::class, 'admins'])->name('admin.admins');
     Route::match(['get', 'post'], '/addAdmin',   [SystemController::class, 'add_admin'])->name('admin.addAdmin');
     Route::match(['get', 'post'], '/storeAdmin', [SystemController::class, 'store_admin'])->name('admin.storeAdmin');
@@ -96,6 +77,31 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/comments/id', [SystemController::class, 'comments'])->name('admin.comments');
     Route::match(['get', 'post'], '/commentStore', [SystemController::class, 'comment_store'])->name('admin.commentStore');
 
+    Route::get('/doctors', [SystemController::class, 'doctors'])->name('admin.doctors');
+    Route::match(['get', 'post'], '/addDoctor',   [SystemController::class, 'add_doctor'])->name('admin.addDoctor');
+    Route::match(['get', 'post'], '/storeDoctor', [SystemController::class, 'store_doctor'])->name('admin.storeDoctor');
+    Route::get('/categories', [SystemController::class, 'categories'])->name('admin.categories');
+    Route::match(['get', 'post'], '/addCategory', [SystemController::class, 'add_category'])->name('admin.addCategory');
+
+
+    Route::match(['get', 'post'], '/deleteSOP/{id}', [SystemController::class, 'delete_sop'])->name('admin.deleteSOP');
+    Route::match(['get', 'post'], '/addSOP/{id?}', [SystemController::class, 'add_sop'])->name('admin.addSOP');
+    Route::match(['get', 'post'], '/storeSOP', [SystemController::class, 'store_sop'])->name('admin.storeSOP');
+    Route::get('/sops', [SystemController::class, 'sops'])->name('admin.sops');
+
+    Route::match(['get', 'post'], '/storeCategory', [SystemController::class, 'store_category'])->name('admin.storeCategory');
+    Route::get('/subCategories', [SystemController::class, 'sub_categories'])->name('admin.subCategories');
+    Route::get('/childCategories', [SystemController::class, 'child_categories'])->name('admin.childCategories');
+    Route::get('/getParentCategory', [SystemController::class, 'get_parent_category'])->name('admin.getParentCategory');
+    Route::get('/getSubCategory', [SystemController::class, 'get_sub_category'])->name('admin.getSubCategory');
+    Route::get('/getChildCategory', [SystemController::class, 'get_child_category'])->name('admin.getChildCategory');
+    Route::match(['get', 'post'], '/dellCategory', [SystemController::class, 'delete_category'])->name('admin.dellCategory');
+    Route::match(['get', 'post'], '/categoriesTrash/{cat_type}', [SystemController::class, 'trash_categories'])->name('admin.categoriesTrash');
+
+    Route::get('/collections', [SystemController::class, 'collections'])->name('admin.collections');
+    Route::match(['get', 'post'], '/addCollection', [SystemController::class, 'add_collection'])->name('admin.addCollection');
+    Route::match(['get', 'post'], '/storeCollection', [SystemController::class, 'store_collection'])->name('admin.storeCollection');
+
     Route::get('/ordersReceived', [SystemController::class, 'orders_recieved'])->name('admin.ordersRecieved');
     Route::get('/ordersAll', [SystemController::class, 'all_orders'])->name('admin.allOrders');
     Route::get('/ordersUnpaid', [SystemController::class, 'unpaid_orders'])->name('admin.unpaidOrders');
@@ -119,13 +125,8 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/createShippingOrder', [SystemController::class, 'create_shiping_order'])->name('admin.createShippingOrder');
     Route::match(['get', 'post'], '/getShippingOrder/{id}', [SystemController::class, 'get_shiping_order'])->name('admin.getShippingOrder');
 
-    Route::get('/prescriptionOrders', [OrderController::class, 'prescription_orders'])->name('admin.prescriptionOrders');
-    Route::get('/onlineClinicOrders', [OrderController::class, 'online_clinic_orders'])->name('admin.onlineClinicOrders');
-    Route::get('/shopOrders', [OrderController::class, 'shop_orders'])->name('admin.shopOrders');
-
     Route::match(['get', 'post'], '/updateAdditionalNote', [SystemController::class, 'update_additional_note'])->name('admin.updateAdditionalNote');
     Route::match(['get', 'post'], '/updateShippingAddress', [SystemController::class, 'update_shipping_address'])->name('admin.updateShippingAddress');
-    Route::delete('/deleteVariant', [ProductController::class, 'delete_variant'])->name('admin.deleteVariant');
 
     Route::match(['get', 'post'], '/AddPMedQuestion', [SystemController::class, 'Add_PMedQuestion'])->name('Add.P.Med.Questions');
     Route::match(['get', 'post'], '/createPMedQuestion', [SystemController::class, 'create_PMedQuestion'])->name('admin.storePMedQuestion');

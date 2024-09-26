@@ -141,7 +141,6 @@ class AuthController extends Controller
             return view('web.pages.registration_form', $data);
         }
     }
-
     public function loginForm()
     {
         return view('web.pages.login');
