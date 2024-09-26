@@ -4,7 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="19a36da7-852a-4c64-9d65-447a5acf2fd8" name="Changes" comment="remove extra code from home and web controller" />
+    <list default="true" id="19a36da7-852a-4c64-9d65-447a5acf2fd8" name="Changes" comment="remove extra code from home and web controller">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/AuthController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/AuthController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/web/CartController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/web/CartController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/web/WebController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/web/WebController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/admin.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/admin.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/1f7d926d14d21d3d462ccafaabcfeb877b777186.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/3d61bbce0f25bbe95640ad79eddcf9aa49acc39b.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/3d9b4b85fe54399f4052481cfbbac460e2eaa2bb.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/4bdbd3fc36af9fa917c60bb3cc95a6e6f27bed5a.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/877ebbf43b6e94a48c3c643948449321c3133a7e.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/91d9b2f42578dbab3f4ac460011058b00bc7996d.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/9240879247aa5c04204cfe31d567bc7a2b512f00.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/c56086a719dbb1c45f9b07506410d6c6b56fd6db.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/framework/views/deea3ec37561540110fadb0a5d0c9f47302ee132.php" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -183,7 +200,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;auth-modification&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;structure-modification&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/laragon/www/backup/OP-Phill-Backup&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -228,6 +245,7 @@
       <workItem from="1727153300372" duration="16509000" />
       <workItem from="1727174827307" duration="12508000" />
       <workItem from="1727238763763" duration="21820000" />
+      <workItem from="1727325448117" duration="23762000" />
     </task>
     <task id="LOCAL-00001" summary="remove extra code from home and web controller">
       <option name="closed" value="true" />

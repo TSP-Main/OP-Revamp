@@ -1,1 +1,0 @@
-<?php /**PATH C:\laragon\www\OP-Phill\resources\views/web/includes/menu.blade.php ENDPATH**/ ?>
