@@ -73,7 +73,6 @@ class AuthController extends Controller
                         'name' => ucwords($request->name),
                         'email' => $request->email,
                         'id_document' => $docPath,
-                        'zip_code' => $request->zip_code,
                         'password' => Hash::make($request->password),
                         'status' => $this->status['Active'] ?? '',
                         'is_active' => $this->status ?? '',
@@ -108,6 +107,7 @@ class AuthController extends Controller
                         'address' => $request->address,
                         'apartment' => $request->apartment,
                         'city' => $request->city,
+                        'zip_code' => $request->zip_code,
                         'state' => $request->state,
                         'country' => $request->country,
                     ]

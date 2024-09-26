@@ -185,13 +185,44 @@
                                             
 
                                             <div class="row mb-3">
-                                                <label for="Address"
-                                                       class="col-md-4 col-lg-3 col-form-label">Address</label>
-                                                <div class="col-md-8 col-lg-9">
+                                            <label for="Address" class="col-md-4 col-lg-3 col-form-label">Address</label>
+                                            <div class="col-md-8 col-lg-9">
+                                                <div class="input-group mb-3">
                                                     <input name="address" type="text" class="form-control" id="Address"
-                                                           value="{{ implode(', ', array_filter([$user->address->apartment, $user->address->address,
-                                                           $user->address->city, $user->address->state, $user->address->zip_code,
-                                                           $user->address->country])) }}" required>
+                                                        value="{{ implode(', ', array_filter([$user->address->apartment, $user->address->address,
+                                                        $user->address->city, $user->address->state, $user->address->zip_code,
+                                                        $user->address->country])) }}" readonly>
+                                                    <button type="button" class="btn btn-primary bg-primary btn-sm rounded" id="editAddressBtn" style="margin-left: 6px;">Edit Address</button>
+                                                </div>
+
+                                                <div id="addressForm" style="display: none;">
+
+                                                        <label for="apartment" class="form-label">Apartment</label>
+                                                        <input type="text" name="apartment" id="apartment" class="form-control mb-2" 
+                                                            value="{{ $user->address->apartment }}">
+                                                        
+                                                        <label for="address" class="form-label">Address</label>
+                                                        <input type="text" name="address" id="address" class="form-control mb-2" 
+                                                            value="{{ $user->address->address }}">
+                                                        
+                                                        <label for="city" class="form-label">City</label>
+                                                        <input type="text" name="city" id="city" class="form-control mb-2" 
+                                                            value="{{ $user->address->city }}">
+                                                        
+                                                        <label for="state" class="form-label">State</label>
+                                                        <input type="text" name="state" id="state" class="form-control mb-2" 
+                                                            value="{{ $user->address->state }}">
+                                                        
+                                                        <label for="zip_code" class="form-label">Zip Code</label>
+                                                        <input type="text" name="zip_code" id="zip_code" class="form-control mb-2" 
+                                                            value="{{ $user->address->zip_code }}">
+                                                        
+                                                        <label for="country" class="form-label">Country</label>
+                                                        <input type="text" name="country" id="country" class="form-control mb-2" 
+                                                            value="{{ $user->address->country }}">
+                                                     
+                                                </div>
+
                                                     <div class="invalid-feedback">Please enter address!</div>
                                                     @error('address')
                                                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -200,11 +231,11 @@
                                             </div>
 
                                             <div class="text-center">
-                                                <button type="submit" class="btn btn-primary bg-primary">Save Changes
+                                                <button type="reset" class="btn btn-secondary bg-danger ">Reset</button>
+                                                <button type="submit" class="btn btn-primary bg-primary">Save
                                                 </button>
                                             </div>
                                         </form><!-- End Profile Edit Form -->
-
                                     </div>
 
 
@@ -313,4 +344,12 @@
             }
         }
     </script>
+    <script>
+    document.getElementById('editAddressBtn').addEventListener('click', function() {
+        document.getElementById('addressForm').style.display = 'block';
+        document.getElementById('Address').style.display = 'none'; 
+        this.style.display = 'none'; 
+    });
+    </script>
+    
 @endPushOnce
