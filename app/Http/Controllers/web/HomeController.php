@@ -5,31 +5,11 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Mail\otpVerifcation;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Config;
 
 // models ...
-use App\Models\User;
 use App\Models\Category;
-use App\Models\SubCategory;
-use App\Models\ChildCategory;
-use App\Models\Question;
-use App\Models\AssignQuestion;
 use App\Models\Product;
 use App\Models\FeaturedProduct;
-use App\Models\ProductAttribute;
-use Gloudemans\Shoppingcart\Facades\Cart;
 
 class HomeController extends Controller
 {
@@ -54,6 +34,7 @@ class HomeController extends Controller
         view()->share('menu_categories', $this->menu_categories);
     }
 
+    //index
     public function index(Request $request)
     {
         $data['user'] = auth()->user() ?? [];

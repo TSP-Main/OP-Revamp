@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\web\HomeController;
 use App\Http\Controllers\web\WebController;
 use App\Http\Controllers\web\CartController;
-use App\Http\Controllers\Admin\DefualtController;
 use App\Http\Controllers\GoogleMerchantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;

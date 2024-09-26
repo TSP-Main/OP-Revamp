@@ -55,8 +55,8 @@
                 <h4>Your Details</h4>
                 <p>Please complete the below details to create your account and continue your consultation.</p>
                 <div class="go-to-btn mt-4">
-                    <a href="/admin"><strong>ALREADY HAVE AN ACCOUNT?</strong></a>
-                    <a href="/admin" class="btn-primary sign-btn text-center">sign in</a>
+                    <a href="/sign-in"><strong>ALREADY HAVE AN ACCOUNT?</strong></a>
+                    <a href="/sign-in" class="btn-primary sign-btn text-center">sign in</a>
                 </div>
             </div>
             <div class="col-lg-12 pt-4">
@@ -302,7 +302,7 @@ unset($__errorArgs, $__bag); ?>
 
 <?php $__env->stopSection(); ?>
 
-<?php if (! $__env->hasRenderedOnce('dd8b85cc-f7ae-4f8d-a4dd-406d0137664d')): $__env->markAsRenderedOnce('dd8b85cc-f7ae-4f8d-a4dd-406d0137664d');
+<?php if (! $__env->hasRenderedOnce('1e396e98-218f-44ee-a0c7-82e29d215637')): $__env->markAsRenderedOnce('1e396e98-218f-44ee-a0c7-82e29d215637');
 $__env->startPush('scripts'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

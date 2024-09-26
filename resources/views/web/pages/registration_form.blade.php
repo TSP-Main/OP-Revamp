@@ -55,8 +55,8 @@
                 <h4>Your Details</h4>
                 <p>Please complete the below details to create your account and continue your consultation.</p>
                 <div class="go-to-btn mt-4">
-                    <a href="/admin"><strong>ALREADY HAVE AN ACCOUNT?</strong></a>
-                    <a href="/admin" class="btn-primary sign-btn text-center">sign in</a>
+                    <a href="/sign-in"><strong>ALREADY HAVE AN ACCOUNT?</strong></a>
+                    <a href="/sign-in" class="btn-primary sign-btn text-center">sign in</a>
                 </div>
             </div>
             <div class="col-lg-12 pt-4">
