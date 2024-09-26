@@ -17,7 +17,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
 
     //Dashboard
     Route::get('/faq', [DashboardController::class, 'faq'])->name('admin.faq');
-    Route::get('/allReadNotifications', [DashboardController::class, 'read_notifications'])->name('admin.allreadNotifications');
+    Route::get('/allReadNotifications', [DashboardController::class, 'read_notifications'])->name('admin.allReadNotifications');
     Route::get('/notifications/unread', [DashboardController::class, 'get_unread_notifications'])->name('admin.notifications.unread');
     Route::match(['get', 'post'], '/storeQuery', [DashboardController::class, 'store_query'])->name('admin.storeQuery');
     Route::match(['get', 'post'], '/storeCompanyDetails', [DashboardController::class, 'store_company_details'])->name('admin.storeCompanyDetails');
