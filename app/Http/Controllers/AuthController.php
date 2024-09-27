@@ -24,6 +24,7 @@ class AuthController extends Controller
     private $menu_categories;
     protected $status;
     protected $ENV;
+
     public function __construct()
     {
         $this->user = auth()->user();
@@ -137,6 +138,7 @@ class AuthController extends Controller
             return redirect()->back();
         }
     }
+
     public function registration_form(Request $request)
     {
         $data['user'] = auth()->user() ?? [];
@@ -302,86 +304,96 @@ class AuthController extends Controller
         }
     }
 
-public function verify_otp(OtpVerifiedRequest $request)
-{
-    $user = auth()->user();
-    if (!$user) {
-        $user = User::where('email', $request->email)->first();
-        if ($user) {
-            if ($user->otp == trim($request->otp)) {
-                $user->password = Hash::make($request->password);
-                $user->save();
-                // dd($request->all(), $user);
-                return redirect()->route('sign_in_form')->with(['status' => 'success', 'message' => "Password updated successfully."]);
+    public function verify_otp(OtpVerifiedRequest $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            $user = User::where('email', $request->email)->first();
+            if ($user) {
+                if ($user->otp == trim($request->otp)) {
+                    $user->password = Hash::make($request->password);
+                    $user->save();
+                    // dd($request->all(), $user);
+                    return redirect()->route('sign_in_form')->with(['status' => 'success', 'message' => "Password updated successfully."]);
+                } else {
+                    return redirect()->back()->withInput()->withErrors(['otp' => 'The provided OTP is incorrect.']);
+                }
             } else {
-                return redirect()->back()->withInput()->withErrors(['otp' => 'The provided OTP is incorrect.']);
+                return redirect()->back()->withInput()->withErrors(['email' => 'The provided email is incorrect.']);
             }
         } else {
-            return redirect()->back()->withInput()->withErrors(['email' => 'The provided email is incorrect.']);
+            return redirect()->back();
         }
-    } else {
-        return redirect()->back();
     }
-}
 
 
     public function profile_setting(ProfileRequest $request)
     {
-        $user = auth()->user();
+//        dd($request->all());
+        $user = auth()->user()  ;
 
         // Check if user has permission to access settings
         if (!$user->hasPermissionTo('setting')) {
-            return redirect()->back();
+            return redirect()->back()->with('error', 'Unauthorized access.');
         }
+
         DB::beginTransaction();
         try {
             $updateUserData = [
                 'name' => ucwords($request->name),
                 'email' => $request->email,
-                'phone' => $request->phone,
-                'image' => $user->image, // Set the existing picture by default
                 'created_by' => $user->id,
             ];
 
+            // Handle profile picture upload
             if ($request->hasFile('user_pic')) {
                 $image = $request->file('user_pic');
                 $imageName = time() . '_' . $image->getClientOriginalName();
                 $image->storeAs('user_images', $imageName, 'public');
                 $updateUserData['image'] = 'user_images/' . $imageName;
             }
-            $user->update($updateUserData);
-            // Update the bio in the `userprofile` table
+
+            // Update or create profile details
             $user->profile()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'phone' => $request->phone,
-                    'short_bio' => $request->short_bio
+                    'speciality' => $request->speciality ?? '',
+                    'phone' => $request->phone ?? '',
+                    'image' => $updateUserData['image'] ?? $user->profile->image, // Ensure new image is considered
+                    'short_bio' => $request->short_bio ?? '',
                 ]
             );
-            // Update the address in the `useraddress` table
+
+            // Update or create address details
             $user->address()->updateOrCreate(
                 ['user_id' => $user->id],
-                ['address' => $request->address]
+                [
+                    'address' => $request->address ?? '',
+                    'apartment' => $request->apartment ?? '',
+                    'city' => $request->city ?? '',
+                    'state' => $request->state ?? '',
+                    'zip_code' => $request->zip_code ?? '',
+                    'country' => $request->country ?? '',
+                ]
             );
+
+            // Update user base details
+            $user->update($updateUserData);
+
             DB::commit();
 
-            $message = "profile" . ($user->id ? "Updated" : "Saved") . " Successfully";
-            return redirect()->route('admin.profileSetting')->with(['msg' => $message]);
+            $message = "Profile " . ($user->wasChanged() ? "Updated" : "Saved") . " Successfully";
+            return redirect()->route('admin.profileSetting')->with('msg', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withInput()->with('error', 'Failed to update profile.');
+            return redirect()->back()->withInput()->with('error', 'Failed to update profile: ' . $e->getMessage());
         }
     }
 
     public function password_change(PasswordChangeRequest $request)
     {
         $user = auth()->user();
-
-        // Use Spatie to check if the user has permission to change the password
-        if (!$user->can('update_setting')) {
-            return redirect()->back()->withErrors(['error' => 'You do not have permission to perform this action.']);
-        }
 
         // Check if the current password matches the user's current password
         if (!Hash::check($request->current_password, $user->password)) {
@@ -397,6 +409,6 @@ public function verify_otp(OtpVerifiedRequest $request)
         $message = "Password updated successfully.";
         notify()->success($message);
 
-        return redirect()->route('admin.profileSetting')->with(['msg' => $message]);
+        return redirect()->route('admin.profileSetting')->with(['message' => $message]);
     }
 }

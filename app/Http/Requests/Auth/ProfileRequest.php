@@ -28,7 +28,7 @@ class ProfileRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'phone' => 'required|digits:15',
+            'phone' => 'required|digits_between:10,15',
             'address' => 'required|string',
             'email' => [
                 'required',

@@ -120,7 +120,7 @@
                                                     Image</label>
                                                 <div class="col-md-8 col-lg-9">
                                                     <img id="img_preview"
-                                                         src="{{ ($user->user_pic ?? '') ? asset('storage/'.$user->user_pic) : asset('assets/admin/img/profile-img.png') }}"
+                                                         src="{{ ($user->profile->image ?? '') ? Storage::url($user->profile->image) : asset('assets/admin/img/profile-img.png') }}"
                                                          alt="Profile">
                                                     <div class="pt-2">
                                                         <input id="profile_pic" class="d-none profile_pic" type="file"
@@ -165,7 +165,7 @@
                                                 <label for="about"
                                                        class="col-md-4 col-lg-3 col-form-label">About</label>
                                                 <div class="col-md-8 col-lg-9">
-                                                <textarea name="short_bio" class="form-control" id="about" style="height: 100px">{{$user->short_bio }}</textarea>
+                                                <textarea name="short_bio" class="form-control" id="about" style="height: 100px">{{$user->profile->short_bio }}</textarea>
                                                 </div>
                                             </div>
 
@@ -182,7 +182,7 @@
                                                     @enderror
                                                 </div>
                                             </div>
-                                            
+
 
                                             <div class="row mb-3">
                                             <label for="Address" class="col-md-4 col-lg-3 col-form-label">Address</label>
@@ -198,29 +198,29 @@
                                                 <div id="addressForm" style="display: none;">
 
                                                         <label for="apartment" class="form-label">Apartment</label>
-                                                        <input type="text" name="apartment" id="apartment" class="form-control mb-2" 
+                                                        <input type="text" name="apartment" id="apartment" class="form-control mb-2"
                                                             value="{{ $user->address->apartment }}">
-                                                        
+
                                                         <label for="address" class="form-label">Address</label>
-                                                        <input type="text" name="address" id="address" class="form-control mb-2" 
+                                                        <input type="text" name="address" id="address" class="form-control mb-2"
                                                             value="{{ $user->address->address }}">
-                                                        
+
                                                         <label for="city" class="form-label">City</label>
-                                                        <input type="text" name="city" id="city" class="form-control mb-2" 
+                                                        <input type="text" name="city" id="city" class="form-control mb-2"
                                                             value="{{ $user->address->city }}">
-                                                        
+
                                                         <label for="state" class="form-label">State</label>
-                                                        <input type="text" name="state" id="state" class="form-control mb-2" 
+                                                        <input type="text" name="state" id="state" class="form-control mb-2"
                                                             value="{{ $user->address->state }}">
-                                                        
+
                                                         <label for="zip_code" class="form-label">Zip Code</label>
-                                                        <input type="text" name="zip_code" id="zip_code" class="form-control mb-2" 
+                                                        <input type="text" name="zip_code" id="zip_code" class="form-control mb-2"
                                                             value="{{ $user->address->zip_code }}">
-                                                        
+
                                                         <label for="country" class="form-label">Country</label>
-                                                        <input type="text" name="country" id="country" class="form-control mb-2" 
+                                                        <input type="text" name="country" id="country" class="form-control mb-2"
                                                             value="{{ $user->address->country }}">
-                                                     
+
                                                 </div>
 
                                                     <div class="invalid-feedback">Please enter address!</div>
@@ -276,7 +276,7 @@
                                                 <label for="renewPassword" class="col-md-4 col-lg-3 col-form-label">Confirm
                                                     New Password</label>
                                                 <div class="col-md-8 col-lg-9">
-                                                    <input name="confirm_password" type="text" class="form-control"
+                                                    <input name="password_confirmation" type="text" class="form-control"
                                                            value="{{ old('confirm_password') ?? ''}}" id="renewPassword"
                                                            required>
                                                     <div class="invalid-feedback">Please re-enter the new password.
@@ -347,9 +347,9 @@
     <script>
     document.getElementById('editAddressBtn').addEventListener('click', function() {
         document.getElementById('addressForm').style.display = 'block';
-        document.getElementById('Address').style.display = 'none'; 
-        this.style.display = 'none'; 
+        document.getElementById('Address').style.display = 'none';
+        this.style.display = 'none';
     });
     </script>
-    
+
 @endPushOnce
