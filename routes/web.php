@@ -28,8 +28,9 @@ use App\Http\Controllers\SiteMapController;
 //    Route::get('/admin/dashboard', 'AdminController@dashboard');
 //});
 
+Route::get('/', [HomeController::class, 'index'])->name('web.index');
 //Auth
-Route::get('/sign-in', [AuthController::class, 'loginForm'])->name('sign_in');
+Route::get('/sign-in', [AuthController::class, 'loginForm'])->name('sign_in_form');
 Route::match(['get', 'post'],'/login', [AuthController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/register', [AuthController::class, 'registration_form'])->name('register');
 Route::match(['get', 'post'], '/registrationFrom', [AuthController::class, 'registerUser'])->name('web.user_register');
@@ -104,7 +105,6 @@ Route::post('/delete-item', [CartController::class, 'deleteItem'])->name('web.ca
 Route::get('/checkout/{id}', [CartController::class, 'checkout_id'])->name('web.checkout.id');
 
 //Home Controller
-Route::get('/', [HomeController::class, 'index'])->name('web.index');
 Route::get('/questions_preview', [HomeController::class, 'questions_preview'])->name('web.questions_preview');
 Route::get('/aboutUs', [HomeController::class, 'about_us'])->name('web.aboutUs');
 Route::get('/contact', [HomeController::class, 'contact_us'])->name('web.contact');
