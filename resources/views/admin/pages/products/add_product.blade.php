@@ -722,7 +722,7 @@
                 contentType: false,
                 success: function(response) {
                     if (response.status === 'success') {
-                        window.location.href = "{{ route('admin.prodcuts') }}";
+                        window.location.href = "{{ route('admin.products') }}";
                     } else if (response.status === 'error') {
 
                         console.log(response.message);
@@ -772,7 +772,7 @@
         }
     }
 
-    // new row add 
+    // new row add
     var new_row = `<div class="row bg-white rounded-3  mb-4 py-2">
                         <div class="col-12">
                             <hr class="">

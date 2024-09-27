@@ -42,6 +42,7 @@ Route::match(['get', 'post'], '/changePassword', [AuthController::class, 'change
 
 //Dashboard
 Route::get('/dashboard/details', [DashboardController::class, 'dashboard_details'])->name('dashboard.details');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('web.index');
 
 //Product Details
 Route::get('/shop', [ProductDetailsController::class, 'shop'])->name('shop');

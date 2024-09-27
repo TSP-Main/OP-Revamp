@@ -222,7 +222,7 @@
                         <div class="col-md-8 mt-3 text-center d-block">
                             <label for="search" class="form-label fw-bold">Search From Table </label>
                             <input type="text" id="search_text" placeholder="Search here..." class="form-control py-2 search_text">
-                           
+
                         </div>
                         <div class="col-md-4 mt-4 text-center d-block">
                         <label for="search" class="form-label fw-bold"></label>
@@ -286,7 +286,7 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('admin.prodcuts') }}",
+                url: "{{ route('admin.products') }}",
                 data: function(d) {
                     d.title = $('#search_text').val();
                     // d.category_id = $('#category').val();
@@ -305,7 +305,7 @@
                 { data: 'product_template', name: 'product_template' },
                 { data: 'status', name: 'status' },
                 { data: 'actions', name: 'actions' },
-                
+
             ],
             columnDefs: [
                 {
