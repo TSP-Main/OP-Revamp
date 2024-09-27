@@ -328,7 +328,6 @@ class AuthController extends Controller
 
     public function profile_setting(ProfileRequest $request)
     {
-//        dd($request->all());
         $user = auth()->user()  ;
 
         // Check if user has permission to access settings
@@ -382,7 +381,7 @@ class AuthController extends Controller
             DB::commit();
 
             $message = "Profile " . ($user->wasChanged() ? "Updated" : "Saved") . " Successfully";
-            return redirect()->route('admin.profileSetting')->with('msg', $message);
+            return redirect()->route('web.index')->with('msg', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
