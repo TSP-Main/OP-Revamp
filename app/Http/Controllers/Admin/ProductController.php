@@ -6,7 +6,6 @@ use App\Imports\importProduct;
 use Maatwebsite\Excel\Facades\Excel;
 
 use App\Models\Product;
-use App\Models\User;
 use App\Models\ImportedPorduct;
 use App\Models\Category;
 use App\Models\SubCategory;
@@ -17,7 +16,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 use App\Models\ProductVariant;
 use App\Models\FeaturedProduct;
 use App\Models\ProductAttribute;
@@ -41,10 +39,7 @@ class ProductController extends Controller
     public function products(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'prodcuts';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('products');
 
         $data = [];
         if (isset($user->role) && $user->role == user_roles('1')) {
@@ -75,7 +70,7 @@ class ProductController extends Controller
                         $imageUrl = asset('storage/' . $product->main_image);
                         $title = $product->title ?? '';
                         $barcode = $product->barcode ?? '';
-            
+
                         return '<div class="d-flex align-items-center">
                                     <img src="' . $imageUrl . '" class="rounded-circle" alt="no image" style="width: 45px; height: 45px" />
                                     <div class="ms-3">
@@ -86,7 +81,7 @@ class ProductController extends Controller
                     })
                     ->addColumn('actions', function ($product) {
                         $previewUrl = route('web.product', ['id' => $product->slug]);
-                        
+
                         return '<div style="display:flex; justify-content: space-around;">
                                     <div>
                                         <a class="edit" style="cursor: pointer;" title="Edit" data-id="' . $product->id . '" data-toggle="tooltip">
@@ -646,7 +641,7 @@ class ProductController extends Controller
                 ->whereIn('status', [$this->status['Active']])
                 ->latest('id')
                 ->paginate(50); // Set pagination to 50 items per page
-            
+
             return response()->json(['status' => 'success', 'data' => $products]);
         }
     }
@@ -655,10 +650,10 @@ class ProductController extends Controller
     {
         // Fetch product details
         $products = Product::all();
-    
+
         // Create CSV writer instance
         $csv = Writer::createFromFileObject(new SplTempFileObject());
-    
+
         // Add CSV header
         $csv->insertOne([
             'ID', 'Title', 'Slug', 'Short Description', 'Description', 'Main Image',
@@ -667,21 +662,21 @@ class ProductController extends Controller
             'Product Template', 'Question Category', 'Status', 'Created By', 'Updated By',
             'Created At', 'Updated At'
         ]);
-    
+
         // Define base URL for slug and main image
         $baseUrl = 'https://onlinepharmacy-4u.co.uk';
-    
+
         // Fetch categories and their names for lookup
         $categories = Category::all()->keyBy('id');
         $subCategories = SubCategory::all()->keyBy('id');
         $childCategories = ChildCategory::all()->keyBy('id');
-    
+
         // Add product data
         foreach ($products as $product) {
             $categoryName = $categories->get($product->category_id)->name ?? 'N/A';
             $subCategoryName = $subCategories->get($product->sub_category_id)->name ?? 'N/A';
             $childCategoryName = $childCategories->get($product->child_category_id)->name ?? 'N/A';
-    
+
             $csv->insertOne([
                 $product->id,
                 $product->title,
@@ -711,15 +706,15 @@ class ProductController extends Controller
                 $product->updated_at
             ]);
         }
-    
+
         // Prepare the CSV for download
         $csvData = $csv->toString();
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="products.csv"',
         ];
-    
+
         return Response::make($csvData, 200, $headers);
     }
-    
+
 }

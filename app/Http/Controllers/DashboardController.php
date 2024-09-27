@@ -21,9 +21,7 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         if ($user) {
-            if (!$user->can('dashboard')) {
-                return redirect()->back()->with('error', 'You do not have permission to view this page.');
-            }
+            $this->authorize('dashboard');
 
             // Store user details in session
             session(['user_details' => $user]);

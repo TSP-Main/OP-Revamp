@@ -116,12 +116,12 @@
 
         @if(view_permission('prodcuts'))
         <li class="nav-item">
-            <a class="nav-link {{ (request()->routeIs(['admin.prodcuts','admin.prodcutsLimits','admin.addProduct','admin.importedProdcuts','admin.importProducts','admin.proTrash'])) ? '' : 'collapsed'}} " data-bs-target="#forms-nav" data-bs-toggle="collapse">
+            <a class="nav-link {{ (request()->routeIs(['admin.products','admin.prodcutsLimits','admin.addProduct','admin.importedProdcuts','admin.importProducts','admin.proTrash'])) ? '' : 'collapsed'}} " data-bs-target="#forms-nav" data-bs-toggle="collapse">
                 <i class="bi bi-journal-text"></i><span>Products</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="forms-nav" class="nav-content {{(request()->routeIs(['admin.prodcuts','admin.prodcutsLimits','admin.addProduct','admin.importedProdcuts','admin.importProducts','admin.proTrash','admin.featuredProducts'])) ? '' : 'collapse'}}  " data-bs-parent="#sidebar-nav">
+            <ul id="forms-nav" class="nav-content {{(request()->routeIs(['admin.products','admin.prodcutsLimits','admin.addProduct','admin.importedProdcuts','admin.importProducts','admin.proTrash','admin.featuredProducts'])) ? '' : 'collapse'}}  " data-bs-parent="#sidebar-nav">
                 <li>
-                    <a class="{{(request()->routeIs(['admin.prodcuts'])) ? 'nav-link ' : ''}} " href="{{route('admin.prodcuts')}}">
+                    <a class="{{(request()->routeIs(['admin.products'])) ? 'nav-link ' : ''}} " href="{{route('admin.products')}}">
                         <i class="bi bi-circle"></i><span>All Products</span>
                     </a>
                 </li>

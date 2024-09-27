@@ -16,7 +16,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     //Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.index');
     Route::get('/faq', [DashboardController::class, 'faq'])->name('admin.faq');
-    Route::get('/allReadNotifications', [DashboardController::class, 'read_notifications'])->name('admin.allreadNotifications');
+    Route::get('/allReadNotifications', [DashboardController::class, 'read_notifications'])->name('admin.allReadNotifications');
     Route::get('/notifications/unread', [DashboardController::class, 'get_unread_notifications'])->name('admin.notifications.unread');
     Route::match(['get', 'post'], '/storeQuery', [DashboardController::class, 'store_query'])->name('admin.storeQuery');
     Route::match(['get', 'post'], '/storeCompanyDetails', [DashboardController::class, 'store_company_details'])->name('admin.storeCompanyDetails');
@@ -24,7 +24,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/contact', [DashboardController::class, 'contact'])->name('admin.contact');
 
     //Product Controller
-    Route::match(['get', 'post'], '/products', [ProductController::class, 'products'])->name('admin.prodcuts');
+    Route::match(['get', 'post'], '/products', [ProductController::class, 'products'])->name('admin.products');
     Route::match(['get', 'post'], '/proTrash', [ProductController::class, 'product_trash'])->name('admin.proTrash');
     Route::match(['get', 'post'], '/productsLimits', [ProductController::class, 'products_limits'])->name('admin.prodcutsLimits');
     Route::match(['get', 'post'], '/featuredProducts', [ProductController::class, 'featured_products'])->name('admin.featuredProducts');

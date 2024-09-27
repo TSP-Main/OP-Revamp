@@ -577,7 +577,7 @@
         //     contentType: false,
         //     success: function(response) {
         //         if (response.status === 'success') {
-        //             window.location.href = "{{ route('admin.prodcuts') }}";
+        //             window.location.href = "{{ route('admin.products') }}";
         //         } else if (response.status === 'error') {
 
         //             console.log(response.message);

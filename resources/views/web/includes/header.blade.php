@@ -110,7 +110,7 @@
                                                 <a href="#" class=" poppins-thin "><i class="icon-user"></i></a>
                                                 <ul>
                                                     @if(auth()->user())
-                                                        <li><a href="{{ route('admin.index') }}">My Account</a></li>
+                                                        <li><a href="{{ route('web.index') }}">My Account</a></li>
                                                         <li><a href="/logout">Sign Out</a></li>
                                                     @else
                                                         <li><a href="{{ route('sign_in') }}">Sign in</a></li>
@@ -509,7 +509,7 @@
                     <ul>
 
                         <li>
-                            <a title="My Account" href="{{ route('admin.index') }}">
+                            <a title="My Account" href="{{ route('web.index') }}">
                                 <span class="utilize-btn-icon">
                                     <i class="far fa-user"></i>
                                 </span>

@@ -100,7 +100,7 @@ function view_permission($page_name)
                 case 'add_question':
                 case 'dispensary_approval':
                 case 'assign_question':
-                case 'prodcuts':
+                case 'products':
                 case 'add_product':
                 case 'orders':
                 case 'admin.unpaidOrders':

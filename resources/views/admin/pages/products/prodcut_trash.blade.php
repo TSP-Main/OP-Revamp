@@ -220,7 +220,7 @@
                         </div>
                         <div class="col-md-3 text-center mt-2 d-block">
                             <label for="endDate" class="form-label fw-bold">Products</label>
-                            <a href="{{route('admin.prodcuts')}}" class="form-control btn btn-success py-2 fw-bold">Go to Products </a>
+                            <a href="{{route('admin.products')}}" class="form-control btn btn-success py-2 fw-bold">Go to Products </a>
                         </div>
                         <div class="col-md-12 mt-3 text-center d-block">
                             <label for="search" class="form-label fw-bold">Search From Table </label>
