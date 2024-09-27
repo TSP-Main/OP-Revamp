@@ -133,7 +133,10 @@
                                 <p style="color: #3d7de8 ;">* Make a strong password</p>
                             </div>
                             <input type="password" name="password" placeholder="Password*" value="{{ old('password') }}" required>
-                            <input type="password" name="password_confirmation" placeholder="Password*" value="{{ old('password') }}" required>
+                            <div class="mt-0">
+                                <p style="color: #3d7de8 ;">* Confirm password</p>
+                            </div>
+                            <input type="password" name="password_confirmation" placeholder="Confirm Password*" value="{{ old('password') }}" required>
                             <div class="invalid-feedback">Please enter your password!</div>
                             @error('password')
                             <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -143,20 +146,6 @@
                             <div class="mb-1 small px-1">
                                 <p style="color: #3d7de8 ;">* We need to verify your identity before providing treatments. Please use your home address below. You can add a different shipping address at the checkout.</p>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" name="zip_code" placeholder="Postal Code" value="{{ old('zip_code') }}" required>
-                            <div class="invalid-feedback">Please enter your postal code!</div>
-                            @error('zip_code')
-                            <div class="alert-danger text-danger ">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" name="city" placeholder="city" value="{{ old('city') }}" required>
-                            <div class="invalid-feedback">Please enter your city!</div>
-                            @error('city')
-                            <div class="alert-danger text-danger ">{{ $message }}</div>
-                            @enderror
                         </div>
                         <div class="col-md-6">
                             <input type="text" name="address" placeholder="address" value="{{ old('address') }}" required>
@@ -172,6 +161,34 @@
                             <div class="alert-danger text-danger ">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="col-md-6">
+                            <input type="text" name="city" placeholder="city" value="{{ old('city') }}" required>
+                            <div class="invalid-feedback">Please enter your city!</div>
+                            @error('city')
+                            <div class="alert-danger text-danger ">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="state" placeholder="state" value="{{ old('state') }}" required>
+                            <div class="invalid-feedback">Please enter your state!</div>
+                            @error('state')
+                            <div class="alert-danger text-danger ">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="zip_code" placeholder="Postal Code" value="{{ old('zip_code') }}" required>
+                            <div class="invalid-feedback">Please enter your postal code!</div>
+                            @error('zip_code')
+                            <div class="alert-danger text-danger ">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="country" placeholder="country" value="{{ old('country') }}" required>
+                            <div class="invalid-feedback">Please enter your country!</div>
+                            @error('country')
+                            <div class="alert-danger text-danger ">{{ $message }}</div>
+                            @enderror
+                        </div>       
                         <div class="col-12 mb-4">
                             <div class="mb-1 small px-1">
                                 <h3 style="color: #3d7de8; margin-bottom: 5px;">Identity Verification</h3>
@@ -197,9 +214,9 @@
                         <div class="by-agree">
                             <p>By creating an account, you agree to our:</p>
                             <p><a href="/terms_and_conditions/">TERMS OF CONDITIONS &nbsp; &nbsp; | &nbsp; &nbsp; PRIVACY POLICY</a></p>
-                            <div class="go-to-btn mt-25">
+                            <!-- <div class="go-to-btn mt-25">
                                 <a href="/admin"><strong>ALREADY HAVE AN ACCOUNT?</strong></a>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </form>

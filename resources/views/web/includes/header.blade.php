@@ -113,7 +113,7 @@
                                                         <li><a href="{{ route('web.index') }}">My Account</a></li>
                                                         <li><a href="/logout">Sign Out</a></li>
                                                     @else
-                                                        <li><a href="{{ route('sign_in') }}">Sign in</a></li>
+                                                        <li><a href="{{ route('sign_in_form') }}">Sign in</a></li>
                                                         <li><a href="/register">Register</a></li>
                                                     @endif
                                                 </ul>
@@ -133,14 +133,6 @@
                                     </div>
                                 </li>
                             </ul>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="site-logo">
-                            <a class="web-logo" href="/"><img src="{{ asset('img/newlogo.jpeg') }}" width="100px"
-                                                              alt="Logo"></a>
-                            <a class="mobile-logo" href="/"><img src="{{ asset('img/newlogo.jpeg') }}" width="100px"
-                                                                 alt="Logo"></a>
                         </div>
                     </div>
                 </div>
