@@ -143,7 +143,6 @@
                                                            value="{{$user->name }}" required>
                                                     <div class="invalid-feedback">Please enter name!</div>
                                                     @error('name')
-                                                    <div class="alert-danger text-danger ">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -156,7 +155,6 @@
                                                            value="{{$user->email }}" required>
                                                     <div class="invalid-feedback">Please enter valid email!</div>
                                                     @error('email')
-                                                    <div class="alert-danger text-danger ">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -170,15 +168,12 @@
                                             </div>
 
                                             <div class="row mb-3">
-                                                <label for="Phone"
-                                                       class="col-md-4 col-lg-3 col-form-label">Phone</label>
+                                                <label for="Phone" class="col-md-4 col-lg-3 col-form-label">Phone</label>
                                                 <div class="col-md-8 col-lg-9">
-                                                    <input name="phone" type="text" min="11" max="11"
-                                                           class="form-control" id="Phone" value="{{ $user->profile->phone }}"
-                                                           required>
-                                                    <div class="invalid-feedback">Please enter phone!</div>
+                                                    <input name="phone" type="text" pattern="^\d{10,15}$" class="form-control" id="Phone" 
+                                                        value="{{ $user->profile->phone }}" required>
+                                                    <div class="invalid-feedback">Please enter a valid phone number (10 to 15 digits)!</div>
                                                     @error('phone')
-                                                    <div class="alert-danger text-danger ">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -225,7 +220,6 @@
 
                                                     <div class="invalid-feedback">Please enter address!</div>
                                                     @error('address')
-                                                    <div class="alert-danger text-danger ">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -351,5 +345,6 @@
         this.style.display = 'none';
     });
     </script>
+
 
 @endPushOnce
