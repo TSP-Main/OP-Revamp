@@ -329,11 +329,7 @@ class AuthController extends Controller
     public function profile_setting(ProfileRequest $request)
     {
         $user = auth()->user()  ;
-
-        // Check if user has permission to access settings
-        if (!$user->hasPermissionTo('setting')) {
-            return redirect()->back()->with('error', 'Unauthorized access.');
-        }
+        $this->authorize('setting');
 
         DB::beginTransaction();
         try {
@@ -392,7 +388,7 @@ class AuthController extends Controller
     public function password_change(PasswordChangeRequest $request)
     {
         $user = auth()->user();
-    
+
         // Check if the current password matches the user's current password
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
@@ -401,13 +397,13 @@ class AuthController extends Controller
                 ]
             ], 422);
         }
-        
-    
+
+
         // Update password
         $user->password = Hash::make($request->password);
         $user->updated_by = $user->id;
         $user->save();
-    
+
         // Notify and return success message
         $message = "Password updated successfully.";
         return response()->json([
@@ -415,5 +411,5 @@ class AuthController extends Controller
             'message' => $message
         ]);
     }
-    
+
 }
