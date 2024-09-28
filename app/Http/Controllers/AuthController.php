@@ -392,21 +392,28 @@ class AuthController extends Controller
     public function password_change(PasswordChangeRequest $request)
     {
         $user = auth()->user();
-
+    
         // Check if the current password matches the user's current password
         if (!Hash::check($request->current_password, $user->password)) {
-            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.'])->withInput();
+            return response()->json([
+                'success' => false,
+                'errors' => ['current_password' => ['The current password is incorrect.']
+                ]
+            ], 422);
         }
-
+        
+    
         // Update password
         $user->password = Hash::make($request->password);
         $user->updated_by = $user->id;
         $user->save();
-
-        // Notify and redirect with success message
+    
+        // Notify and return success message
         $message = "Password updated successfully.";
-        notify()->success($message);
-
-        return redirect()->route('admin.profileSetting')->with(['message' => $message]);
+        return response()->json([
+            'success' => true,
+            'message' => $message
+        ]);
     }
+    
 }
