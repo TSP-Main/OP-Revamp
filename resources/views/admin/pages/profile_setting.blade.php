@@ -6,6 +6,18 @@
         .displaynone {
             display: none;
         }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        body {
+            padding-top: 70px; 
+        }
+
+        #responseMessage {
+            width: 100%; 
+        }
     </style>
     <!-- main stated -->
     <main id="main" class="main">
@@ -120,8 +132,8 @@
                                                     Image</label>
                                                 <div class="col-md-8 col-lg-9">
                                                     <img id="img_preview"
-                                                         src="{{ ($user->profile->image ?? '') ? Storage::url($user->profile->image) : asset('assets/admin/img/profile-img.png') }}"
-                                                         alt="Profile">
+                                                         src="{{ ($user->profile->image ?? '') ? Storage::url($user->profile->image) : asset('assets/admin/img/profile-img.png') }}">
+                                                         
                                                     <div class="pt-2">
                                                         <input id="profile_pic" class="d-none profile_pic" type="file"
                                                                name="user_pic" onchange="previewImage(this);">
@@ -227,7 +239,7 @@
                                             <div class="text-center">
                                                 <button type="reset" class="btn btn-secondary bg-danger ">Reset</button>
                                                 <button type="submit" class="btn btn-primary bg-primary">Save
-                                                </button>
+                                                </button>                                             
                                             </div>
                                         </form><!-- End Profile Edit Form -->
                                     </div>
@@ -235,7 +247,7 @@
 
                                     <div class="tab-pane fade pt-3" id="profile-change-password">
                                         <!-- Change Password Form -->
-                                        <form class="row g-3 mt-3 needs-validation" method="post"
+                                        <form id="passwordChangeForm" class="row g-3 mt-3 needs-validation" method="post"
                                               action="{{ route('admin.passwordChange') }}" novalidate>
                                             @csrf
                                             <div class="row mb-3">
@@ -247,9 +259,7 @@
                                                            value="{{ old('current_password') ?? ''}}" required>
                                                     <div class="invalid-feedback">Please enter the current password.
                                                     </div>
-                                                    @error('current_password')
-                                                    <div class="alert-danger text-danger">{{ $message }}</div>
-                                                    @enderror
+                                                    <div class="error-message" id="current_password_error"></div>
                                                 </div>
                                             </div>
 
@@ -260,9 +270,7 @@
                                                     <input name="password" type="text" class="form-control"
                                                            value="{{ old('password') ?? ''}}" id="newPassword" required>
                                                     <div class="invalid-feedback">Please enter a new password.</div>
-                                                    @error('password')
-                                                    <div class="alert-danger text-danger">{{ $message }}</div>
-                                                    @enderror
+                                                    <div class="error-message" id="password_error"></div>
                                                 </div>
                                             </div>
 
@@ -275,9 +283,7 @@
                                                            required>
                                                     <div class="invalid-feedback">Please re-enter the new password.
                                                     </div>
-                                                    @error('confirm_password')
-                                                    <div class="alert-danger text-danger">{{ $message }}</div>
-                                                    @enderror
+                                                    <div class="error-message" id="password_confirmation_error"></div>
                                                 </div>
                                             </div>
 
@@ -285,6 +291,7 @@
                                                 <button type="submit" class="btn btn-primary bg-primary">Change
                                                     Password
                                                 </button>
+                                                <div id="responseMessage" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050;"></div>
                                             </div>
                                         </form>
 
@@ -307,6 +314,53 @@
 @stop
 
 @pushOnce('scripts')
+    <script>
+    $(document).ready(function() {
+        $('#passwordChangeForm').on('submit', function(e) {
+            e.preventDefault(); 
+            
+            // Clear previous error messages
+            $('.error-message').text('');
+            $('#responseMessage').text('');
+
+            $.ajax({
+                url: '{{ route('admin.passwordChange') }}', 
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    location.reload();
+                    const alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        response.message +
+                        '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                        '<span aria-hidden="true">&times;</span>' +
+                        '</button>' +
+                        '</div>';
+
+                        $('#responseMessage').html(alertHtml);
+                            setTimeout(function() {
+                                $('.alert').alert('close');
+                            }, 2000);
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        let errors = xhr.responseJSON.errors;
+
+                        // Display error messages below the respective input fields
+                        if (errors.current_password) {
+                            $('#current_password_error').text(errors.current_password[0]);
+                        }
+                        if (errors.password) {
+                            $('#password_error').text(errors.password[0]);
+                        }
+                        if (errors.password_confirmation) {
+                            $('#password_confirmation_error').text(errors.password_confirmation[0]);
+                        }
+                    }
+                }
+            });
+        });
+    });
+    </script>     
     <script>
         function previewImage(input) {
             $('.img-error').addClass('d-none').text('');
@@ -339,12 +393,10 @@
         }
     </script>
     <script>
-    document.getElementById('editAddressBtn').addEventListener('click', function() {
+        document.getElementById('editAddressBtn').addEventListener('click', function() {
         document.getElementById('addressForm').style.display = 'block';
         document.getElementById('Address').style.display = 'none';
         this.style.display = 'none';
-    });
+        });
     </script>
-
-
 @endPushOnce

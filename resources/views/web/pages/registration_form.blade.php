@@ -70,7 +70,10 @@
                             <div class="alert-danger text-danger ">{{ $message }}</div>
                             @enderror
 
-                            <input type="number" id="phone" name="phone" placeholder="Phone Number" value="{{ old('phone') }}" required>
+                            <input type="number" id="phone" name="phone" placeholder="Phone Number" 
+                            value="{{ old('phone') }}" minlength="10" maxlength="15" required>
+
+
                             <div class="invalid-feedback">Please enter Phone Number!</div>
                             @error('phone')
                             <div class="alert-danger text-danger ">{{ $message }}</div>
