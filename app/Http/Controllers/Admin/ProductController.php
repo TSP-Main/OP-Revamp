@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Requests\Product\DeleteFeaturedProductRequest;
+use App\Http\Requests\Product\StoreProductRequest;
+use App\Http\Requests\Product\UpdateBuyLimitsRequest;
 use App\Imports\importProduct;
+use Illuminate\Support\Facades\Response;
 use Maatwebsite\Excel\Facades\Excel;
-
+use App\Http\Requests\Product\StoreFeaturedProductRequest;
 use App\Models\Product;
 use App\Models\ImportedPorduct;
 use App\Models\Category;
@@ -13,9 +17,7 @@ use App\Models\ChildCategory;
 use App\Models\QuestionCategory;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Models\ProductVariant;
 use App\Models\FeaturedProduct;
 use App\Models\ProductAttribute;
@@ -23,7 +25,6 @@ use \Cviebrock\EloquentSluggable\Services\SlugService;
 use Yajra\DataTables\Facades\DataTables;
 use League\Csv\Writer;
 use SplTempFileObject;
-use Response;
 
 class ProductController extends Controller
 {
@@ -42,8 +43,7 @@ class ProductController extends Controller
         $this->authorize('products');
 
         $data = [];
-        if (isset($user->role) && $user->role == user_roles('1')) {
-
+        if ($user->hasRole('super_admin')) {
             if ($request->ajax()) {
                 $query = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
                     ->whereIn('status', [$this->status['Active']]);
@@ -127,18 +127,15 @@ class ProductController extends Controller
             }
         }
 
-        return view('admin.pages.products.prodcuts', $data);
+        return view('admin.pages.products.products', $data);
     }
 
-    public function product_trash(Request $request)
+    public function product_trash()
     {
         $user = auth()->user();
-        $page_name = 'prodcuts';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('products');
 
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')->whereIn('status', [$this->status['Deactive']])->latest('id')->get()->toArray();
             $data['filters'] = [];
             if ($products) {
@@ -151,32 +148,26 @@ class ProductController extends Controller
             }
         }
 
-        return view('admin.pages.products.prodcut_trash', $data);
+        return view('admin.pages.products.product_trash', $data);
     }
 
-    public function imported_products(Request $request)
+    public function imported_products()
     {
         $user = auth()->user();
-        $page_name = 'prodcuts';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('products');
 
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['products'] = ImportedPorduct::latest('id')->get()->toArray();
         }
-        return view('admin.pages.products.imported_prodcuts', $data);
+        return view('admin.pages.products.imported_products', $data);
     }
 
-    public function products_limits(Request $request)
+    public function products_limits()
     {
         $user = auth()->user();
-        $page_name = 'prodcuts';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('products');
 
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['products'] = Product::with('category:id,name')->latest('id')->get()->toArray();
         }
         // dd($data['products']);
@@ -186,22 +177,15 @@ class ProductController extends Controller
     public function import_products()
     {
         $data['user'] = auth()->user();
-        $page_name = 'prodcuts';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('products');
 
         return view('admin.pages.products.import_products', $data);
     }
 
-    public function featured_products(Request $request)
+    public function featured_products()
     {
         $data['user'] = auth()->user();
-
-        $page_name = 'featured_products';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('featured_products');
 
         $data['products'] = Product::with('variants')->where('status', $this->status['Active'])->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
 
@@ -213,21 +197,14 @@ class ProductController extends Controller
         return view('admin.pages.products.featured_products', $data);
     }
 
-    public function store_featured_products(Request $request)
+    public function store_featured_products(StoreFeaturedProductRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'add_product';
-        if (!view_permission($page_name)) {
-            return response()->json(['status' => 'error', 'message' => 'Permission Denied']);
-        }
-        $rules = ['product_id' => 'required|exists:products,id'];
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'message' => $validator->errors()->first()]);
-        }
+        $this->authorize('add_product');
 
+        // Update or create a new featured product
         $featuredProduct = FeaturedProduct::updateOrCreate(
-            ['id' => $request->id ?? Null],
+            ['id' => $request->id ?? null],
             [
                 'product_id' => $request->product_id,
                 'created_by' => $user->id,
@@ -235,8 +212,10 @@ class ProductController extends Controller
         );
 
         $message = "Featured Product " . ($request->id ? "Updated" : "Saved") . " Successfully";
+
         return response()->json(['status' => 'success', 'message' => $message]);
     }
+
 
     public function store_import_products(Request $request)
     {
@@ -291,84 +270,38 @@ class ProductController extends Controller
                 $data['prod_question'] = explode(',', $data['product']['question_category']);
             }
         }
-        // dd($data['product']);
         return view('admin.pages.products.add_product', $data);
     }
 
-    public function store_product(Request $request)
+    public function store_product(StoreProductRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'add_product';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
 
-        $rules = [
-            'price'             => 'required|regex:/^\d+(\.\d{1,2})?$/',
-            'category_id'       => 'required',
-            'product_template'  => 'required',
-            'stock'             => 'required',
-            'stock_status'      => 'required',
-            'cut_price'         => 'nullable|regex:/^\d+(\.\d{1,2})?$/',
-            'desc'              => 'required',
-            'title'             => [
-                'required',
-                Rule::unique('products')->ignore((isset($request->id) && $request->duplicate == 'no') ? $request->id : null),
-            ],
-        ];
+        $this->authorize('add_product');
 
-        if ($request->id == null || !$request->id) {
-            $rules['main_image'] = [
-                'required',
-                'image',
-                'mimes:jpeg,png,jpg,gif,webm,svg,webp',
-                'max:1024',
-                // 'dimensions:min_width=1000,min_height=1000',
-            ];
-        }
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'message' => $validator->errors()]);
-        }
-
-        $data['user'] = auth()->user();
+        // Handle the main image upload
         if ($request->hasFile('main_image')) {
-
-            $rules['main_image'] = [
-                'required',
-                'image',
-                'mimes:jpeg,png,jpg,gif,webm,svg,webp',
-                'max:1024',
-                // 'dimensions:min_width=1000,min_height=1000',
-            ];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['status' => 'error', 'message' => $validator->errors()]);
-            }
-
             $mainImage = $request->file('main_image');
             $mainImageName = time() . '_' . uniqid('', true) . '.' . $mainImage->getClientOriginalExtension();
             $mainImage->storeAs('product_images/main_images', $mainImageName, 'public');
             $mainImagePath = 'product_images/main_images/' . $mainImageName;
         }
 
-        $question_category = $request->question_category ? implode(",", $request->question_category) : NULL;
+        $question_category = $request->question_category ? implode(",", $request->question_category) : null;
 
-        // Create or update product
+        // Create or update the product
         $product = Product::updateOrCreate(
             ['id' => (isset($request->id) && $request->duplicate == 'no') ? $request->id : null],
             [
                 'title'      => ucwords($request->title),
-                // 'slug'       => SlugService::createSlug(Product::class, 'slug', $request->title),
                 'desc'       => $request->desc,
-                'short_desc' => $request->short_desc ?? Null,
+                'short_desc' => $request->short_desc ?? null,
                 'main_image' => $mainImagePath ?? Product::findOrFail($request->id)->main_image,
                 'category_id' => $request->category_id,
-                'sub_category' => $request->sub_category ?? NULL,
-                'child_category' => $request->child_category ?? NULL,
-                'product_template' => $request->product_template ?? NULL,
-                'question_category' => $question_category ?? NULL,
+                'sub_category' => $request->sub_category ?? null,
+                'child_category' => $request->child_category ?? null,
+                'product_template' => $request->product_template ?? null,
+                'question_category' => $question_category ?? null,
                 'cut_price'    => $request->cut_price,
                 'barcode'    => $request->barcode,
                 'SKU'        => $request->SKU,
@@ -382,149 +315,39 @@ class ProductController extends Controller
         );
 
         if ($product) {
-            // Handle image uploads
+            // Handle additional image uploads
             $uploadedImages = [];
             if ($request->hasFile('images')) {
-
                 foreach ($request->file('images') as $image) {
                     $imageName = time() . '_' . $image->getClientOriginalName();
-                    $image->storeAs('product_images', $imageName, 'public'); // Change 'product_images' to your storage folder
-                    $extImagePath = 'product_images/' . $imageName;
-
-                    $uploadedImages[] = $extImagePath;
+                    $image->storeAs('product_images', $imageName, 'public');
+                    $uploadedImages[] = 'product_images/' . $imageName;
                 }
 
-                // Associate product attributes
+                // Insert product attributes (images)
                 foreach ($uploadedImages as $uploadedImage) {
-                    $productAttributesData[] = [
+                    DB::table('product_attributes')->insert([
                         'product_id' => $product->id,
                         'image'      => $uploadedImage,
                         'status'     => $this->status['Active'],
                         'created_by' => $user->id,
-                    ];
-                }
-
-                DB::table('product_attributes')->insert($productAttributesData);
-            }
-
-
-            // new variant
-            if ($request['vari_value'] ?? NULL) {
-                // handle the product variations .....
-                $valueArr = $request['vari_value'];
-                $priceArr = $request['vari_price'];
-                $cutPriceArr = $request['vari_cut_price'];
-                $skuArr   = $request['vari_sku'];
-                $nameArr  = $request['vari_name'];
-                $barcodeArr   = $request['vari_barcode'];
-                $inventoryArr = $request['vari_inventory'];
-                $weightArr = $request['vari_weight'] ?? 0;
-                foreach ($skuArr as $key => $val) {
-
-                    $productAttrArr['product_id'] = $product->id;
-                    $productAttrArr['title'] = $nameArr[$key];
-                    $productAttrArr['price'] = $priceArr[$key];
-                    $productAttrArr['cut_price'] = $cutPriceArr[$key];
-                    $productAttrArr['value'] = $valueArr[$key];
-                    $productAttrArr['slug'] = SlugService::createSlug(ProductVariant::class, 'slug', $request->title . ' ' . $valueArr[$key], ['unique' => false]);
-                    $productAttrArr['barcode'] = $barcodeArr[$key];
-                    $productAttrArr['inventory'] = $inventoryArr[$key];
-                    $productAttrArr['sku'] = $skuArr[$key];
-                    $productAttrArr['weight'] = $weightArr[$key] ?? 0;
-
-                    // Correcting the array key for variant images
-                    if ($request->hasFile("vari_attr_images.$key")) {
-                        $vari_Image = $request->file("vari_attr_images.$key");
-                        $vari_ImageName = time() . '_' . uniqid('', true) . '.' . $vari_Image->getClientOriginalExtension();
-                        $vari_Image->storeAs('product_images/main_images', $vari_ImageName, 'public');
-                        $vari_ImagePath = 'product_images/main_images/' . $vari_ImageName;
-                        $productAttrArr['image'] = $vari_ImagePath;
-                    }
-
-                    DB::table('product_variants')->insert($productAttrArr);
+                    ]);
                 }
             }
 
-            // update variant
+            // Handle product variations
+            if ($request->filled('vari_value')) {
+                $this->handleProductVariations($request, $product);
+            }
+
+            // Handle existing variant updates
             if (isset($request['exist_vari_value']) && $request->duplicate == 'no') {
-                // handle the product variations .....
-                $idArrExist = $request['exist_vari_id'];
-                $valueArrExist = $request['exist_vari_value'];
-                $priceArrExist = $request['exist_vari_price'];
-                $cutPriceArrExist = $request['exist_vari_cut_price'];
-                $skuArrExist   = $request['exist_vari_sku'];
-                $nameArrExist  = $request['exist_vari_name'];
-                $barcodeArrExist   = $request['exist_vari_barcode'];
-                $inventoryArrExist = $request['exist_vari_inventory'];
-                $weightArrExist = $request['exist_vari_weight'] ?? 0;
-                if ($request->hasFile('exist_vari_attr_images')) {
-                    foreach ($request->file('exist_vari_attr_images') as $variantId => $image) {
-                        if ($image) {
-                            $variImageNameExist = time() . '_' . uniqid('', true) . '.' . $image->getClientOriginalExtension();
-                            $variImagePathExist = $image->storeAs('product_images/main_images', $variImageNameExist, 'public');
-
-                            $productAttrImage = ['image' => $variImagePathExist];
-
-                            DB::table('product_variants')
-                                ->where('id', $variantId)
-                                ->update($productAttrImage);
-                        }
-                    }
-                }
-                foreach ($skuArrExist as $key1 => $val1) {
-
-                    $id = $idArrExist[$key1];
-                    $productAttrArrE['title'] = $nameArrExist[$key1];
-                    $productAttrArrE['price'] = $priceArrExist[$key1];
-                    $productAttrArrE['cut_price'] = $cutPriceArrExist[$key1];
-                    $productAttrArrE['value'] = $valueArrExist[$key1];
-                    $productAttrArrE['slug'] = SlugService::createSlug(ProductVariant::class, 'slug', $request->title . ' ' . $valueArrExist[$key1], ['unique' => false]);
-                    $productAttrArrE['barcode'] = $barcodeArrExist[$key1];
-                    $productAttrArrE['inventory'] = $inventoryArrExist[$key1];
-                    $productAttrArrE['sku'] = $skuArrExist[$key1];
-                    $productAttrArrE['weight'] = $weightArrExist[$key1] ?? 0;
-
-                    DB::table('product_variants')
-                        ->where('id', $id)
-                        ->update($productAttrArrE);
-                }
+                $this->updateExistingVariants($request);
             }
 
-            // Duplicate variant
+            // Handle variant duplication
             if (isset($request['exist_vari_value']) && $request->duplicate == 'yes') {
-                $valueArrExist = $request['exist_vari_value'];
-                $priceArrExist = $request['exist_vari_price'];
-                $cutPriceArrExist = $request['exist_vari_cut_price'];
-                $skuArrExist   = $request['exist_vari_sku'];
-                $nameArrExist  = $request['exist_vari_name'];
-                $barcodeArrExist   = $request['exist_vari_barcode'];
-                $inventoryArrExist = $request['exist_vari_inventory'];
-                $weightArrExist = $request['exist_vari_weight'] ?? 0;
-                $imageArrExist = [];
-                if ($request->hasFile('exist_vari_attr_images')) {
-                    foreach ($request->file('exist_vari_attr_images') as $variantId => $image) {
-                        if ($image) {
-                            $variImageNameExist = time() . '_' . uniqid('', true) . '.' . $image->getClientOriginalExtension();
-                            $variImagePathExist = $image->storeAs('product_images/main_images', $variImageNameExist, 'public');
-                            $productAttrImage[] =  $variImagePathExist;
-                        }
-                    }
-                    $imageArrExist = $productAttrImage;
-                }
-                foreach ($skuArrExist as $key1 => $val1) {
-                    $productAttrArrE['product_id'] = $product->id;
-                    $productAttrArrE['title'] = $nameArrExist[$key1];
-                    $productAttrArrE['price'] = $priceArrExist[$key1];
-                    $productAttrArrE['cut_price'] = $cutPriceArrExist[$key1];
-                    $productAttrArrE['value'] = $valueArrExist[$key1];
-                    $productAttrArrE['barcode'] = $barcodeArrExist[$key1];
-                    $productAttrArrE['inventory'] = $inventoryArrExist[$key1];
-                    $productAttrArrE['sku'] = $skuArrExist[$key1];
-                    $productAttrArrE['weight'] = $weightArrExist[$key1] ?? 0;
-                    $productAttrArrE['image'] = $imageArrExist[$key1] ?? 0;
-
-                    DB::table('product_variants')->insert($productAttrArrE);
-                }
+                $this->duplicateVariants($request, $product);
             }
         }
 
@@ -532,22 +355,118 @@ class ProductController extends Controller
         return response()->json(['status' => 'success', 'message' => $message, 'data' => []]);
     }
 
-    public function update_buy_limits(Request $request)
+    private function handleProductVariations($request, $product)
+    {
+        $valueArr = $request['vari_value'];
+        $priceArr = $request['vari_price'];
+        $cutPriceArr = $request['vari_cut_price'];
+        $skuArr = $request['vari_sku'];
+        $nameArr = $request['vari_name'];
+        $barcodeArr = $request['vari_barcode'];
+        $inventoryArr = $request['vari_inventory'];
+        $weightArr = $request['vari_weight'] ?? 0;
+
+        foreach ($skuArr as $key => $val) {
+            $variantData = [
+                'product_id' => $product->id,
+                'title' => $nameArr[$key],
+                'price' => $priceArr[$key],
+                'cut_price' => $cutPriceArr[$key],
+                'value' => $valueArr[$key],
+                'slug' => SlugService::createSlug(ProductVariant::class, 'slug', $request->title . ' ' . $valueArr[$key], ['unique' => false]),
+                'barcode' => $barcodeArr[$key],
+                'inventory' => $inventoryArr[$key],
+                'sku' => $skuArr[$key],
+                'weight' => $weightArr[$key] ?? 0,
+                'image' => $this->handleVariantImage($request, $key, "vari_attr_images"),
+            ];
+
+            DB::table('product_variants')->insert($variantData);
+        }
+    }
+
+    private function updateExistingVariants($request)
+    {
+        $idArrExist = $request['exist_vari_id'];
+        $valueArrExist = $request['exist_vari_value'];
+        $priceArrExist = $request['exist_vari_price'];
+        $cutPriceArrExist = $request['exist_vari_cut_price'];
+        $skuArrExist = $request['exist_vari_sku'];
+        $nameArrExist = $request['exist_vari_name'];
+        $barcodeArrExist = $request['exist_vari_barcode'];
+        $inventoryArrExist = $request['exist_vari_inventory'];
+        $weightArrExist = $request['exist_vari_weight'] ?? 0;
+
+        foreach ($skuArrExist as $key => $val) {
+            $variantId = $idArrExist[$key];
+
+            $variantData = [
+                'title' => $nameArrExist[$key],
+                'price' => $priceArrExist[$key],
+                'cut_price' => $cutPriceArrExist[$key],
+                'value' => $valueArrExist[$key],
+                'slug' => SlugService::createSlug(ProductVariant::class, 'slug', $request->title . ' ' . $valueArrExist[$key], ['unique' => false]),
+                'barcode' => $barcodeArrExist[$key],
+                'inventory' => $inventoryArrExist[$key],
+                'sku' => $skuArrExist[$key],
+                'weight' => $weightArrExist[$key] ?? 0,
+            ];
+
+            if ($request->hasFile("exist_vari_attr_images.$variantId")) {
+                $variantData['image'] = $this->handleVariantImage($request, $variantId, "exist_vari_attr_images");
+            }
+
+            DB::table('product_variants')->where('id', $variantId)->update($variantData);
+        }
+    }
+
+    private function duplicateVariants($request, $product)
+    {
+        $valueArrExist = $request['exist_vari_value'];
+        $priceArrExist = $request['exist_vari_price'];
+        $cutPriceArrExist = $request['exist_vari_cut_price'];
+        $skuArrExist = $request['exist_vari_sku'];
+        $nameArrExist = $request['exist_vari_name'];
+        $barcodeArrExist = $request['exist_vari_barcode'];
+        $inventoryArrExist = $request['exist_vari_inventory'];
+        $weightArrExist = $request['exist_vari_weight'] ?? 0;
+
+        foreach ($skuArrExist as $key => $val) {
+            $variantData = [
+                'product_id' => $product->id,
+                'title' => $nameArrExist[$key],
+                'price' => $priceArrExist[$key],
+                'cut_price' => $cutPriceArrExist[$key],
+                'value' => $valueArrExist[$key],
+                'barcode' => $barcodeArrExist[$key],
+                'inventory' => $inventoryArrExist[$key],
+                'sku' => $skuArrExist[$key],
+                'weight' => $weightArrExist[$key] ?? 0,
+                'image' => $this->handleVariantImage($request, $key, "exist_vari_attr_images"),
+            ];
+
+            DB::table('product_variants')->insert($variantData);
+        }
+    }
+
+    private function handleVariantImage($request, $key, $imageField)
+    {
+        if ($request->hasFile("$imageField.$key")) {
+            $image = $request->file("$imageField.$key");
+            $imageName = time() . '_' . uniqid('', true) . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('product_images/main_images', $imageName, 'public');
+            return 'product_images/main_images/' . $imageName;
+        }
+        return null;
+    }
+
+
+    public function update_buy_limits(UpdateBuyLimitsRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'add_product';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_product');
 
-        $rules = [
-            'id'  => 'required',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'message' => $validator->errors()]);
-        }
+        // Find the product and update the limits
         $product = Product::findOrFail($request->id);
         $product->update([
             'min_buy'       => $request->min_buy,
@@ -558,6 +477,7 @@ class ProductController extends Controller
         $message = "Product Limits " . ($request->id ? "Updated" : "Saved") . " Successfully";
         return response()->json(['status' => 'success', 'message' => $message, 'data' => []]);
     }
+
 
     public function delete_variant(Request $request)
     {
@@ -573,19 +493,8 @@ class ProductController extends Controller
     public function update_status(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'add_product';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_product');
 
-        $rules = [
-            'id'  => 'required',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'message' => $validator->errors()]);
-        }
         $product = Product::findOrFail($request->id);
         $product->update([
             'status'       => $request->status,
@@ -595,13 +504,9 @@ class ProductController extends Controller
         return response()->json(['status' => 'success', 'message' => $message, 'data' => []]);
     }
 
-    public function delete_featured_products(Request $request)
+    public function delete_featured_products(DeleteFeaturedProductRequest $request)
     {
-        $product_id = $request->input('product_id');
-
-        if (!$product_id) {
-            return response()->json(['status' => 'error', 'message' => 'Product ID is required']);
-        }
+        $product_id = $request->product_id;
 
         $featuredProduct = FeaturedProduct::where('product_id', $product_id)->first();
 
@@ -629,13 +534,10 @@ class ProductController extends Controller
     public function search_products(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'prodcuts';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('products');
 
         $data = [];
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
                 ->where('title', 'like', '%'.$request->string.'%')
                 ->whereIn('status', [$this->status['Active']])

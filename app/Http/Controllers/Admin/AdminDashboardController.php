@@ -3,6 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 
+use App\Http\Requests\AdminDashboard\CreatePrescriptionMedQuestionRequest;
+use App\Http\Requests\AdminDashboard\DeleteCategoryRequest;
+use App\Http\Requests\AdminDashboard\DeletePMedQuestionRequest;
+use App\Http\Requests\AdminDashboard\DeleteQuestionRequest;
+use App\Http\Requests\AdminDashboard\QuestionMappingRequest;
+use App\Http\Requests\AdminDashboard\StoreAdminRequest;
+use App\Http\Requests\AdminDashboard\StoreAssignQuestRequest;
+use App\Http\Requests\AdminDashboard\StoreFaqQuestionRequest;
+use App\Http\Requests\AdminDashboard\StoreOrderRequest;
+use App\Http\Requests\AdminDashboard\StorePmedQuestionRequest;
+use App\Http\Requests\AdminDashboard\StoreQuestionCategoryRequest;
+use App\Http\Requests\AdminDashboard\StoreQuestionRequest;
+use App\Http\Requests\AdminDashboard\StoreSopRequest;
+use App\Http\Requests\AdminDashboard\UpdateAdditionalNoteRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Mail\otpVerifcation;
@@ -10,17 +24,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
-use SebastianBergmann\Type\NullType;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -28,7 +33,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Comment;
 use App\Models\Pharmacy4uGpLocation;
 use App\Models\shippedOrder;
-use App\Models\ProductAttribute;
 use App\Models\QuestionCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +46,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Question;
-use App\Models\Collection;
 use App\Models\SubCategory;
 use App\Models\ChildCategory;
 use App\Models\AssignQuestion;
@@ -50,11 +53,10 @@ use App\Models\ProductVariant;
 use App\Models\QuestionMapping;
 use App\Models\PMedGeneralQuestion;
 use App\Models\PrescriptionMedGeneralQuestion;
-use App\Models\PaymentDetail;
 use App\Models\SOP;
 use App\Models\HumanRequestForm;
 
-class SystemController extends Controller
+class AdminDashboardController extends Controller
 {
     protected $status;
     protected $user;
@@ -100,18 +102,30 @@ class SystemController extends Controller
     }
 
     // system roles .... Super Admin, Dispensary, Doctor,User,
-    public function admins(Request $request)
+//    public function admins(Request $request)
+//    {
+//        $user = auth()->user();
+//        $page_name = 'dispensaries';
+//        if (!view_permission($page_name)) {
+//            return redirect()->back();
+//        }
+//
+//        $data['user'] = auth()->user();
+//
+//        if (isset($user->role) && $user->role == user_roles('1')) {
+//            $data['admins'] = User::where(['role' => user_roles('2')])->latest('id')->get()->toArray();
+//        }
+//
+//        return view('admin.pages.admins', $data);
+//    }
+    public function admins()
     {
         $user = auth()->user();
-        $page_name = 'dispensaries';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('dispensaries');
+        $data['user'] = $user;
 
-        $data['user'] = auth()->user();
-
-        if (isset($user->role) && $user->role == user_roles('1')) {
-            $data['admins'] = User::where(['role' => user_roles('2')])->latest('id')->get()->toArray();
+        if ($user->hasRole('super_admin')) {
+            $data['admins'] = User::role('dispensary')->latest('id')->get()->toArray();
         }
 
         return view('admin.pages.admins', $data);
@@ -119,13 +133,9 @@ class SystemController extends Controller
 
     public function add_admin(Request $request)
     {
-        $user = auth()->user();
-        $page_name = 'add_dispensary';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
         $data['user'] = auth()->user();
+        $this->authorize('add_dispensary');
+
         $data['state_list'] = STATE_LIST();
         if ($request->has('id')) {
             $data['admin'] = User::findOrFail($request->id)->toArray();
@@ -134,41 +144,15 @@ class SystemController extends Controller
         return view('admin.pages.add_admin', $data);
     }
 
-    public function store_admin(Request $request)
+    public function store_admin(StoreAdminRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'add_dispensary';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        // Authorize the user to add dispensary (already handled in the StoreAdminRequest class)
 
-        $rules = [
-            'name' => 'required',
-            'phone' => 'required',
-            'address' => 'required',
-            'gender' => 'required',
-            'role' => 'required',
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users')->ignore($request->id),
-            ],
-        ];
-        if (!isset($request->id)) {
-            $rules['password'] = 'required';
-        }
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data['user'] = auth()->user();
-
+        // Prepare data for creating or updating the admin
         $updateData = [
             'name' => ucwords($request->name),
             'email' => $request->email,
-            'role' => $request->role,
             'phone' => $request->phone,
             'address' => $request->address,
             'gender' => $request->gender,
@@ -178,33 +162,39 @@ class SystemController extends Controller
             'status' => $this->status['Active'],
             'created_by' => $user->id,
         ];
-        if ($request->password) {
+
+        // Update password if provided
+        if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
         }
 
+        // Create or update the user
         $saved = User::updateOrCreate(
-            ['id' => $request->id ?? NULL],
+            ['id' => $request->id ?? null],
             $updateData
         );
-        $message = "Admin " . ($request->id ? "Updated" : "Saved") . " Successfully";
+
+        // Assign the role using Spatie's Role system
         if ($saved) {
-            return redirect()->route('admin.admins')->with(['msg' => $message]);
+            $saved->syncRoles($request->role);
         }
+
+        $message = "Admin " . ($request->id ? "Updated" : "Saved") . " Successfully";
+
+        return redirect()->route('admin.admins')->with(['msg' => $message]);
     }
 
     // doctors managment ...
-    public function doctors(Request $request)
+    public function doctors()
     {
         $user = auth()->user();
-        $page_name = 'doctors';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('doctors');
 
         $data['user'] = auth()->user();
 
-        if (isset($user->role) && $user->role == user_roles('1')) {
-            $data['doctors'] = User::where(['role' => user_roles('3')])->latest('id')->get()->toArray();
+        if ($user->hasRole('super_admin')) {
+//            $data['doctors'] = User::where(['role' => user_roles('3')])->latest('id')->get()->toArray();
+            $data['doctors'] = User::role('doctor')->latest('id')->get()->toArray();
         }
 
         return view('admin.pages.doctors', $data);
@@ -212,11 +202,7 @@ class SystemController extends Controller
 
     public function add_doctor(Request $request)
     {
-        $user = auth()->user();
-        $page_name = 'add_doctor';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_doctor');
 
         $data['user'] = auth()->user();
         if ($request->has('id')) {
@@ -229,39 +215,12 @@ class SystemController extends Controller
     public function store_doctor(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'add_doctor';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $rules = [
-            'name' => 'required',
-            'phone' => 'required',
-            'address' => 'required',
-            'gender' => 'required',
-            'role' => 'required',
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users')->ignore($request->id),
-            ],
-        ];
-
-        if (!isset($request->id)) {
-            $rules['password'] = 'required';
-        }
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data['user'] = auth()->user();
+        $this->authorize('add_doctor');
 
         $updateData = [
             'name' => ucwords($request->name),
             'email' => $request->email,
-            'role' => $request->role,
+//            'role' => $request->role,
             'phone' => $request->phone,
             'gender' => $request->gender,
             'address' => $request->address,
@@ -271,6 +230,7 @@ class SystemController extends Controller
             'status' => $this->status['Active'],
             'created_by' => $user->id,
         ];
+
         if ($request->password) {
             $updateData['password'] = Hash::make($request->password);
         }
@@ -281,23 +241,19 @@ class SystemController extends Controller
         );
         $message = "Doctor " . ($request->id ? "Updated" : "Saved") . " Successfully";
         if ($saved) {
+            $saved->syncRoles($request->role);
             return redirect()->route('admin.doctors')->with(['msg' => $message]);
         }
     }
 
     //users management ...
-    public function users(Request $request)
+    public function users()
     {
         $user = auth()->user();
-        $page_name = 'users';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $data['user'] = auth()->user();
-
-        if (isset($user->role) && $user->role == user_roles('1')) {
-            $data['users'] = User::where(['role' => user_roles('4')])->latest('id')->get()->toArray();
+        $this->authorize('users');
+        $data['user'] = $user;
+        if ($user->hasRole('super_admin')) {
+            $data['users'] = User::role('user')->latest('id')->get()->toArray();
         }
 
         return view('admin.pages.users', $data);
@@ -307,14 +263,10 @@ class SystemController extends Controller
     public function categories()
     {
         $user = auth()->user();
-        $page_name = 'categories';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('categories');
+        $data['user'] = $user;
 
-        $data['user'] = auth()->user();
-
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['categories'] = Category::where('status', 'Active')->latest('id')->get()->toArray();
         }
 
@@ -324,14 +276,10 @@ class SystemController extends Controller
     public function sub_categories()
     {
         $user = auth()->user();
-        $page_name = 'sub_categories';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('sub_categories');
+        $data['user'] = $user;
 
-        $data['user'] = auth()->user();
-
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['categories'] = SubCategory::with('category')->where('status', 'Active')->latest('id')->get()->toArray();
         }
 
@@ -341,14 +289,10 @@ class SystemController extends Controller
     public function child_categories()
     {
         $user = auth()->user();
-        $page_name = 'child_categories';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('child_categories');
+        $data['user'] = $user;
 
-        $data['user'] = auth()->user();
-
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['categories'] = ChildCategory::with('subcategory')->where('status', 'Active')->latest('id')->get()->toArray();
         }
 
@@ -358,10 +302,7 @@ class SystemController extends Controller
     public function add_category(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'add_category';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_category');
 
         $data['user'] = auth()->user();
         $data['title'] = 'Add Category';
@@ -385,37 +326,32 @@ class SystemController extends Controller
 
         return view('admin.pages.categories.add_category', $data);
     }
+
     //sop management
     public function sops()
     {
         $user = auth()->user();
-        $page_name = 'sops';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('sops');
 
         $data['user'] = auth()->user();
         $data['title'] = "SOP's";
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['sops'] = SOP::get()->toArray();
-        } elseif (isset($user->role) && $user->role == user_roles('2')) {
-            $data['sops'] = SOP::whereIn('file_for', ['dispensory', 'both'])->get()->toArray();
-        } elseif (isset($user->role) && $user->role == user_roles('3')) {
+        } elseif ($user->hasRole('dispensary')) {
+            $data['sops'] = SOP::whereIn('file_for', ['dispensary', 'both'])->get()->toArray();
+        } elseif ($user->hasRole('doctor')) {
             $data['sops'] = SOP::whereIn('file_for', ['doctor', 'both'])->get()->toArray();
         }
 
         return view('admin.pages.sops.sops', $data);
     }
 
-    public function add_sop(Request $request, $id = null)
+    public function add_sop($id = null)
     {
         $user = auth()->user();
-        $page_name = 'add_sop';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_sop');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $data['title'] = 'Add SOP';;
         if ($id ?? null) {
             $data['title'] = 'Edit Category';
@@ -426,39 +362,22 @@ class SystemController extends Controller
         return view('admin.pages.sops.add_sop', $data);
     }
 
-    public function store_sop(Request $request)
+    public function store_sop(StoreSopRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'store_sop';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('store_sop');
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'file_for' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        $data['user'] = auth()->user();
-
-        if ($request->hasFile('file') || !$request->id) {
-            $rules['file'] = [
-                'required'
-            ];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
-
+        // Handle file upload
+        if ($request->hasFile('file')) {
             $sopFile = $request->file('file');
             $sopFileName = time() . '_' . uniqid('', true) . '.' . $sopFile->getClientOriginalExtension();
             $sopFile->storeAs('sop_file/', $sopFileName, 'public');
             $sopFilePath = 'sop_file/' . $sopFileName;
         }
+
+        // Create or update the SOP entry
         $question = SOP::updateOrCreate(
-            ['id' => $request->id ?? NULL],
+            ['id' => $request->id ?? null],
             [
                 'name' => ucwords($request->name),
                 'file' => $sopFilePath ?? $request->sopFilePath_old,
@@ -466,6 +385,7 @@ class SystemController extends Controller
                 'created_by' => $user->id,
             ]
         );
+
         if ($question->id) {
             $message = "SOP File " . ($request->id ? "Updated" : "Saved") . " Successfully";
             return redirect()->route('admin.sops')->with(['msg' => $message]);
@@ -479,6 +399,65 @@ class SystemController extends Controller
         $sop->delete();
 
         return redirect()->back()->with('success', 'SOP deleted successfully.');
+    }
+
+    public function delete_old_category($old_id, $old_category_type)
+    {
+        // when type of category change than delete category from current type
+
+        if ($old_category_type == 1) {
+            $category = Category::findOrFail($old_id);
+        } elseif ($old_category_type == 2) {
+            $category = SubCategory::findOrFail($old_id);
+        } elseif ($old_category_type == 3) {
+            $category = ChildCategory::findOrFail($old_id);
+        }
+        $update = $category->update([
+            'status' => 'Deleted',
+        ]);
+
+        return ['update' => $update, 'old_image_path' => $category->image];
+    }
+
+    public function update_product_categories($old_cat_id, $old_cat_type, $new_cat, $new_cat_type)
+    {
+        if ($old_cat_type == 1) {
+            $products = Product::where('category_id', $old_cat_id)->get()->toArray();
+        } elseif ($old_cat_type == 2) {
+            $products = Product::where('sub_category', $old_cat_id)->get()->toArray();
+        } elseif ($old_cat_type == 3) {
+            $products = Product::where('child_category', $old_cat_id)->get()->toArray();
+        }
+        $response = true;
+        if ($products) {
+            $product_ids = array_column($products, 'id');
+            if ($new_cat_type == 1) {
+                $data = [
+                    'category_id' => $new_cat->id,
+                    'sub_category' => NULL,
+                    'child_category' => NULL,
+                    'updated_by' => auth()->user()->id,
+                ];
+                $response = Product::whereIn('id', $product_ids)->update($data);
+            } elseif ($new_cat_type == 2) {
+                $data = [
+                    'category_id' => $new_cat->category_id,
+                    'sub_category' => $new_cat->id,
+                    'child_category' => NULL,
+                    'updated_by' => auth()->user()->id,
+                ];
+                $response = Product::whereIn('id', $product_ids)->update($data);
+            } elseif ($new_cat_type == 3) {
+                $data = [
+                    'category_id' => SubCategory::where(['id' => $new_cat->sub_category_id, 'status' => 'Active'])->value('category_id'),
+                    'sub_category' => $new_cat->sub_category_id,
+                    'child_category' => $new_cat->id,
+                    'updated_by' => auth()->user()->id,
+                ];
+                $response = Product::whereIn('id', $product_ids)->update($data);
+            }
+        }
+        return $response;
     }
 
     public function category_validation($request, $selection)
@@ -558,73 +537,11 @@ class SystemController extends Controller
         return $validator;
     }
 
-    public function delete_old_category($old_id, $old_category_type)
-    {
-        // when type of category change than delete category from current type
-
-        if ($old_category_type == 1) {
-            $category = Category::findOrFail($old_id);
-        } elseif ($old_category_type == 2) {
-            $category = SubCategory::findOrFail($old_id);
-        } elseif ($old_category_type == 3) {
-            $category = ChildCategory::findOrFail($old_id);
-        }
-        $update = $category->update([
-            'status' => 'Deleted',
-        ]);
-
-        return ['update' => $update, 'old_image_path' => $category->image];
-    }
-
-    public function update_product_categories($old_cat_id, $old_cat_type, $new_cat, $new_cat_type)
-    {
-        if ($old_cat_type == 1) {
-            $products = Product::where('category_id', $old_cat_id)->get()->toArray();
-        } elseif ($old_cat_type == 2) {
-            $products = Product::where('sub_category', $old_cat_id)->get()->toArray();
-        } elseif ($old_cat_type == 3) {
-            $products = Product::where('child_category', $old_cat_id)->get()->toArray();
-        }
-        $response = true;
-        if ($products) {
-            $product_ids = array_column($products, 'id');
-            if ($new_cat_type == 1) {
-                $data = [
-                    'category_id' => $new_cat->id,
-                    'sub_category' => NULL,
-                    'child_category' => NULL,
-                    'updated_by' => auth()->user()->id,
-                ];
-                $response = Product::whereIn('id', $product_ids)->update($data);
-            } elseif ($new_cat_type == 2) {
-                $data = [
-                    'category_id' => $new_cat->category_id,
-                    'sub_category' => $new_cat->id,
-                    'child_category' => NULL,
-                    'updated_by' => auth()->user()->id,
-                ];
-                $response = Product::whereIn('id', $product_ids)->update($data);
-            } elseif ($new_cat_type == 3) {
-                $data = [
-                    'category_id' => SubCategory::where(['id' => $new_cat->sub_category_id, 'status' => 'Active'])->value('category_id'),
-                    'sub_category' => $new_cat->sub_category_id,
-                    'child_category' => $new_cat->id,
-                    'updated_by' => auth()->user()->id,
-                ];
-                $response = Product::whereIn('id', $product_ids)->update($data);
-            }
-        }
-        return $response;
-    }
-
     public function store_category(Request $request)
     {
         // use for main,sub and child categories
         $user = auth()->user();
-        $page_name = 'add_category';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_category');
 
         $selection = $request->selection;
 
@@ -655,7 +572,6 @@ class SystemController extends Controller
             $image->storeAs('category_images/', $imageName, 'public');
             $imagePath = 'category_images/' . $imageName;
         }
-
 
 
         if ($request->hasFile('icon') || !$request->id) {
@@ -830,33 +746,26 @@ class SystemController extends Controller
         return response()->json(['status' => 'success', 'child_category' => $categories]);
     }
 
-    public function delete_category(Request $request)
+    public function delete_category(DeleteCategoryRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'dell_category';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $rules = [
-            'id' => 'required',
-            'cat_type' => 'required',
-            'status' => 'required',
-        ];
+        $this->authorize('dell_category');
 
         $status = 'Success';
         $message = "Category deleted Successfully";
         $class = 'bg-success';
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'message' => $validator->errors()]);
-        }
-        $productExists = Product::where($request->cat_type, $request->id)->where('status', 1)->exists();
+
+        // Check if products are associated with the category
+        $productExists = Product::where($request->cat_type, $request->id)
+            ->where('status', 1)
+            ->exists();
+
         if ($productExists) {
             $status = 'Failed';
-            $message = "Category can't deleted,Please delete associated products of that category frist.";
+            $message = "Category can't be deleted. Please delete associated products of that category first.";
             $class = 'bg-danger';
         } else {
+            // Determine which category type to delete
             if ($request->cat_type === 'child_category') {
                 $category = ChildCategory::findOrFail($request->id);
             } elseif ($request->cat_type === 'sub_category') {
@@ -865,6 +774,7 @@ class SystemController extends Controller
                 $category = Category::findOrFail($request->id);
             }
 
+            // Update the category status
             $category->update([
                 'status' => $request->status,
             ]);
@@ -876,11 +786,8 @@ class SystemController extends Controller
     public function trash_categories(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'categories';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-        $data['user'] = auth()->user();
+        $this->authorize('categories');
+        $data['user'] = $user;
         $data['route'] = '';
         $data['cat_type'] = $request->cat_type;
         if ($request->cat_type === 'category_id') {
@@ -903,14 +810,11 @@ class SystemController extends Controller
     public function question_categories()
     {
         $user = auth()->user();
-        $page_name = 'question_categories';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('question_categories');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
 
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['categories'] = QuestionCategory::latest('id')->get()->toArray();
         }
 
@@ -920,12 +824,9 @@ class SystemController extends Controller
     public function add_question_category(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'add_question_category';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_question_category');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         if ($request->has('id')) {
             $data['category'] = QuestionCategory::findOrFail($request->id)->toArray();
         }
@@ -933,29 +834,12 @@ class SystemController extends Controller
         return view('admin.pages.questions.add_question_category', $data);
     }
 
-    public function store_question_category(Request $request)
+    public function store_question_category(StoreQuestionCategoryRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'add_question_category';
+        $this->authorize('add_question_category'); // Authorization
 
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $validator = Validator::make($request->all(), [
-            'publish' => 'required',
-            'name' => [
-                'required',
-                Rule::unique('question_categories')->ignore($request->id),
-            ],
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data['user'] = auth()->user();
-
+        // Save or update the question category
         $saved = QuestionCategory::updateOrCreate(
             ['id' => $request->id ?? NULL],
             [
@@ -965,23 +849,22 @@ class SystemController extends Controller
                 'created_by' => $user->id,
             ]
         );
+
         $message = "category " . ($request->id ? "Updated" : "Saved") . " Successfully";
+
         if ($saved) {
             return redirect()->route('admin.questionCategories')->with(['msg' => $message]);
         }
     }
 
-    public function questions(Request $request)
+    public function questions()
     {
         $user = auth()->user();
-        $page_name = 'questions';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('questions');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $data['categories'] = [];
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['questions'] = Question::where(['status' => 'Active'])
                 ->orderBy('category_title')
                 ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
@@ -999,10 +882,7 @@ class SystemController extends Controller
     public function trash_questions(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'questions';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('questions');
         $data['user'] = auth()->user();
         $data['route'] = '';
         $data['q_type'] = $request->q_type;
@@ -1031,17 +911,14 @@ class SystemController extends Controller
         return view('admin.pages.questions.trash_questions', $data);
     }
 
-    public function faq_questions(Request $request)
+    public function faq_questions()
     {
         $user = auth()->user();
-        $page_name = 'faq_questions';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('faq_questions');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $data['categories'] = [];
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['questions'] = FaqProduct::where(['status' => 'Active'])
                 ->orderBy('product_id')
                 ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
@@ -1056,13 +933,9 @@ class SystemController extends Controller
         return view('admin.pages.questions.faq_questions', $data);
     }
 
-    public function p_med_general_questions(Request $request)
+    public function p_med_general_questions()
     {
-        $user = auth()->user();
-        $page_name = 'p_med_gq';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('p_med_gq');
 
         $data['user'] = auth()->user();
         $data['questions'] = PMedGeneralQuestion::where(['status' => 'Active'])->get()->toArray();
@@ -1070,13 +943,9 @@ class SystemController extends Controller
         return view('admin.pages.questions.p_med_gq', $data);
     }
 
-    public function prescription_med_general_questions(Request $request)
+    public function prescription_med_general_questions()
     {
-        $user = auth()->user();
-        $page_name = 'prescription_med_gq';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('prescription_med_gq');
 
         $data['user'] = auth()->user();
         $data['questions'] = PrescriptionMedGeneralQuestion::where(['status' => 'Active'])->get()->toArray();
@@ -1086,11 +955,7 @@ class SystemController extends Controller
 
     public function add_question(Request $request)
     {
-        $user = auth()->user();
-        $page_name = 'add_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_question');
         $data['user'] = auth()->user();
         $data['categories'] = QuestionCategory::latest('id')->get()->toArray();
         if ($request->has('id')) {
@@ -1101,11 +966,7 @@ class SystemController extends Controller
 
     public function add_faq_question(Request $request)
     {
-        $user = auth()->user();
-        $page_name = 'faq_questions';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('faq_questions');
         $data['user'] = auth()->user();
         $data['products'] = Product::where(['status' => '1'])->latest('id')->get()->toArray();
         if ($request->has('id')) {
@@ -1114,25 +975,12 @@ class SystemController extends Controller
         return view('admin.pages.questions.add_faq_question', $data);
     }
 
-    public function store_question(Request $request)
+    public function store_question(StoreQuestionRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'add_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_question');
+        $data['user'] = $user;
 
-        $validator = Validator::make($request->all(), [
-            'is_assigned' => 'required',
-            'anwser_set' => 'required',
-            'category_id' => 'required',
-            'title' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data['user'] = auth()->user();
         $question = Question::updateOrCreate(
             ['id' => $request->id ?? NULL],
             [
@@ -1154,17 +1002,18 @@ class SystemController extends Controller
                 'created_by' => $user->id,
             ]
         );
+
         if ($question->id) {
             if ($question->is_assigned == 'yes') {
                 $options = ['optA', 'optB', 'optC', 'optD', 'optY', 'optN', 'openBox', 'file'];
-                // dd($request->next_quest);
+
                 foreach ($options as $option) {
                     $value = $request->next_quest[$option];
                     $selector = 'nothing';
+
                     if ($value['next_type'] == 'alert') {
                         $alert = Alert::updateOrCreate(
                             [
-                                // 'id' => $question->alert_id ?? NULL,
                                 'question_id' => $question->id,
                                 'q_category_id' => $question->category_id,
                                 'option' => $option,
@@ -1179,6 +1028,7 @@ class SystemController extends Controller
                                 'created_by' => $user->id
                             ]
                         );
+
                         if ($alert->id) {
                             $selector = $alert->id;
                             $mapped = QuestionMapping::updateOrCreate(
@@ -1188,9 +1038,6 @@ class SystemController extends Controller
                                     'answer' => $option,
                                 ],
                                 [
-                                    'question_id' => $question->id,
-                                    'category_id' => $question->category_id,
-                                    'answer' => $option,
                                     'next_type' => 'alert',
                                     'selector' => $alert->id,
                                     'status' => 1,
@@ -1198,9 +1045,9 @@ class SystemController extends Controller
                                 ]
                             );
                         } else {
-                            dd('alert is not saved');
+                            return response()->json('alert is not saved');
                         }
-                    } else if ($value['next_type'] == 'question') {
+                    } elseif ($value['next_type'] == 'question') {
                         $selector = $value['question'];
                         $mapped = QuestionMapping::updateOrCreate(
                             [
@@ -1209,16 +1056,13 @@ class SystemController extends Controller
                                 'answer' => $option,
                             ],
                             [
-                                'question_id' => $question->id,
-                                'category_id' => $question->category_id,
-                                'answer' => $option,
                                 'next_type' => 'question',
                                 'selector' => $selector,
                                 'status' => 1,
                                 'created_by' => $user->id
                             ]
                         );
-                    } else if ($value['next_type'] == 'nothing') {
+                    } else {
                         $mapped = QuestionMapping::updateOrCreate(
                             [
                                 'question_id' => $question->id,
@@ -1226,9 +1070,6 @@ class SystemController extends Controller
                                 'answer' => $option,
                             ],
                             [
-                                'question_id' => $question->id,
-                                'category_id' => $question->category_id,
-                                'answer' => $option,
                                 'next_type' => 'nothing',
                                 'selector' => $selector,
                                 'status' => 1,
@@ -1244,24 +1085,11 @@ class SystemController extends Controller
         }
     }
 
-    public function store_faq_question(Request $request)
+    public function store_faq_question(StoreFaqQuestionRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'faq_questions';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('faq_questions');
 
-        $validator = Validator::make($request->all(), [
-            'product_id' => 'required',
-            'title' => 'required',
-            'order' => 'required',
-            'desc' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        $data['user'] = auth()->user();
         $question = FaqProduct::updateOrCreate(
             ['id' => $request->id ?? NULL],
             [
@@ -1273,38 +1101,23 @@ class SystemController extends Controller
                 'created_by' => $user->id,
             ]
         );
+
         if ($question->id) {
             $message = "FAQ question " . ($request->id ? "Updated" : "Saved") . " Successfully";
             return redirect()->route('admin.faqQuestions')->with(['msg' => $message]);
         }
     }
 
-    public function delete_question(Request $request)
+    public function delete_question(DeleteQuestionRequest $request)
     {
-        $user = auth()->user();
-        $page_name = 'dell_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $rules = [
-            'id' => 'required',
-            'q_type' => 'required',
-            'status' => 'required',
-        ];
+        $this->authorize('dell_question');
 
         $status = 'Success';
         $action = ($request->status == 'Active') ? ' Reverted ' : (($request->status == 'Deactive') ? ' Sent to Trash ' : ' Deleted ');
         $message = "Question " . $action . " Successfully";
         $class = ($request->status == 'Deleted') ? 'bg-danger' : 'bg-success';
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            $status = 'Failed';
-            $message = "Question can't deleted.";
-            $class = 'bg-danger';
-            return response()->json(['status' => $status, 'message' => $message, 'data' => ['class' => $class], 'errors' => $validator->errors()]);
-        }
 
+        // Fetch the question based on the type
         if ($request->q_type === 'pro_question') {
             $question = Question::findOrFail($request->id);
         } elseif ($request->q_type === 'pmd_question') {
@@ -1313,6 +1126,7 @@ class SystemController extends Controller
             $question = PrescriptionMedGeneralQuestion::findOrFail($request->id);
         }
 
+        // Update the status
         $question->update([
             'status' => $request->status,
         ]);
@@ -1320,17 +1134,15 @@ class SystemController extends Controller
         return response()->json(['status' => $status, 'message' => $message, 'data' => ['class' => $class]]);
     }
 
-    // question assignment manament...
-    public function assign_question(Request $request)
+
+    // question assignment management...
+    public function assign_question()
     {
         // question mapping screen
         $user = auth()->user();
-        $page_name = 'assign_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-        $data['user'] = auth()->user();
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        $this->authorize('assign_question');
+        $data['user'] = $user;
+        if ($user->hasRole('super_admin')) {
             $data['categories'] = QuestionCategory::where(['status' => 'Active'])->latest('id')->get()->toArray();
         }
         return view('admin.pages.questions.assign_question', $data);
@@ -1339,15 +1151,11 @@ class SystemController extends Controller
     public function get_assign_quest(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'assign_question';
-
-        if (!view_permission($page_name)) {
-            return response()->json(['status' => 'error', 'message' => 'Unauthorized']);
-        }
+        $this->authorize('assign_question');
 
         $questions = [];
 
-        if (isset($user->role) && $user->role == user_roles('1') && $request->has('id')) {
+        if ($user->hasRole('super_admin') && $request->has('id')) {
             $questions = Question::select('id', 'title', 'order')
                 ->where(['category_id' => $request->id, 'status' => 'Active'])
                 ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
@@ -1359,25 +1167,10 @@ class SystemController extends Controller
         return response()->json(['status' => 'success', 'questions' => $questions]);
     }
 
-    public function store_assign_quest(Request $request)
+    public function store_assign_quest(StoreAssignQuestRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'assign_question';
-
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $validator = Validator::make($request->all(), [
-            'category_id' => 'required',
-            'question_id.*' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data['user'] = auth()->user();
+        $this->authorize('assign_question');
 
         // Delete previous records for the given category_id
         AssignQuestion::where('category_id', $request->category_id)->delete();
@@ -1398,34 +1191,19 @@ class SystemController extends Controller
         return redirect()->back()->with(['msg' => $message, 'category_id' => $request->category_id]);
     }
 
+
     // Question Mapping ...
-    public function question_mapping(Request $request)
+    public function question_mapping(QuestionMappingRequest $request)
     {
-        // Question mapping which question is next base on answer
         $user = auth()->user();
-        $page_name = 'question_mapping';
-
-        // if (!view_permission($page_name)) {
-        //     return redirect()->back();
-        // }
-
-        $validator = Validator::make($request->all(), [
-            'category_id' => 'required',
-            'question_id.*' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data['user'] = auth()->user();
-
+        // Remove in-method validation since it's handled in the request class
         $options = ['optA', 'optB', 'optC', 'optD', 'optY', 'optN', 'openBox', 'file'];
+
         foreach ($options as $option) {
             $value = $request->$option;
-            // Check if the value is not null
+
             if ($value !== null && $value !== '') {
-                $response = QuestionMapping::updateOrCreate(
+                QuestionMapping::updateOrCreate(
                     [
                         'category_id' => $request->category_id,
                         'question_id' => $request->question_id,
@@ -1503,10 +1281,7 @@ class SystemController extends Controller
     public function order_detail(Request $request)
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders');
         if ($request->id) {
             $id = base64_decode($request->id);
             $order = Order::with('user', 'shipingdetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
@@ -1517,7 +1292,6 @@ class SystemController extends Controller
                 if ($order->approved_by) {
                     $data['marked_by'] = User::findOrFail($order->approved_by) ?? [];
                 }
-                // dd($data);
                 return view('admin.pages.order_detail', $data);
             } else {
                 return redirect()->back()->with('error', 'Order not found.');
@@ -1530,15 +1304,12 @@ class SystemController extends Controller
     public function consultation_view(Request $request)
     {
         $data['user'] = auth()->user();
-        $page_name = 'consultation_view';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('consultation_view');
         if ($request->odd_id) {
             $odd_id = base64_decode($request->odd_id);
             $user_result = [];
             $prod_result = [];
-            $consultaion  = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
+            $consultaion = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
             if ($consultaion) {
                 $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
                 $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
@@ -1584,8 +1355,8 @@ class SystemController extends Controller
                 }
 
                 $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
-                $data['order_user_detail'] =  ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
-                $data['user_profile_details'] =  (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+                $data['order_user_detail'] = ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
+                $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
                 $data['generic_consultation'] = $user_result;
                 $data['product_consultation'] = $prod_result ?? [];
                 return view('admin.pages.consultation_view', $data);
@@ -1602,15 +1373,12 @@ class SystemController extends Controller
     public function consultation_user_view(Request $request)
     {
         $data['user'] = auth()->user();
-        $page_name = 'consultation_view';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('consultation_view');
         if ($request->odd_id) {
             $odd_id = base64_decode($request->odd_id);
             $user_result = [];
             $prod_result = [];
-            $consultaion  = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
+            $consultaion = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
             if ($consultaion) {
                 $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
                 $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
@@ -1656,8 +1424,8 @@ class SystemController extends Controller
                 }
 
                 $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
-                $data['order_user_detail'] =  ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
-                $data['user_profile_details'] =  (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+                $data['order_user_detail'] = ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
+                $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
                 $data['generic_consultation'] = $user_result;
                 $data['product_consultation'] = $prod_result ?? [];
                 return view('admin.pages.consultation_view', $data);
@@ -1671,13 +1439,10 @@ class SystemController extends Controller
         }
     }
 
-    public function orders_recieved()
+    public function ordersReceived()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_recieved';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_received');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Received'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
@@ -1685,17 +1450,13 @@ class SystemController extends Controller
             $data['orders'] = $this->assign_order_types($orders);
         }
 
-        // dd(  $data['orders']);
         return view('admin.pages.orders_recieved', $data);
     }
 
     public function all_orders()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_recieved';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_received');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
@@ -1703,17 +1464,13 @@ class SystemController extends Controller
             $data['orders'] = $this->assign_order_types($orders);
         }
 
-        // dd(  $data['orders']);
         return view('admin.pages.order_all', $data);
     }
 
     public function unpaid_orders()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_recieved';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_received');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
@@ -1721,17 +1478,13 @@ class SystemController extends Controller
             $data['orders'] = $this->assign_order_types($orders);
         }
 
-        // dd(  $data['orders']);
         return view('admin.pages.order_unpaid', $data);
     }
 
     public function orders_created()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_created';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_created');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid', 'status' => 'Created'])
             ->orWhere('status', 'Duplicate')
             ->latest('created_at')->get()->toArray();
@@ -1830,10 +1583,7 @@ class SystemController extends Controller
     public function orders_refunded()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_refunded';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_refunded');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Refund'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1846,10 +1596,7 @@ class SystemController extends Controller
     public function doctors_approval()
     {
         $data['user'] = auth()->user();
-        $page_name = 'doctors_approval';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('doctors_approval');
         if (isset($data['user']->role) && $data['user']->role == user_roles('2')) {
             $orders = Order::with(['user', 'approved_by:id,name,email', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
         } else {
@@ -1867,42 +1614,33 @@ class SystemController extends Controller
     public function dispensary_approval()
     {
         $data['user'] = auth()->user();
-        $page_name = 'dispensary_approval';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('dispensary_approval');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
         }
-        return view('admin.pages.despensory_approval', $data);
+        return view('admin.pages.dispensary_approval', $data);
     }
 
-    public function orders_shiped()
+    public function orders_shipped()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_shipped';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_shipped');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
         }
 
-        return view('admin.pages.orders_shiped', $data);
+        return view('admin.pages.orders_shipped', $data);
     }
 
     public function orders_unshipped()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_shipped';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_unshipped');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1915,10 +1653,7 @@ class SystemController extends Controller
     public function gpa_letters()
     {
         $data['user'] = auth()->user();
-        $page_name = 'gpa_letters';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('gpa_letters');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,address', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1930,10 +1665,7 @@ class SystemController extends Controller
     public function vet_prescriptions()
     {
         $data['user'] = auth()->user();
-        $page_name = 'vet_prescription';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('vet_prescription');
         $data['queries'] = HumanRequestForm::latest('created_at')->get()->toArray();
 
         return view('admin.pages.orders.vet_prescriptions', $data);
@@ -1951,10 +1683,7 @@ class SystemController extends Controller
     public function orders_audit()
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_shipped';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_shipped');
 
         $orders = Order::with('user', 'shipingdetails', 'orderdetails:id,order_id,product_name')
             ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
@@ -2005,14 +1734,10 @@ class SystemController extends Controller
     }
 
 
-    public function add_order(Request $request)
+    public function add_order()
     {
-
         $data['user'] = auth()->user();
-        $page_name = 'orders_created';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_created');
         $data['products'] = Product::with('variants')->where('status', $this->status['Active'])->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
 
         foreach ($data['products'] as $key => $product) {
@@ -2024,29 +1749,11 @@ class SystemController extends Controller
         return view('admin.pages.add_order', $data);
     }
 
-    public function store_order(Request $request)
+    public function store_order(StoreOrderRequest $request)
     {
         $user = auth()->user();
-        $page_name = 'orders_created';
+        $this->authorize('orders_created');
 
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required',
-            'lastName' => 'required',
-            'email' => 'required',
-            'phone' => 'required',
-            'address' => 'required',
-            'city' => 'required',
-            'zip_code' => 'required',
-            'shiping_cost' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
         $shippingCost = $request->shiping_cost;
 
         // Determine the shipping method based on the shipping cost
@@ -2055,9 +1762,9 @@ class SystemController extends Controller
         } elseif ($shippingCost == 4.95) {
             $shippingMethod = 'express';
         } else {
-            // Handle unexpected values or errors
             $shippingMethod = 'Default Method'; // Example fallback
         }
+
         $order = Order::create([
             'user_id' => $request->user_id ?? 'guest',
             'email' => $request->email,
@@ -2069,9 +1776,7 @@ class SystemController extends Controller
             'status' => 'Created',
         ]);
 
-        // dd($order);
         if ($order) {
-            // Store shipping details
             $shippingDetail = ShipingDetail::create([
                 'order_id' => $order->id,
                 'user_id' => $request->user_id ?? 'guest',
@@ -2087,55 +1792,46 @@ class SystemController extends Controller
                 'cost' => $request->shiping_cost,
                 'state' => $request->state ?? null,
                 'status' => 'Created',
-                'created_by' => auth()->id(),
-                'updated_by' => auth()->id(),
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
             ]);
-
-
-
 
             $consultaiontype = 'one_over';
             $productTemplate = 'null';
+            $hasTemplate1 = false;
+            $hasTemplate3 = false;
 
+            // Determine the consultation type and product template
             foreach ($request->all() as $key => $value) {
                 if (preg_match('/^pro_(\d+)_qty$/', $key, $matches)) {
                     $productId = $matches[1];
                     $product = Product::find($productId);
 
                     if ($product) {
-                        // If any product has template 2, set consultation to POM and break
                         if ($product->product_template == 2) {
                             $productTemplate = $product->product_template;
                             $consultaiontype = 'premd';
                             break;
                         }
 
-                        // If none have template 2 but have both 1 and 3, set consultation to P.Med
                         if ($product->product_template == 1) {
-                            $productTemplate = $product->product_template;
-
                             $hasTemplate1 = true;
                         }
 
                         if ($product->product_template == 3) {
-                            $productTemplate = $product->product_template;
                             $hasTemplate3 = true;
                         }
                     }
                 }
             }
 
-            // Determine the consultation type if not already set to POM
             if (!isset($consultaiontype)) {
-                if (isset($hasTemplate1) && isset($hasTemplate3)) {
+                if ($hasTemplate1 && $hasTemplate3) {
                     $consultaiontype = 'pmd';
                 }
             }
 
-
-
-            // dd($consultaiontype , $productTemplate);
-            // Loop through the products in the request and create order details
+            // Save order details
             foreach ($request->all() as $key => $value) {
                 if (preg_match('/^pro_(\d+)_qty$/', $key, $matches)) {
                     $productId = $matches[1];
@@ -2144,10 +1840,9 @@ class SystemController extends Controller
                     $variantId = $request->input($variantKey, null);
 
                     $product = Product::find($productId);
-
                     $variant = ProductVariant::find($variantId);
 
-                    $order_Detail =    OrderDetail::create([
+                    OrderDetail::create([
                         'order_id' => $order->id,
                         'product_id' => $productId,
                         'variant_id' => $variantId,
@@ -2158,30 +1853,24 @@ class SystemController extends Controller
                         'product_price' => $product ? $product->price : 0,
                         'status' => 'Created',
                         'consultation_type' => $consultaiontype,
-                        'created_by' => auth()->id(),
-                        'updated_by' => auth()->id(),
+                        'created_by' => $user->id,
+                        'updated_by' => $user->id,
                     ]);
                 }
             }
 
-            // dd( 'shippingDetail', $shippingDetail ,'order_Detail',$order_Detail);
             if ($shippingDetail) {
                 $message = "Order and Shipping Details Saved Successfully";
                 return redirect()->route('admin.ordersCreated')->with(['msg' => $message]);
             }
         }
 
-        // Handle error case
         return redirect()->back()->with(['error' => 'Failed to save order and shipping details']);
     }
 
     public function change_status(Request $request)
     {
-        $data['user'] = auth()->user();
-        $page_name = 'orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders');
 
         $validatedData = $request->validate([
             'id' => 'required|exists:orders,id',
@@ -2204,91 +1893,10 @@ class SystemController extends Controller
         return redirect()->back();
     }
 
-
-
-//     public function refund_order(Request $request)
-// {
-//     $data['user'] = auth()->user();
-//     $page_name = 'orders';
-//     if (!view_permission($page_name)) {
-//         return redirect()->back();
-//     }
-
-//     $validatedData = $request->validate([
-//         'id' => 'required|exists:orders,id',
-//         'status' => 'required',
-//         'ammount' => 'required|numeric|gt:0',
-//     ]);
-
-//     $order = Order::with('paymentdetails')->findOrFail($validatedData['id']);
-//     if ($order->paymentdetails) {
-//         $amount = $validatedData['ammount'];
-//         $transactionId = $order->paymentdetails->transactionId;
-
-//         $apiKey = .env('SUPERPAYMENTS_API_KEY');
-//         $brandId = .env('BRAND_ID');
-
-//         $curl = curl_init();
-//         curl_setopt_array(
-//             $curl,
-//             array(
-//                 CURLOPT_URL => "https://api.superpayments.com/2024-02-01/refunds",
-//                 CURLOPT_RETURNTRANSFER => true,
-//                 CURLOPT_TIMEOUT => 30,
-//                 CURLOPT_POST => true,
-//                 CURLOPT_POSTFIELDS => json_encode([
-//                     'transactionId' => $transactionId,
-//                     'amount' => $amount * 100, // Assuming the amount is in dollars and the API expects cents
-//                     'currency' => 'GBP',
-//                     'externalReference' => 'refund' . $transactionId,
-//                     'brandId' => $brandId
-//                 ]),
-//                 CURLOPT_HTTPHEADER => [
-//                     'Authorization: APIKEY ' . $apiKey,
-//                     'Accept: application/json',
-//                     'Content-Type: application/json'
-//                 ]
-//             )
-//         );
-
-//         $response = curl_exec($curl);
-//         $responseData = json_decode($response, true);
-//         $curlError = curl_error($curl);
-//         curl_close($curl);
-
-//         if ($curlError) {
-//             // Handle the cURL error
-//             return redirect()->back()->with('status', 'error')->with('msg', 'Refund request failed: ' . $curlError);
-//         }
-
-//         if (isset($responseData['statusId']) && $responseData['statusId'] === 'success') {
-//             $update_payment = [
-//                 'statusId' => $responseData['statusId'],
-//             ];
-//             PaymentDetail::where('id', $order->paymentdetails->id)->update($update_payment);
-
-//             $order->status = $validatedData['status'];
-//             $order->save();
-
-//             $msg = 'Order is ' . $validatedData['status'];
-//             $status = 'success';
-//             return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])->with('status', $status)->with('msg', $msg);
-//         } else {
-//             return redirect()->back()->with('status', 'error')->with('msg', 'Refund request failed: ' . ($responseData['error'] ?? 'Unknown error'));
-//         }
-//     }
-
-//     return redirect()->back()->with('status', 'error')->with('msg', 'Order does not have payment details');
-// }
-
-
     public function create_shiping_order(Request $request)
     {
         $user = auth()->user();
-        $page_name = 'orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders');
 
         $validatedData = $request->validate([
             'id' => 'required|exists:orders,id'
@@ -2567,10 +2175,7 @@ class SystemController extends Controller
     public function comment_store(Request $request): JsonResponse
     {
         $data['user'] = auth()->user();
-        $page_name = 'comment_store';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('comment_store');
 
         try {
 
@@ -2591,26 +2196,14 @@ class SystemController extends Controller
         }
     }
 
-    public function update_additional_note(Request $request)
+    public function update_additional_note(UpdateAdditionalNoteRequest $request)
     {
-        $data['user'] = auth()->user();
-        $page_name = 'orders_recieved';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-
-        $rules = [
-            'note' => 'required',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $user = auth()->user();
+        $this->authorize('orders_received');
 
         $updateData = [
             'note' => $request->note,
-            'updated_by' => $data['user']->id,
+            'updated_by' => $user->id,
         ];
 
         $response = Order::where('id', $request->order_id)->update($updateData);
@@ -2619,15 +2212,14 @@ class SystemController extends Controller
         if ($response) {
             return redirect()->route('admin.orderDetail', ['id' => base64_encode($request->order_id)])->with(['msg' => $message]);
         }
+
+        return redirect()->back()->withErrors(['error' => 'Failed to update the note']);
     }
 
     public function update_shipping_address(Request $request)
     {
         $data['user'] = auth()->user();
-        $page_name = 'orders_recieved';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('orders_received');
 
         $updateData = [];
         if ($request->city) {
@@ -2660,14 +2252,11 @@ class SystemController extends Controller
     public function gp_locations()
     {
         $user = auth()->user();
-        $page_name = 'gp_locations';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('gp_locations');
 
         $data['user'] = auth()->user();
 
-        if (isset($user->role) && $user->role == user_roles('1')) {
+        if ($user->hasRole('super_admin')) {
             $data['gp_locations'] = Pharmacy4uGpLocation::where('status', 'Active')->latest('id')->get()->toArray();
         }
 
@@ -2676,12 +2265,7 @@ class SystemController extends Controller
 
     public function Add_PMedQuestion(request $request)
     {
-
-        $user = auth()->user();
-        $page_name = 'add_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_question');
         $data['user'] = auth()->user();
         if ($request->has('id')) {
             $data['question'] = PMedGeneralQuestion::findOrFail($request->id)->toArray();
@@ -2689,7 +2273,7 @@ class SystemController extends Controller
         return view('admin.pages.questions.Create_p_med_question', $data);
     }
 
-    public function get_PMeddp_questions(Request $request)
+    public function get_PMeddp_questions()
     {
 
         $result['dp_qstn'] = PMedGeneralQuestion::select('id', 'title')
@@ -2704,53 +2288,39 @@ class SystemController extends Controller
         }
     }
 
-    public function create_PMedQuestion(Request $request)
+    public function create_PMedQuestion(StorePmedQuestionRequest $request)
     {
-
         $user = auth()->user();
-        $page_name = 'add_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-        $validator = Validator::make($request->all(), [
-            'is_assigned' => 'required',
-            'anwser_set' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $this->authorize('add_question');
 
-        $data['user'] = auth()->user();
         $question = PMedGeneralQuestion::updateOrCreate(
-            ['id' => $request->id ?? NULL],
+            ['id' => $request->id ?? null],
             [
                 'title' => ucwords($request->title),
-                'desc' => $request->desc ?? NULL,
+                'desc' => $request->desc ?? null,
                 'is_assigned' => $request->is_assigned,
                 'anwser_set' => $request->anwser_set,
                 'type' => $request->type,
-                'yes_lable' => ucwords($request->yes_lable) ?? NULL,
-                'no_lable' => ucwords($request->no_lable) ?? NULL,
-                'optA' => ucwords($request->optA) ?? NULL,
-                'optB' => ucwords($request->optB) ?? NULL,
-                'optC' => ucwords($request->optC) ?? NULL,
-                'optD' => ucwords($request->optD) ?? NULL,
+                'yes_lable' => ucwords($request->yes_lable) ?? null,
+                'no_lable' => ucwords($request->no_lable) ?? null,
+                'optA' => ucwords($request->optA) ?? null,
+                'optB' => ucwords($request->optB) ?? null,
+                'optC' => ucwords($request->optC) ?? null,
+                'optD' => ucwords($request->optD) ?? null,
                 'order' => $request->order ?? 0,
                 'is_dependent' => ($request->type == 'non_dependent') ? 'no' : 'yes',
                 'created_by' => $user->id,
             ]
         );
 
-
         if ($question->id) {
-
             if ($question->is_assigned == 'yes') {
                 $options = ['optA', 'optB', 'optC', 'optD', 'optY', 'optN', 'openBox', 'file'];
-                // dd($request->next_quest);
-                foreach ($options as $option) {
 
+                foreach ($options as $option) {
                     $value = $request->next_quest[$option];
                     $selector = 'nothing';
+
                     if ($value['next_type'] == 'alert') {
                         $alert = Alert::updateOrCreate(
                             [
@@ -2760,20 +2330,15 @@ class SystemController extends Controller
                                 'option' => $option,
                                 'question_id' => $question->id,
                                 'question_type' => 'PMedGeneralQuestion',
-                                'created_by' => $user->id
+                                'created_by' => $user->id,
                             ]
                         );
 
-
-
                         if ($alert->id) {
-
                             $selector = $alert->id;
-
 
                             $mapped = QuestionMapping::updateOrCreate(
                                 [
-
                                     'question_id' => $question->id,
                                     'category_id' => '0',
                                     'answer' => $option,
@@ -2781,7 +2346,7 @@ class SystemController extends Controller
                                     'selector' => $alert->id,
                                     'status' => 1,
                                     'question_type' => 'PMedGeneralQuestion',
-                                    'created_by' => $user->id
+                                    'created_by' => $user->id,
                                 ]
                             );
                         } else {
@@ -2791,6 +2356,7 @@ class SystemController extends Controller
 
                     if ($value['next_type'] == 'question') {
                         $selector = $value['question'];
+
                         $mapped = QuestionMapping::updateOrCreate(
                             [
                                 'question_id' => $question->id,
@@ -2800,11 +2366,10 @@ class SystemController extends Controller
                                 'selector' => $selector,
                                 'status' => 1,
                                 'question_type' => 'PMedGeneralQuestion',
-                                'created_by' => $user->id
+                                'created_by' => $user->id,
                             ]
                         );
                     }
-
 
                     if ($value['next_type'] == 'nothing') {
                         $mapped = QuestionMapping::updateOrCreate(
@@ -2816,11 +2381,9 @@ class SystemController extends Controller
                                 'selector' => $selector,
                                 'status' => 1,
                                 'question_type' => 'PMedGeneralQuestion',
-                                'created_by' => $user->id
+                                'created_by' => $user->id,
                             ]
                         );
-
-                        // dd($mapped);
                     }
                 }
             }
@@ -2828,7 +2391,6 @@ class SystemController extends Controller
             $message = "Question " . ($request->id ? "Updated" : "Saved") . " Successfully";
             return redirect()->route('admin.pMedGQ')->with(['msg' => $message]);
         }
-
 
         return redirect()->route('admin.pMedGQ');
     }
@@ -2847,35 +2409,18 @@ class SystemController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    public function deletePMedQuestion(Request $request)
+    public function deletePMedQuestion(DeletePMedQuestionRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|exists:p_med_general_questions,id',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
         $question = PMedGeneralQuestion::find($request->id);
-
-        if (!$question) {
-            return redirect()->back()->with('error', 'Question not found');
-        }
-
         $question->delete();
 
         return redirect()->route('admin.pMedGQ')->with('success', 'Question deleted successfully');
     }
 
+
     public function Add_PrescriptionMedQuestion(Request $request)
     {
-
-        $user = auth()->user();
-        $page_name = 'add_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_question');
         $data['user'] = auth()->user();
         if ($request->has('id')) {
             $data['question'] = PrescriptionMedGeneralQuestion::findOrFail($request->id)->toArray();
@@ -2884,7 +2429,7 @@ class SystemController extends Controller
         return view('admin.pages.questions.Create_prescription_med_question', $data);
     }
 
-    public function get_PrescriptionMeddp_questions(Request $request)
+    public function get_PrescriptionMeddp_questions()
     {
         $result['dp_qstn'] = PrescriptionMedGeneralQuestion::select('id', 'title')
             ->where(['is_dependent' => 'yes', 'status' => 'Active'])
@@ -2898,23 +2443,11 @@ class SystemController extends Controller
         }
     }
 
-    public function create_PrescriptionMedQuestion(Request $request)
+    public function create_PrescriptionMedQuestion(CreatePrescriptionMedQuestionRequest $request)
     {
-
         $user = auth()->user();
-        $page_name = 'add_question';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
-        $validator = Validator::make($request->all(), [
-            'is_assigned' => 'required',
-            'anwser_set' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $this->authorize('add_question');
 
-        $data['user'] = auth()->user();
         $question = PrescriptionMedGeneralQuestion::updateOrCreate(
             ['id' => $request->id ?? NULL],
             [
@@ -2935,16 +2468,14 @@ class SystemController extends Controller
             ]
         );
 
-
         if ($question->id) {
-
             if ($question->is_assigned == 'yes') {
                 $options = ['optA', 'optB', 'optC', 'optD', 'optY', 'optN', 'openBox', 'file'];
-                // dd($request->next_quest);
-                foreach ($options as $option) {
 
+                foreach ($options as $option) {
                     $value = $request->next_quest[$option];
                     $selector = 'nothing';
+
                     if ($value['next_type'] == 'alert') {
                         $alert = Alert::updateOrCreate(
                             [
@@ -2958,12 +2489,11 @@ class SystemController extends Controller
                             ]
                         );
 
-
                         if ($alert->id) {
                             $selector = $alert->id;
-                            $mapped = QuestionMapping::updateOrCreate(
-                                [
 
+                            QuestionMapping::updateOrCreate(
+                                [
                                     'question_id' => $question->id,
                                     'category_id' => '0',
                                     'answer' => $option,
@@ -2981,7 +2511,7 @@ class SystemController extends Controller
 
                     if ($value['next_type'] == 'question') {
                         $selector = $value['question'];
-                        $mapped = QuestionMapping::updateOrCreate(
+                        QuestionMapping::updateOrCreate(
                             [
                                 'question_id' => $question->id,
                                 'category_id' => '0',
@@ -2996,7 +2526,7 @@ class SystemController extends Controller
                     }
 
                     if ($value['next_type'] == 'nothing') {
-                        $mapped = QuestionMapping::updateOrCreate(
+                        QuestionMapping::updateOrCreate(
                             [
                                 'question_id' => $question->id,
                                 'category_id' => '0',
@@ -3008,8 +2538,6 @@ class SystemController extends Controller
                                 'created_by' => $user->id
                             ]
                         );
-
-                        // dd($mapped);
                     }
                 }
             }
@@ -3035,20 +2563,10 @@ class SystemController extends Controller
 
     public function deletePrescriptionMedQuestion(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|exists:prescription_med_general_questions,id',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
         $question = PrescriptionMedGeneralQuestion::find($request->id);
-
         if (!$question) {
             return redirect()->back()->with('error', 'Question not found');
         }
-
         $question->delete();
 
         return redirect()->route('admin.prescriptionMedGQ')->with('success', 'Question deleted successfully');
