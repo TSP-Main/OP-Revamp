@@ -561,37 +561,6 @@ class PaymentController extends Controller
         }
     }
 
-    public function get_related_products($product)
-    {
-        $category = $product->category_id;
-        $sub_category = $product->sub_category;
-        $child_category = $product->child_category;
-        $level = '';
-        if ($category && $sub_category && $child_category) {
-            $level = 'child';
-        } else if ($category && $sub_category && !$child_category) {
-            $level = 'sub';
-        } else if ($category && !$sub_category && !$child_category) {
-            $level = 'main';
-        }
-
-        //switches
-        switch ($level) {
-            case 'main':
-                $products = Product::where(['status' => $this->status['Active'], 'category_id' => $category])->where('id', '!=', $product->id)->latest('id')->get();
-                break;
-            case 'sub':
-                $products = Product::where(['status' => $this->status['Active'], 'sub_category' => $sub_category])->where('id', '!=',  $product->id)->latest('id')->get();
-                break;
-            case 'child':
-                $products = Product::where(['status' => $this->status['Active'], 'child_category' => $child_category])->where('id', '!=', $product->id)->latest('id')->get();
-                break;
-            default:
-                $products = Product::where(['status' => $this->status['Active']])->get();
-        }
-
-        return $products ?? NULL;
-    }
     public function error404()
     {
         return view('web.pages.404');

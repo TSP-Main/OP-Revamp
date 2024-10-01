@@ -89,7 +89,7 @@
                             <li>
                                <div class="showing-product-number text-right">
                                     <span>Showing 1–12 of 18 results</span>
-                                </div> 
+                                </div>
                             </li>
                             <li>
                                <div class="short-by text-center">
@@ -100,7 +100,7 @@
                                         <option>Sort by price: low to high</option>
                                         <option>Sort by price: high to low</option>
                                     </select>
-                                </div> 
+                                </div>
                             </li>
                         </ul>
                     </div>
@@ -429,8 +429,8 @@
                             <h4 class="ltn__widget-title ltn__widget-title-border">Filter by price</h4>
                             <div class="price_filter">
                                 <div class="price_slider_amount">
-                                    <input type="submit"  value="Your range:"/> 
-                                    <input type="text" class="amount" name="price"  placeholder="Add Your Price" /> 
+                                    <input type="submit"  value="Your range:"/>
+                                    <input type="text" class="amount" name="price"  placeholder="Add Your Price" />
                                 </div>
                                 <div class="slider-range"></div>
                             </div>

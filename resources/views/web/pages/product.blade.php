@@ -298,7 +298,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2">
-                    <h4 class="title-2">Related Products<span>.</span></h1>
+                    <h4 class="title-2">Related Products<span>.</span></h4>
                 </div>
             </div>
         </div>
