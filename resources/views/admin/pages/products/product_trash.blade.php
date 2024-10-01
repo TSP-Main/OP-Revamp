@@ -277,7 +277,7 @@
                                         <p class="fw-normal mb-1">{{config('constants.PRODUCT_TEMPLATES')[$value['product_template']]}}</p>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
-                                        <span class="badge  {{($value['status'] == 1) ? 'bg-success' : 'bg-danger'; }}  rounded-pill d-inline">{{ ($value['status'] == 1) ? 'Active' : 'Deactive'; }} </span>
+                                        <span class="badge  {{($value['status'] == 1) ? 'bg-success' : 'bg-danger' }}  rounded-pill d-inline">{{ ($value['status'] == 1) ? 'Active' : 'Deactive' }} </span>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
                                         <a class="undo" style="cursor: pointer;" title="undo" data-status="{{config('constants.STATUS')['Active']}}" data-id="{{$value['id']}}" data-toggle="tooltip">

@@ -105,7 +105,7 @@
                                 <tr>
                                     <th style="vertical-align: middle; text-align: center;">{{ ++$key }}</th>
                                     @if($cat_type != 'category_id')
-                                    <td style="vertical-align: middle; text-align: center;">{{($cat_type == 'sub_category') ? $value['category']['name'] : $value['subcategory']['name']; }}</td>
+                                    <td style="vertical-align: middle; text-align: center;">{{($cat_type == 'sub_category') ? $value['category']['name'] : $value['subcategory']['name'] }}</td>
                                     @endif
                                     <td style="vertical-align: middle; text-align: center;">{{$value['name'] ?? '' }}</td>
                                     <td style="vertical-align: middle; text-align: center; font-weight: bold;">{{$value['publish'] ?? '' }} </td>

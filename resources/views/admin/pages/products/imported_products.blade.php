@@ -97,7 +97,7 @@
                                         <p class="text-muted mb-0">{{ $value['barcode'] ?? ''}}</p>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
-                                        <span class="badge  {{($value['status'] == 'active') ? 'bg-success' : 'bg-danger'; }}  rounded-pill d-inline">{{ ($value['status'] == 'active') ? 'Active' : 'Deactive'; }} </span>
+                                        <span class="badge  {{($value['status'] == 'active') ? 'bg-success' : 'bg-danger' }}  rounded-pill d-inline">{{ ($value['status'] == 'active') ? 'Active' : 'Deactive' }} </span>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
                                         <a class="edit" style="cursor: pointer;" title="Edit" data-id="{{$value['id']}}" data-toggle="tooltip">

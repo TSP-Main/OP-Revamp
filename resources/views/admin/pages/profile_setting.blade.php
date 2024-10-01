@@ -12,11 +12,20 @@
             margin-top: 5px;
         }
         body {
-            padding-top: 70px; 
+            padding-top: 70px;
         }
 
         #responseMessage {
-            width: 100%; 
+            width: 100%;
+        }
+        #alert {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+            text-align: center;
         }
     </style>
     <!-- main stated -->
@@ -42,8 +51,10 @@
                         <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
 
                             <img
-                                src="{{ ($user->profile->image ?? '') ? asset('storage/'.$user->profile->image) : asset('assets/admin/img/profile-img.png') }}"
-                                alt="Profile" class="rounded-circle">
+                                src="{{ asset('storage/' . ($user->profile->image ?? 'user_images/default-profile.png')) }}"
+                                alt="Profile"
+                                class="rounded-circle"
+                            />
                             <h2>{{$user->name }}</h2>
                             <div class="social-links mt-2 displaynone">
                                 <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
@@ -87,7 +98,7 @@
                                 <div class="tab-pane fade show active profile-overview" id="profile-overview">
                                     <h5 class="card-title ">About</h5>
                                     <p class="small fst-italic ">
-                                        {{$user->short_bio ?? '' }}
+                                        {{$user->profile->short_bio ?? '' }}
                                     </p>
 
                                     <h5 class="card-title">Profile Details</h5>
@@ -133,7 +144,7 @@
                                                 <div class="col-md-8 col-lg-9">
                                                     <img id="img_preview"
                                                          src="{{ ($user->profile->image ?? '') ? Storage::url($user->profile->image) : asset('assets/admin/img/profile-img.png') }}">
-                                                         
+
                                                     <div class="pt-2">
                                                         <input id="profile_pic" class="d-none profile_pic" type="file"
                                                                name="user_pic" onchange="previewImage(this);">
@@ -182,7 +193,7 @@
                                             <div class="row mb-3">
                                                 <label for="Phone" class="col-md-4 col-lg-3 col-form-label">Phone</label>
                                                 <div class="col-md-8 col-lg-9">
-                                                    <input name="phone" type="text" pattern="^\d{10,15}$" class="form-control" id="Phone" 
+                                                    <input name="phone" type="text" pattern="^\d{10,15}$" class="form-control" id="Phone"
                                                         value="{{ $user->profile->phone }}" required>
                                                     <div class="invalid-feedback">Please enter a valid phone number (10 to 15 digits)!</div>
                                                     @error('phone')
@@ -237,9 +248,13 @@
                                             </div>
 
                                             <div class="text-center">
-                                                <button type="reset" class="btn btn-secondary bg-danger ">Reset</button>
-                                                <button type="submit" class="btn btn-primary bg-primary">Save
-                                                </button>                                             
+                                                <button type="reset" class="btn btn-secondary bg-danger">Reset</button>
+                                                <button type="submit" class="btn btn-primary bg-primary" onclick="showAlert()">Save</button>
+
+                                                <!-- Alert box -->
+                                                <div id="alert" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+                                                    Your changes have been saved!
+                                                </div>
                                             </div>
                                         </form><!-- End Profile Edit Form -->
                                     </div>
@@ -257,8 +272,7 @@
                                                     <input name="current_password" type="text" class="form-control"
                                                            id="currentPassword"
                                                            value="{{ old('current_password') ?? ''}}" required>
-                                                    <div class="invalid-feedback">Please enter the current password.
-                                                    </div>
+
                                                     <div class="error-message" id="current_password_error"></div>
                                                 </div>
                                             </div>
@@ -269,7 +283,7 @@
                                                 <div class="col-md-8 col-lg-9">
                                                     <input name="password" type="text" class="form-control"
                                                            value="{{ old('password') ?? ''}}" id="newPassword" required>
-                                                    <div class="invalid-feedback">Please enter a new password.</div>
+
                                                     <div class="error-message" id="password_error"></div>
                                                 </div>
                                             </div>
@@ -281,8 +295,7 @@
                                                     <input name="password_confirmation" type="text" class="form-control"
                                                            value="{{ old('confirm_password') ?? ''}}" id="renewPassword"
                                                            required>
-                                                    <div class="invalid-feedback">Please re-enter the new password.
-                                                    </div>
+
                                                     <div class="error-message" id="password_confirmation_error"></div>
                                                 </div>
                                             </div>
@@ -314,17 +327,18 @@
 @stop
 
 @pushOnce('scripts')
+    <!-- password updates alerts -->
     <script>
     $(document).ready(function() {
         $('#passwordChangeForm').on('submit', function(e) {
-            e.preventDefault(); 
-            
+            e.preventDefault();
+
             // Clear previous error messages
             $('.error-message').text('');
             $('#responseMessage').text('');
 
             $.ajax({
-                url: '{{ route('admin.passwordChange') }}', 
+                url: '{{ route('admin.passwordChange') }}',
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
@@ -360,7 +374,7 @@
             });
         });
     });
-    </script>     
+    </script>
     <script>
         function previewImage(input) {
             $('.img-error').addClass('d-none').text('');
@@ -392,11 +406,24 @@
             }
         }
     </script>
+    <!-- address update with edit address -->
     <script>
         document.getElementById('editAddressBtn').addEventListener('click', function() {
         document.getElementById('addressForm').style.display = 'block';
         document.getElementById('Address').style.display = 'none';
         this.style.display = 'none';
         });
+    </script>
+    <!-- profile update alert -->
+    <script>
+          function showAlert() {
+            var alertBox = document.getElementById("alert");
+            alertBox.style.display = "block";
+            alertBox.classList.add("show");
+
+            setTimeout(function() {
+                alertBox.style.display = "none";
+            }, 3000);
+        }
     </script>
 @endPushOnce
