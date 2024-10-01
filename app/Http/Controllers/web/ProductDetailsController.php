@@ -14,32 +14,11 @@ use App\Models\QuestionMapping;
 use App\Models\SubCategory;
 use Cviebrock\EloquentSluggable\Services\SlugService;
 use Illuminate\Http\Request;
+use App\Traits\MenuCategoriesTrait;
 
 class ProductDetailsController extends Controller
 {
-    private $menu_categories;
-    protected $status;
-    protected $ENV;
-    public function __construct()
-    {
-        $this->status = config('constants.STATUS');
-
-        $this->menu_categories = Category::where('status', 'Active')
-            ->with(['subcategory' => function ($query) {
-                $query->where('status', 'Active')
-                    ->with(['childCategories' => function ($query) {
-                        $query->where('status', 'Active');
-                    }]);
-            }])
-            ->where('publish', 'Publish')
-            ->latest('id')
-            ->get()
-            ->toArray();
-
-        view()->share('menu_categories', $this->menu_categories);
-        $this->ENV = env('PAYMENT_ENV', 'Live') ?? 'Live'; //1. Live, 2. Local.
-    }
-
+    use MenuCategoriesTrait;
     public function shop(Request $request, $category = null, $sub_category = null, $child_category = null)
     {
         // Get consultation data
@@ -338,6 +317,7 @@ class ProductDetailsController extends Controller
 
     public function treatment(Request $request)
     {
+        $this->shareMenuCategories(); // from MenuCategoryTrait
         $ranges = [
             'a-e' => ['a', 'b', 'c', 'd', 'e'],
             'f-j' => ['f', 'g', 'h', 'i', 'j'],
