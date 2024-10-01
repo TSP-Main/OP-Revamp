@@ -45,7 +45,7 @@ class RegisterUserRequest extends FormRequest
 
             // UserProfile fields
             'speciality' => ['nullable', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:15', 'regex:/^\+?[0-9]*$/'], // Phone number with optional international code
+            'phone' => ['required', 'string', 'min:11', 'max:15', 'regex:/^\+?[0-9]*$/'], // Phone number with optional international code
             'gender' => ['required', 'in:male,female,other'], // Ensure gender is one of the accepted values
             'image' => ['nullable', 'image', 'max:2048'], // User's image should be a valid image and less than 2MB
             'short_bio' => ['nullable', 'string', 'max:1000'],
@@ -53,12 +53,12 @@ class RegisterUserRequest extends FormRequest
             // UserAddress fields
             'address' => ['required', 'string', 'max:255'],
             'apartment' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:255'],
-            'state' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
 
             // Zip code (optional based on needs)
-            'zip_code' => ['nullable', 'string', 'max:20'],
+            'zip_code' => ['required', 'string', 'max:20'],
 
             // ID Document (if uploaded)
             'id_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'], // Max 5MB and should be a valid file type

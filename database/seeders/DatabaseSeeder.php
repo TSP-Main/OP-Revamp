@@ -22,9 +22,9 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         // $this->call(UserSeeder::class);
-        $this->call(PMedGeneralQuestionSeeder::class);
-        $this->call(PrescriptionMedGeneralQuestionSeeder::class);
-        $this->call(RoleSeeder::class);
-        $this->call(UserSeeder::class);
+        // $this->call(PMedGeneralQuestionSeeder::class);
+        // $this->call(PrescriptionMedGeneralQuestionSeeder::class);
+        // $this->call(RoleSeeder::class);
+        // $this->call(UserSeeder::class);
     }
 }
