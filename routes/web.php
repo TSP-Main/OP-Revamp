@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\web\HomeController;
 use App\Http\Controllers\web\WebController;
 use App\Http\Controllers\web\CartController;
-use App\Http\Controllers\GoogleMerchantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Web\ProductDetailsController;
@@ -62,20 +61,6 @@ Route::post('/idDocumentForm', [ConsultancyController::class, 'idDocumentUpdate'
 Route::match(['get', 'post'], '/consultationStore', [ConsultancyController::class, 'consultationStore'])->name('web.consultationStore');
 Route::match(['get', 'post'], '/transactionStore/', [ConsultancyController::class, 'transactionStore'])->name('web.transactionStore');
 
-//Categories
-Route::get('/{main_category?}/{sub_category?}/{child_category?}', [CategoriesController::class, 'showCategories'])->name('web.collections');
-Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
-Route::match(['get', 'post'], '/categorydetail', [CategoriesController::class, 'categoryDetail'])->name('web.categorydetail');
-Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
-Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
-Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
-Route::match(['get', 'post'], '/search', [CategoriesController::class, 'search'])->name('web.search');
-Route::get('/conditions', [CategoriesController::class, 'conditions'])->name('web.conditions');
-Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
-Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
-Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
-Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
-
 //Payment
 Route::match(['get', 'post'], '/payment', [PaymentController::class, 'payment'])->name('payment');
 Route::match(['get', 'post'], '/Completed-order', [PaymentController::class, 'completedOrder']);
@@ -106,7 +91,6 @@ Route::get('/checkout/{id}', [CartController::class, 'checkout_id'])->name('web.
 
 //Home Controller
 Route::get('/questions_preview', [HomeController::class, 'questions_preview'])->name('web.questions_preview');
-Route::get('/aboutUs', [HomeController::class, 'about_us'])->name('web.aboutUs');
 Route::get('/contact', [HomeController::class, 'contact_us'])->name('web.contact');
 Route::get('/clinic', [HomeController::class, 'clinic'])->name('web.clinic');
 // new pages added in home controller
@@ -122,7 +106,7 @@ Route::get('/blog-details', [HomeController::class, 'blog_details'])->name('web.
 Route::get('/policy', [HomeController::class, 'policy'])->name('web.policy');
 Route::get('/prescribers', [HomeController::class, 'prescribers'])->name('web.prescribers');
 Route::get('/about', [HomeController::class, 'about'])->name('web.about');
-Route::get('/work', [HomeController::class, 'how_it_work'])->name('web.work');
+Route::get('/work', [HomeController::class, 'howItWork'])->name('web.work');
 Route::get('/product_information', [HomeController::class, 'product_information'])->name('web.product_information');
 Route::get('/responsible_pharmacist', [HomeController::class, 'responsible_pharmacist'])->name('web.responsible_pharmacist');
 Route::get('/modern_slavery_act', [HomeController::class, 'modern_slavery_act'])->name('web.modern_slavery_act');
@@ -132,9 +116,6 @@ Route::get('/terms_and_conditions', [HomeController::class, 'terms_and_condition
 Route::get('/acceptable_use_policy', [HomeController::class, 'acceptable_use_policy'])->name('web.acceptable_use_policy');
 Route::get('/editorial_policy', [HomeController::class, 'editorial_policy'])->name('web.editorial_policy');
 Route::get('/dispensing_frequencies', [HomeController::class, 'dispensing_frequencies'])->name('web.dispensing_frequencies');
-Route::get('/product_information', [HomeController::class, 'product_information'])->name('web.product_information');
-
-
 Route::match(['get', 'post'],'/humanRequestForm', [HomeController::class, 'human_request_form'])->name('web.humanRequestForm');
 
 Route::get('/email-template',function(){
@@ -146,5 +127,20 @@ Route::get('/sitemap_index.xml', [SiteMapController::class, 'sitemap'])->name('s
 Route::get('/page-sitemap.xml', [SiteMapController::class, 'pageSitemap'])->name('sitemap');
 Route::get('/products-sitemap.xml', [SiteMapController::class, 'productSitemap'])->name('sitemap');
 Route::get('/categories-sitemap.xml', [SiteMapController::class, 'categoriesSitemap'])->name('sitemap');
+
+//Categories
+Route::get('/{main_category?}/{sub_category?}/{child_category?}', [CategoriesController::class, 'showCategories'])->name('web.collections');
+Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
+Route::match(['get', 'post'], '/categorydetail', [CategoriesController::class, 'categoryDetail'])->name('web.categorydetail');
+Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
+Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
+Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
+Route::match(['get', 'post'], '/search', [CategoriesController::class, 'search'])->name('web.search');
+Route::get('/conditions', [CategoriesController::class, 'conditions'])->name('web.conditions');
+Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
+Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
+Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
+Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
+
 
 

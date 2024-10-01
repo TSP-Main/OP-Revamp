@@ -25,6 +25,7 @@ class RoleSeeder extends Seeder
         // Create permissions
         $permissions = [
             // Super Admin Permissions
+            'home',
             'dashboard',
             'comment_store',
             'vet_prescription',
@@ -129,7 +130,7 @@ class RoleSeeder extends Seeder
 
         // User Permissions
         $userPermissions = [
-//            'home',
+            'home',
             'dashboard',
             'store_query',
             'consultation_view',

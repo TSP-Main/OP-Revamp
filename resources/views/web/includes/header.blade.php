@@ -10,7 +10,7 @@
     }
 </style>
 <!-- Body main wrapper start -->
-<div class="body-wrapper">
+<header class="body-wrapper">
 
     <!-- HEADER AREA START (header-3) -->
     <header class="ltn__header-area ltn__header-3 section-bg-6---">
@@ -545,6 +545,7 @@
                                         <ul>
                                             <li><a style="background: none !important;" href="/" class="poppins-thin">Home</a>
                                             </li>
+{{--                                            @dd($menu_categories);--}}
                                             @foreach ($menu_categories as $key => $val)
 
                                                 <li class="menu-item">
@@ -587,7 +588,7 @@
                                                 </li>
                                             @endforeach
 
-                                            <li><a style="background: none !important;" href="/work"
+                                            <li><a style="background: none !important;" href="{{ route('web.work') }}"
                                                    class="poppins-thin">How it work's</a></li>
                                             <li><a style="background: none !important;" href="/help"
                                                    class="poppins-thin">Help</a></li>
@@ -622,11 +623,13 @@
                                                 class="fas fa-star"></i><i
                                                 class="fas fa-star-half"></i><strong>4.4</strong> based on
                                             <strong>1,421</strong> reviews</a></li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
     </header>
     <!-- HEADER AREA END -->
 
@@ -681,7 +684,6 @@
         function toggleSubMenu(submenuNumber) {
             var submenuId = "mySubMenu" + submenuNumber;
             var allSubmenus = document.getElementsByClassName("submenu");
-            console.log(allSubmenus);
             for (var i = 0; i < allSubmenus.length; i++) {
                 if (allSubmenus[i].id === submenuId) {
                     allSubmenus[i].classList.toggle("show");
@@ -718,6 +720,7 @@
                                         class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
                                         class="fas fa-star-half"></i><strong>4.4</strong> based on
                                     <strong>1,421</strong> reviews</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -777,7 +780,6 @@
         function toggleSubMenu(submenuNumber) {
             var submenuId = "mySubMenu" + submenuNumber;
             var allSubmenus = document.getElementsByClassName("submenu");
-            console.log(allSubmenus);
             for (var i = 0; i < allSubmenus.length; i++) {
                 if (allSubmenus[i].id === submenuId) {
                     allSubmenus[i].classList.toggle("show");

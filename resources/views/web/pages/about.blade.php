@@ -147,79 +147,79 @@
     color: #3c7ce7;">Company Values</h1>
                         <!-- <p>Our basic consultation services are designed to address your general health concerns and provide guidance on a wide range of common health issues. Whether you have questions about minor ailments, need advice on over-the-counter medications, or want information on maintaining a healthy lifestyle, our team of qualified healthcare professionals is here to assist you. The basic consultation service is user-friendly, allowing you to submit your queries online and receive prompt, confidential responses tailored to your specific needs.</p> -->
                          <div class="row">
-           
-             
+
+
           	<div class="col-md-4 value-box">
                 <div class="val-ic">
-               
+
               <img src="//online-pharmacy4u.co.uk/cdn/shop/files/value-1_1.png?v=1623676635" class="" />
-              
+
                 </div>
                 <h4>Trust</h4>
                 <p>Here at Online Pharmacy 4U, you can rest assured that all medications you order via our website all have the correct credentials and can all be cross-checked with the MHRA or the General Pharmaceuticals Council for your peace of mind. </p>
-            </div>   
-       		
-      		
-             
+            </div>
+
+
+
           	<div class="col-md-4 value-box">
                 <div class="val-ic">
-               
+
               <img src="//online-pharmacy4u.co.uk/cdn/shop/files/value-2_1.png?v=1623676650" class="" />
-              
+
                 </div>
                 <h4>Genuine</h4>
                 <p>All of our products & medications are UK ethically sources so you can rest assured of there origin. Even if you choose a leading brand or a cost-effective generic you can be assured al of our ranges are 100% genuine and effective. </p>
-            </div>   
-       		
-      		
-             
+            </div>
+
+
+
           	<div class="col-md-4 value-box">
                 <div class="val-ic">
-               
+
               <img src="//online-pharmacy4u.co.uk/cdn/shop/files/value-3_1.png?v=1623676664" class="" />
-              
+
                 </div>
                 <h4>Privacy</h4>
                 <p>We at Online Pharmacy 4U take our customers privacy extremely serious and do not share you medical data with any third party. Any medical notes we may have of you are only accessible by your doctor or pharmacist and we give you our 100% guarantee of their security. </p>
-            </div>   
-       		
-      		
-             
+            </div>
+
+
+
           	<div class="col-md-4 value-box">
                 <div class="val-ic">
-               
+
               <img src="//online-pharmacy4u.co.uk/cdn/shop/files/value-4_8ba2048f-240a-431d-b3a0-9778d2eeb528.png?v=1623674000" class="" />
-              
+
                 </div>
                 <h4>Service</h4>
                 <p>All our Online Pharmacy 4U dedicated team from our customer services department through to our experienced pharmacist are friendly and eager to help assist you, so if you have a problem or would like to talk to us about something rest assured we are on hand to assist you via online live chat, telephone, or email. </p>
-            </div>   
-       		
-      		
-             
+            </div>
+
+
+
           	<div class="col-md-4 value-box">
                 <div class="val-ic">
-               
+
               <img src="//online-pharmacy4u.co.uk/cdn/shop/files/value-5_034e9e47-1768-40fa-a2b8-07150328481f.png?v=1623674013" class="" />
-              
+
                 </div>
                 <h4>Expertise</h4>
                 <p>Things such as Medications can be confusing and complicated at times so due to this, we will only ever trust our own medical experts with your medical care. We have a permanent full time dedicated on-site superintendent pharmacist, as well as extremely efficient highly qualified online prescribers giving you peace of mind. </p>
-            </div>   
-       		
-      		
-             
+            </div>
+
+
+
           	<div class="col-md-4 value-box">
                 <div class="val-ic">
-               
+
               <img src="//online-pharmacy4u.co.uk/cdn/shop/files/value-6_18983210-0429-4e71-8aa3-0c247fe08fde.png?v=1623674027" class="" />
-              
+
                 </div>
                 <h4>Discretion</h4>
                 <p>You never have to worry about our deliveries to you as all of our parcels come in unbranded & unmarked packaging so you can rest assured its contents are for your eyes only </p>
-            </div>   
-       		
-      		 
+            </div>
+
+
 		</div>
                     </div>
                     <!-- <ul class="ltn__list-item-half clearfix">

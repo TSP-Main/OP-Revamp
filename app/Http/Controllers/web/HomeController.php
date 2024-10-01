@@ -4,7 +4,7 @@ namespace App\Http\Controllers\web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Mail\otpVerifcation;
+use App\Traits\MenuCategoriesTrait;
 
 // models ...
 use App\Models\Category;
@@ -13,30 +13,11 @@ use App\Models\FeaturedProduct;
 
 class HomeController extends Controller
 {
-    private $menu_categories;
-    protected $status;
-
-    public function __construct()
-    {
-        $this->status = config('constants.STATUS');
-        $this->menu_categories = Category::where('status', 'Active')
-            ->with(['subcategory' => function ($query) {
-                $query->where('status', 'Active')
-                    ->with(['childCategories' => function ($query) {
-                        $query->where('status', 'Active');
-                    }]);
-            }])
-            ->where('publish', 'Publish')
-            ->latest('id')
-            ->get()
-            ->toArray();
-
-        view()->share('menu_categories', $this->menu_categories);
-    }
-
+    use MenuCategoriesTrait;
     //index
-    public function index(Request $request)
+    public function index()
     {
+        $this->shareMenuCategories(); // from MenuCategoryTrait
         $data['user'] = auth()->user() ?? [];
         $featuredProducts = FeaturedProduct::with('product')->latest('id')->take(8)->get();
 
@@ -96,8 +77,9 @@ class HomeController extends Controller
         return view('web.pages.deliveryReturns');
     }
 
-    public function help(Request $request)
+    public function help()
     {
+        $this->shareMenuCategories();
         return view('web.pages.help');
     }
 
@@ -106,13 +88,15 @@ class HomeController extends Controller
         return view('web.pages.order_status');
     }
 
-    public function delivery(Request $request)
+    public function delivery()
     {
+        $this->shareMenuCategories();
         return view('web.pages.delivery');
     }
 
-    public function returns(Request $request)
+    public function returns()
     {
+        $this->shareMenuCategories();
         return view('web.pages.returns');
     }
 
@@ -121,43 +105,51 @@ class HomeController extends Controller
         return view('web.pages.complaints');
     }
 
-    public function policy(Request $request)
+    public function policy()
     {
+        $this->shareMenuCategories();
         return view('web.pages.policy');
     }
 
-    public function prescribers(Request $request)
+    public function prescribers()
     {
+        $this->shareMenuCategories();
         return view('web.pages.prescribers');
     }
 
     public function about(Request $request)
     {
+        $this->shareMenuCategories(); // from MenuCategoryTrait
         return view('web.pages.about');
     }
 
-    public function how_it_work(Request $request)
+    public function howItWork(Request $request)
     {
+        $this->shareMenuCategories();
         return view('web.pages.works');
     }
 
-    public function product_information(Request $request)
+    public function product_information()
     {
+        $this->shareMenuCategories();
         return view('web.pages.product_information');
     }
 
-    public function responsible_pharmacist(Request $request)
+    public function responsible_pharmacist()
     {
+        $this->shareMenuCategories();
         return view('web.pages.responsible_pharmacist');
     }
 
-    public function modern_slavery_act(Request $request)
+    public function modern_slavery_act()
     {
+        $this->shareMenuCategories();
         return view('web.pages.modern_slavery_act');
     }
 
-    public function opioid_policy(Request $request)
+    public function opioid_policy()
     {
+        $this->shareMenuCategories();
         return view('web.pages.opioid_policy');
     }
 
@@ -166,8 +158,9 @@ class HomeController extends Controller
         return view('web.pages.privacy_and_cookies_policy');
     }
 
-    public function terms_and_conditions(Request $request)
+    public function terms_and_conditions()
     {
+        $this->shareMenuCategories();
         return view('web.pages.terms_and_conditions');
     }
 

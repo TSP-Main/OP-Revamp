@@ -51,8 +51,8 @@
                         </div>
                     </div>
                     <!-- display none in bootstrap -->
-                    
-                   
+
+
                     <div class="col-xl-2 col-md-6 col-sm-6 col-6">
                         <div class="footer-widget footer-menu-widget clearfix">
                             <h4 class="footer-title">Information</h4>
@@ -60,7 +60,7 @@
                                 <ul>
                                     <li><a href="/work">How it works</a></li>
                                     <li><a href="/help">Help</a></li>
-                                    <li><a href="/about">About Us</a></li>
+                                    <li><a href="{{ route('web.about') }}">About Us</a></li>
                                     <li><a href="/prescribers">Prescribers</a></li>
                                     <!-- <li><a href="/blogs">Blogs</a></li> -->
                                     <li><a href="https://online-pharmacy4u.co.uk/pages/nhs-prescriptions" target="blank">NHS Prescriptions</a></li>
@@ -77,7 +77,7 @@
                                 <ul>
                                     <li><a href="/returns">Returns & Refunds</a></li>
                                     <li><a href="/policy">Policies</a></li>
-                                    <li><a href="/delivery">Delivery</a></li>  
+                                    <li><a href="/delivery">Delivery</a></li>
                                     <li><a href="/responsible_pharmacist">Responsible </a></li>
                                     <li><a href="{{ route('web.conditions')}}" target="blank">A-Z Condition</a></li>
                                     <li><a href="/modern_slavery_act">Modern Slavery Act</a></li>

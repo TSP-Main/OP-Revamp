@@ -48,7 +48,6 @@ class AuthController extends Controller
 
         view()->share('menu_categories', $this->menu_categories);
     }
-
     public function registerUser(RegisterUserRequest $request)
     {
         if (!auth()->check()) {
@@ -80,7 +79,9 @@ class AuthController extends Controller
                         'created_by' => Auth::id() ?? 1,
                     ]
                 );
-
+                if (!$user) {
+                    throw new \Exception('User creation failed');
+                }
                 // Assign role using Spatie, if provided
                 if ($request->has('role')) {
                     $user->assignRole($request->role);
@@ -100,7 +101,6 @@ class AuthController extends Controller
                         'short_bio' => $request->short_bio,
                     ]
                 );
-
                 // Create or update the user address
                 UserAddress::updateOrCreate(
                     ['user_id' => $user->id],
@@ -116,11 +116,14 @@ class AuthController extends Controller
 
                 // Log in the user if authentication is successful
                 if (Auth::attempt($request->only('email', 'password'))) {
-                    $token = auth()->user()->createToken('MyApp')->plainTextToken;
-
+                    try {
+                        $token = auth()->user()->createToken('MyApp')->plainTextToken;
+                    } catch (\Exception $e) {
+                        dd('here', $e->getMessage());
+                        return redirect()->back()->withErrors('Token creation failed: ' . $e->getMessage());
+                    }
                     DB::commit();
 
-                    // Handle redirection
                     $intendedUrl = session('intended_url');
                     session()->forget('intended_url');
                     return redirect($intendedUrl ? route('web.consultationForm') : '/dashboard');
