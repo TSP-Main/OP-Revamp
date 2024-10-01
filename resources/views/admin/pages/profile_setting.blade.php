@@ -151,7 +151,7 @@
                                                         <label for="profile_pic"
                                                                class="btn btn-primary bg-primary text-white btn-sm"
                                                                title="Upload new profile image"><i
-                                                                class="bi bi-upload"></i></lable>
+                                                                class="bi bi-upload"></i></label>
                                                             <!-- <a href="#" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a> -->
                                                     </div>
                                                     <label class="text-danger d-none img-error"></label>
@@ -327,7 +327,6 @@
 @stop
 
 @pushOnce('scripts')
-    <!-- password updates alerts -->
     <script>
     $(document).ready(function() {
         $('#passwordChangeForm').on('submit', function(e) {

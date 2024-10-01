@@ -1,6 +1,5 @@
 <!doctype html>
 <html class="no-js" lang="eng">
-
 <head>
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
