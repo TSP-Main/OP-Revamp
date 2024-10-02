@@ -141,7 +141,7 @@
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
                                         <li>
-                                            <div class="cart-plus-minus">
+                                            <div class="cart-plus-minus" role="button">
                                                 <input type="text" value="1" name="qtybutton" class="cart-plus-minus-box">
                                             </div>
                                         </li>

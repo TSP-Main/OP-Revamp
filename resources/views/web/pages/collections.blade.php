@@ -143,14 +143,14 @@
                                                                         </li>
                                                                     @else
                                                                         <li>
-                                                                            <a href="#"
-                                                                               title="You have to answer some question"
-                                                                               data-bs-toggle="modal"
-                                                                               data-bs-target="#add_to_cart_modal">
+                                                                            <a href="{{ route('web.product', ['id' => $val->slug])}}"
+                                                                               title="You have to answer some question">
                                                                                 <i class="fas fa-plus"></i>
                                                                             </a>
                                                                         </li>
                                                                     @endif
+
+
                                                                 @else
                                                                     <a class="btn btn-secondary disabled"
                                                                        title="Out of Stock" aria-disabled="true">

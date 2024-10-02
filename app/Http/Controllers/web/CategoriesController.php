@@ -120,6 +120,7 @@ class CategoriesController extends Controller
 
     public function search(Request $request)
     {
+        $this->shareMenuCategories();
         $data['string'] = $request->q;
         $category_id = Category::where('name', 'like', '%' . $data['string'] . '%')->pluck('id');
         $subCategory_id = SubCategory::where('name', 'like', '%' . $data['string'] . '%')->pluck('id');

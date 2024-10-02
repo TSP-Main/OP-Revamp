@@ -9,32 +9,14 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\ShipingDetail;
+use App\Traits\MenuCategoriesTrait;
 
 class CartController extends Controller
 {
-    private $menu_categories;
-
-    public function __construct()
-    {
-        $this->menu_categories = Category::where('status', 'Active')
-            ->with(['subcategory' => function ($query) {
-                $query->where('status', 'Active')
-                    ->with(['childCategories' => function ($query) {
-                        $query->where('status', 'Active');
-                    }]);
-            }])
-            ->where('publish', 'Publish')
-            ->latest('id')
-            ->get()
-            ->toArray();
-
-        view()->share('menu_categories', $this->menu_categories);
-    }
-
+    use MenuCategoriesTrait;
     public function cart()
     {
+        $this->shareMenuCategories();
         $data['cartContent'] = Cart::content();
         return view('web.pages.cart', $data);
     }
@@ -162,6 +144,7 @@ class CartController extends Controller
 
     public function checkout()
     {
+        $this->shareMenuCategories();
         if (Cart::count() == 0) {
             return redirect()->route('web.view.cart');
         } else {

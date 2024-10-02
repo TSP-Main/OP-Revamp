@@ -120,6 +120,7 @@
                                         </a>
                                         <a class="delete" style="cursor: pointer;" title="Delete" data-status="Deleted" data-id="{{$value['id']}}" data-toggle="tooltip">
                                             <i class="bi bi-trash-fill"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach

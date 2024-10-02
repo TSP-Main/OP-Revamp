@@ -2,7 +2,7 @@
 @section('title', 'Cart')
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <!-- BREADCRUMB AREA START -->
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image "  data-bs-bg="img/bg/14.jpg">
         <div class="container">
@@ -58,7 +58,7 @@
                                                 </td>
                                                 <td class="cart-product-price">£{{ $item->price }}</td>
                                                 <td class="cart-product-quantity" data-id="{{ $item->rowId }}">
-                                                    <div class="cart-plus-minus">
+                                                    <div class="cart-plus-minus" role="button">
                                                         <input type="text" value="{{ $item->qty }}" name="qtybutton" class="cart-plus-minus-box">
                                                     </div>
                                                 </td>
