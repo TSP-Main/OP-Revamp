@@ -22,6 +22,7 @@ use App\Traits\MenuCategoriesTrait;
 class AuthController extends Controller
 {
     use MenuCategoriesTrait;
+
     public function registerUser(RegisterUserRequest $request)
     {
         $this->shareMenuCategories();
@@ -126,118 +127,55 @@ class AuthController extends Controller
             return view('web.pages.registration_form', $data);
         }
     }
+
     public function loginForm()
     {
+        $this->shareMenuCategories();
         return view('web.pages.login');
     }
 
     public function login(LoginUserRequest $request)
     {
-        // Check if user is already authenticated
-        if (auth()->check()) {
-            return $this->redirectBasedOnRole(auth()->user());
-        }
-
-        $authenticatedUser = auth()->user();
-        if (!$authenticatedUser) {
-            if ($credentials = $request->only('email', 'password')) {
-
-                // Find the user by email
-                $user = User::where('email', $credentials['email'])->first();
-                if (!$user) {
-                    return redirect()->back()->with([
-                        'status' => 'noexistence',
-                        'message' => 'User does not exist',
-                        'email' => $credentials['email']
-                    ], 401);
-                }
-                // Verify the password using Hash::check
-                if (!Hash::check($credentials['password'], $user->password)) {
-                    return redirect()->back()->with([
-                        'status' => 'invalid',
-                        'message' => 'Invalid password',
-                        'email' => $credentials['email']
-                    ])->withInput();
-                }
-
-                // Check if the user is authorized to log in (check user status)
-                if (!in_array($user->status, auth_users())) {
-                    $statusMessages = [
-                        4 => 'User is unverified, please check your email',
-                        'default' => 'You are unauthorized to log in',
-                    ];
-                    $message = $statusMessages[$user->status] ?? $statusMessages['default'];
-
-                    return redirect()->back()->with([
-                        'status' => 'Deactive',
-                        'message' => $message,
-                        'email' => $credentials['email']
-                    ]);
-                }
-
-                // Attempt to log the user in
-                if (Auth::attempt($credentials)) {
-                    // Create a token for the user
-                    $token = $user->createToken('MyApp')->plainTextToken;
-
-                    // Redirect based on role
-                    return $this->redirectBasedOnRole($user);
-                } else {
-                    return redirect()->back()->with([
-                        'status' => 'invalid',
-                        'message' => 'Invalid credentials',
-                        'email' => $credentials['email']
-                    ]);
-                }
+        try {
+            if (!Auth::attempt($request->only(['email', 'password']))) {
+                return response()->json('User login failed', 406);
             }
 
-        } else {
-            return view('web.pages.login');
+            $user = Auth::user();
+            $token = $user->createToken('MyApp')->plainTextToken;
+
+            return $this->redirectBasedOnRole($user);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error', 'Something went wrong, error in processing email'], 406);
         }
     }
 
     protected function redirectBasedOnRole($user)
     {
-        // Redirect users based on their role using Spatie
-        if ($user->hasRole('super_admin')) {
-            return redirect('/dashboard');
-        }
-
-        if ($user->hasRole('dispensary')) {
-            return redirect('/dashboard');
-        }
-
-        if ($user->hasRole('doctor')) {
-            return redirect('/dashboard');
-        }
-
         if ($user->hasRole('user')) {
             $intendedUrl = session('intended_url');
             session()->forget('intended_url');
             return $intendedUrl ? redirect()->route('web.consultationForm') : redirect('/dashboard');
         }
 
-        return redirect('/');
+        return redirect('/dashboard');
     }
 
     public function logout()
     {
         $user = auth()->user();
-        // Flush the session and log out the user
-        session()->flush();
-        Auth::logout();
 
-        // Role-based redirection using Spatie roles
-        if ($user && $user->hasRole('super_admin')) {
-            return redirect('/login');
+        // Log out the user first, and invalidate the session
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken(); // Protect against CSRF
+
+        // Role-based redirection
+        if ($user->hasRole('user')) {
+            return redirect('/');
         }
-        if ($user && $user->hasRole('dispensary')) {
-            return redirect('/login');
-        }
-        if ($user && $user->hasRole('doctor')) {
-            return redirect('/login');
-        }
-        // Default role or if no role, redirect to homepage
+
         return redirect('/');
     }
 
@@ -306,7 +244,7 @@ class AuthController extends Controller
 
     public function profile_setting(ProfileRequest $request)
     {
-        $user = auth()->user()  ;
+        $user = auth()->user();
         $this->authorize('setting');
 
         DB::beginTransaction();
