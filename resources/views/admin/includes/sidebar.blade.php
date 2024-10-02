@@ -377,8 +377,7 @@
                 </ul>
             </li>
         @endif
-
-        @if(auth()->user()->hasPermissionTo('prescription_orders'))
+        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('prescription_orders'))
             <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs('admin.prescriptionOrders')) ? '' : 'collapsed'}}  "
                    href="{{route('admin.prescriptionOrders')}}">
@@ -386,8 +385,7 @@
                 </a>
             </li>
         @endif
-
-        @if(auth()->user()->hasPermissionTo('online_clinic_orders'))
+        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('online_clinic_orders'))
             <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs('admin.onlineClinicOrders')) ? '' : 'collapsed'}} "
                    href="{{route('admin.onlineClinicOrders')}}">
@@ -396,7 +394,7 @@
             </li>
         @endif
 
-        @if(auth()->user()->hasPermissionTo('shop_orders'))
+        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('shop_orders'))
             <li class="nav-item ">
                 <a class="nav-link {{(request()->routeIs('admin.shopOrders')) ? '' : 'collapsed'}}"
                    href="{{route('admin.shopOrders')}}">
@@ -405,7 +403,7 @@
             </li>
         @endif
 
-        @if(auth()->user()->hasPermissionTo('gpa_letters'))
+        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('shop_orders'))
             <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs('admin.gpaLeters')) ? '' : 'collapsed'}}"
                    href="{{route('admin.gpaLeters')}}">
@@ -447,31 +445,30 @@
         @endif
 
         <!-------------------------- SOP tabs work start ------------------------------->
-        @if(auth()->user()->hasRole('super_admin'))
-            <li class="nav-item">
-                <a class="nav-link {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapsed'}} "
-                   data-bs-target="#siderbar-users" data-bs-toggle="collapse">
-                    <i class="bi bi-person"></i><span>SOP's</span><i class="bi bi-chevron-down ms-auto"></i>
-                </a>
-                <ul id="siderbar-users"
-                    class="nav-content {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapse'}} "
-                    data-bs-parent="#sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapsed'}} "
+               data-bs-target="#siderbar-users" data-bs-toggle="collapse">
+                <i class="bi bi-person"></i><span>SOP's</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="siderbar-users"
+                class="nav-content {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapse'}} "
+                data-bs-parent="#sidebar-nav">
+                @if(auth()->user()->hasRole('super_admin'))
                     <li>
                         <a class="{{(request()->routeIs(['admin.addSOP'])) ? 'nav-link ' : ''}} "
                            href="{{route('admin.addSOP')}}">
                             <i class="bi bi-circle"></i><span>Add SOP</span>
                         </a>
                     </li>
-
-                    <li>
-                        <a class="{{(request()->routeIs(['admin.sops'])) ? 'nav-link ' : ''}} "
-                           href="{{route('admin.sops')}}">
-                            <i class="bi bi-circle"></i><span>SOP's</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        @endif
+                @endif
+                <li>
+                    <a class="{{(request()->routeIs(['admin.sops'])) ? 'nav-link ' : ''}} "
+                       href="{{route('admin.sops')}}">
+                        <i class="bi bi-circle"></i><span>SOP's</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
         <!-------------------------- SOP tabs work end ------------------------------------>
     </ul>
 </aside>

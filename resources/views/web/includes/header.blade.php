@@ -111,7 +111,7 @@
                                                 <ul>
                                                     @if(auth()->user())
                                                         <li><a href="{{ route('web.index') }}">My Account</a></li>
-                                                        <li><a href="/logout">Sign Out</a></li>
+                                                        <li><a href="{{ route('web.logout') }}">Sign Out</a></li>
                                                     @else
                                                         <li><a href="{{ route('sign_in_form') }}">Sign in</a></li>
                                                         <li><a href="/register">Register</a></li>
