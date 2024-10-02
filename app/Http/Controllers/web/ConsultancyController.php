@@ -10,14 +10,14 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\Consultancy\UpdateIdDocumentRequest;
 use Illuminate\Support\Facades\Session;
+use App\Traits\MenuCategoriesTrait;
 
 class ConsultancyController extends Controller
 {
-    private $menu_categories;
-    protected $status;
-    protected $ENV;
+    use MenuCategoriesTrait;
     public function consultationForm(Request $request)
     {
+        $this->shareMenuCategories();
         $data['user'] = auth()->user() ?? [];
         $data['template'] = $request->template ?? session('template');
         $data['product_id'] = $request->product_id ?? session('product_id');
@@ -87,6 +87,7 @@ class ConsultancyController extends Controller
 
     public function consultationStore(Request $request)
     {
+        $this->shareMenuCategories();
         $consultations = Session::get('consultations', []);
         $questionAnswers = [];
         foreach ($request->all() as $key => $value) {
