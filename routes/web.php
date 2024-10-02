@@ -100,7 +100,6 @@ Route::get('/order_status', [HomeController::class, 'order_status'])->name('web.
 Route::get('/delivery', [HomeController::class, 'delivery'])->name('web.delivery');
 Route::get('/returns', [HomeController::class, 'returns'])->name('web.returns');
 Route::get('/complaints', [HomeController::class, 'complaints'])->name('web.complaints');
-Route::get('/complaints', [HomeController::class, 'complaints'])->name('web.complaints');
 Route::get('/blogs', [HomeController::class, 'blogs'])->name('web.blogs');
 Route::get('/blog-details', [HomeController::class, 'blog_details'])->name('web.blog-details');
 Route::get('/policy', [HomeController::class, 'policy'])->name('web.policy');
@@ -129,7 +128,6 @@ Route::get('/products-sitemap.xml', [SiteMapController::class, 'productSitemap']
 Route::get('/categories-sitemap.xml', [SiteMapController::class, 'categoriesSitemap'])->name('sitemap');
 
 //Categories
-Route::get('/{main_category?}/{sub_category?}/{child_category?}', [CategoriesController::class, 'showCategories'])->name('web.collections');
 Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
 Route::match(['get', 'post'], '/categorydetail', [CategoriesController::class, 'categoryDetail'])->name('web.categorydetail');
 Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
@@ -141,6 +139,8 @@ Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'cate
 Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
 Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
 Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
+Route::get('/{main_category?}/{sub_category?}/{child_category?}', [CategoriesController::class, 'showCategories'])->name('web.collections');
+
 
 
 

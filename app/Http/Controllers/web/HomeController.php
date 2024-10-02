@@ -83,8 +83,9 @@ class HomeController extends Controller
         return view('web.pages.help');
     }
 
-    public function order_status(Request $request)
+    public function order_status()
     {
+        $this->shareMenuCategories();
         return view('web.pages.order_status');
     }
 
@@ -100,8 +101,9 @@ class HomeController extends Controller
         return view('web.pages.returns');
     }
 
-    public function complaints(Request $request)
+    public function complaints()
     {
+        $this->shareMenuCategories();
         return view('web.pages.complaints');
     }
 
@@ -123,7 +125,7 @@ class HomeController extends Controller
         return view('web.pages.about');
     }
 
-    public function howItWork(Request $request)
+    public function howItWork()
     {
         $this->shareMenuCategories();
         return view('web.pages.works');
