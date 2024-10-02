@@ -2,7 +2,7 @@
 @section('title', 'Help')
 @section('content')
 
-    
+
 <div class="ltn__utilize-overlay"></div>
 
 <!-- BREADCRUMB AREA START -->
@@ -86,10 +86,10 @@
                 <div class="col-lg-3 col-sm-4 col-12">
                     <div class="ltn__blog-item ltn__blog-item-3 border-radius text-center ltn__blog-brief help_card">
                         <div class="ltn__blog-img">
-                            <a href="/how_it_work" class="text-center"><img src="/img/help-img/how-it-works-icon_d1bdae8c-dec8-4318-a13d-6575770d375e.webp" alt="#" class="text-center"></a>
+                            <a href="/work" class="text-center"><img src="/img/help-img/how-it-works-icon_d1bdae8c-dec8-4318-a13d-6575770d375e.webp" alt="#" class="text-center"></a>
                         </div>
                         <div class="help_card_title">
-                            <h3 class="ltn__blog-title animated fadeIn pt-4"><a href="/how_it_work">How It Works</a></h3>
+                            <h3 class="ltn__blog-title animated fadeIn pt-4"><a href="/work">How It Works</a></h3>
                         </div>
                     </div>
                 </div>
@@ -110,7 +110,7 @@
                  <div class="col-lg-3 col-sm-4 col-12">
                 </div>
                 <!-- help card-->
-                
+
             </div>
         </div>
     </div>

@@ -155,10 +155,7 @@ class DashboardController extends Controller
     public function contact()
     {
         $user = auth()->user();
-        if ($user->hasPermissionTo('store_query'))
-        {
-            return redirect()->back();
-        }
+        $user->hasPermissionTo('store_query');
 
         // Store the authenticated user in $data
         $data['user'] = $user;

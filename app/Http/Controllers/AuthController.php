@@ -8,7 +8,6 @@ use App\Http\Requests\Auth\ProfileRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Requests\Auth\OtpVerifiedRequest;
 use App\Mail\OTPMail;
-use App\Models\Category;
 use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\UserProfile;
@@ -17,39 +16,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use App\Traits\MenuCategoriesTrait;
 
 
 class AuthController extends Controller
 {
-    private $menu_categories;
-    protected $status;
-    protected $ENV;
-
-    public function __construct()
-    {
-        $this->user = auth()->user();
-        $this->status = config('constants.USER_STATUS');
-
-        $this->menu_categories = Category::where('status', 'Active')
-            ->with([
-                'subcategory' => function ($query) {
-                    $query->where('status', 'Active')
-                        ->with([
-                            'childCategories' => function ($query) {
-                                $query->where('status', 'Active');
-                            }
-                        ]);
-                }
-            ])
-            ->where('publish', 'Publish')
-            ->latest('id')
-            ->get()
-            ->toArray();
-
-        view()->share('menu_categories', $this->menu_categories);
-    }
+    use MenuCategoriesTrait;
     public function registerUser(RegisterUserRequest $request)
     {
+        $this->shareMenuCategories();
         if (!auth()->check()) {
             try {
                 DB::beginTransaction();

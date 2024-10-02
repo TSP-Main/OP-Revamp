@@ -379,7 +379,7 @@
         @if(auth()->user()->hasPermissionTo('prescription_orders'))
             <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs('admin.prescriptionOrders')) ? '' : 'collapsed'}}  "
-                       href="{{route('admin.prescriptionOrders')}}">
+                   href="{{route('admin.prescriptionOrders')}}">
                     <i class="bi bi-bar-chart"></i><span>Prescription Orders</span>
                 </a>
             </li>
@@ -414,15 +414,15 @@
 
         <li class="nav-heading">-------- user's Basic Settings --------</li>
 
-        @if(auth()->user()->hasPermissionTo('setting'))
-            <li class="nav-item">
-                <a class="nav-link {{(request()->routeIs('admin.profileSetting')) ? '' : 'collapsed'}} "
-                   href="{{route('admin.profileSetting')}}">
-                    <i class="bi bi-person"></i>
-                    <span>Profile Setting</span>
-                </a>
-            </li>
-        @endif
+        {{--        @if(auth()->user()->hasPermissionTo('setting'))--}}
+        {{--            <li class="nav-item">--}}
+        {{--                <a class="nav-link {{(request()->routeIs('admin.profileSetting')) ? '' : 'collapsed'}} "--}}
+        {{--                   href="{{route('admin.profileSetting')}}">--}}
+        {{--                    <i class="bi bi-person"></i>--}}
+        {{--                    <span>Profile Setting</span>--}}
+        {{--                </a>--}}
+        {{--            </li>--}}
+        {{--        @endif--}}
 
         @if(auth()->user()->hasPermissionTo('faq'))
             <li class="nav-item displaynone">
@@ -445,30 +445,31 @@
         @endif
 
         <!-------------------------- SOP tabs work start ------------------------------->
-        <li class="nav-item">
-            <a class="nav-link {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapsed'}} "
-               data-bs-target="#siderbar-users" data-bs-toggle="collapse">
-                <i class="bi bi-person"></i><span>SOP's</span><i class="bi bi-chevron-down ms-auto"></i>
-            </a>
-            <ul id="siderbar-users"
-                class="nav-content {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapse'}} "
-                data-bs-parent="#sidebar-nav">
-                @if($user->hasRole('super_admin'))
+        @if(auth()->user()->hasRole('super_admin'))
+            <li class="nav-item">
+                <a class="nav-link {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapsed'}} "
+                   data-bs-target="#siderbar-users" data-bs-toggle="collapse">
+                    <i class="bi bi-person"></i><span>SOP's</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="siderbar-users"
+                    class="nav-content {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapse'}} "
+                    data-bs-parent="#sidebar-nav">
                     <li>
                         <a class="{{(request()->routeIs(['admin.addSOP'])) ? 'nav-link ' : ''}} "
                            href="{{route('admin.addSOP')}}">
                             <i class="bi bi-circle"></i><span>Add SOP</span>
                         </a>
                     </li>
-                @endif
-                <li>
-                    <a class="{{(request()->routeIs(['admin.sops'])) ? 'nav-link ' : ''}} "
-                       href="{{route('admin.sops')}}">
-                        <i class="bi bi-circle"></i><span>SOP's</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
+
+                    <li>
+                        <a class="{{(request()->routeIs(['admin.sops'])) ? 'nav-link ' : ''}} "
+                           href="{{route('admin.sops')}}">
+                            <i class="bi bi-circle"></i><span>SOP's</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
         <!-------------------------- SOP tabs work end ------------------------------------>
     </ul>
 </aside>

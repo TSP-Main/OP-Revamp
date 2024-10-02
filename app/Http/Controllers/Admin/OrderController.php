@@ -22,10 +22,8 @@ class OrderController extends Controller
     public function prescription_orders()
     {
         $user = auth()->user();
-        $page_name = 'prescription_orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $user->hasPermissionTo('prescription_orders');
+
         $data['user'] = auth()->user();
         $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'user_id' => $user->id, 'order_for' => 'doctor'])->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -40,10 +38,7 @@ class OrderController extends Controller
     public function online_clinic_orders()
     {
         $user = auth()->user();
-        $page_name = 'online_clinic_orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $user->hasPermissionTo('online_clinic_orders');
 
         $data['user'] = auth()->user();
         $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'email' => $user->email, 'order_for' => 'despensory'])->latest('created_at')->get()->toArray();
@@ -62,10 +57,7 @@ class OrderController extends Controller
     public function shop_orders()
     {
         $user = auth()->user();
-        $page_name = 'shop_orders';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $user->hasPermissionTo('shop_orders');
 
         $data['user'] = auth()->user();
         $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'email' => $user->email, 'order_for' => 'despensory'])->latest('created_at')->get()->toArray();

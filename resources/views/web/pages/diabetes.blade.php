@@ -89,7 +89,7 @@
                             <li>
                                <div class="showing-product-number text-right">
                                     {{-- <span>Showing 1–12 of 18 results</span> --}}
-                                </div> 
+                                </div>
                             </li>
                             <li class="d-none">
                                <div class="short-by text-center">
@@ -100,7 +100,7 @@
                                         <option>Sort by price: low to high</option>
                                         <option>Sort by price: high to low</option>
                                     </select>
-                                </div> 
+                                </div>
                             </li>
                         </ul>
                     </div>

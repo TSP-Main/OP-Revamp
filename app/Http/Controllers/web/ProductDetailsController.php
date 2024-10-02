@@ -21,6 +21,7 @@ class ProductDetailsController extends Controller
     use MenuCategoriesTrait;
     public function shop(Request $request, $category = null, $sub_category = null, $child_category = null)
     {
+        $this->shareMenuCategories();
         // Get consultation data
         $slug = $this->getSlug($category, $sub_category, $child_category);
         $data['pre_add_to_cart'] = $this->checkConsultation($slug) ? 'yes' : 'no';
@@ -86,8 +87,10 @@ class ProductDetailsController extends Controller
      */
     private function getProducts($category_detail, Request $request, $category, $sub_category, $child_category)
     {
+//        $this->shareMenuCategories();
         if ($category_detail) {
             if ($category && $sub_category && $child_category) {
+
                 return Product::where(['status' => $this->status['Active'], 'child_category' => $category_detail->id])->paginate(20);
             } elseif ($category && $sub_category && !$child_category) {
                 return Product::where(['status' => $this->status['Active'], 'sub_category' => $category_detail->id])->paginate(20);
@@ -112,6 +115,7 @@ class ProductDetailsController extends Controller
 
     public function show_products(Request $request, $category = null, $sub_category = null, $child_category = null)
     {
+        $this->shareMenuCategories();
         // Get consultation data
         $slug = $this->getSlug($category, $sub_category, $child_category);
         $data['pre_add_to_cart'] = $this->checkConsultation($slug) ? 'yes' : 'no';
@@ -168,6 +172,7 @@ class ProductDetailsController extends Controller
 
     public function product_detail($slug)
     {
+        $this->shareMenuCategories();
         $data['user'] = auth()->user() ?? [];
         // $data['product'] = Product::with('category:id,name,slug', 'sub_cat:id,name,slug', 'child_cat:id,name,slug', 'variants')->findOrFail($request->id);
         $data['product'] = Product::with('productAttributes:id,product_id,image', 'category:id,name,slug', 'sub_cat:id,name,slug', 'child_cat:id,name,slug', 'variants')
@@ -213,6 +218,39 @@ class ProductDetailsController extends Controller
             redirect()->back();
         }
     }
+
+    public function get_related_products($product)
+    {
+        $category = $product->category_id;
+        $sub_category = $product->sub_category;
+        $child_category = $product->child_category;
+        $level = '';
+        if ($category && $sub_category && $child_category) {
+            $level = 'child';
+        } else if ($category && $sub_category && !$child_category) {
+            $level = 'sub';
+        } else if ($category && !$sub_category && !$child_category) {
+            $level = 'main';
+        }
+
+        //switches
+        switch ($level) {
+            case 'main':
+                $products = Product::where(['status' => $this->status['Active'], 'category_id' => $category])->where('id', '!=', $product->id)->latest('id')->get();
+                break;
+            case 'sub':
+                $products = Product::where(['status' => $this->status['Active'], 'sub_category' => $sub_category])->where('id', '!=',  $product->id)->latest('id')->get();
+                break;
+            case 'child':
+                $products = Product::where(['status' => $this->status['Active'], 'child_category' => $child_category])->where('id', '!=', $product->id)->latest('id')->get();
+                break;
+            default:
+                $products = Product::where(['status' => $this->status['Active']])->get();
+        }
+
+        return $products ?? NULL;
+    }
+
 
     public function product_question(Request $request)
     {
