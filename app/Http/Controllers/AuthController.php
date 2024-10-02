@@ -94,7 +94,6 @@ class AuthController extends Controller
                     try {
                         $token = auth()->user()->createToken('MyApp')->plainTextToken;
                     } catch (\Exception $e) {
-                        dd('here', $e->getMessage());
                         return redirect()->back()->withErrors('Token creation failed: ' . $e->getMessage());
                     }
                     DB::commit();
@@ -117,8 +116,9 @@ class AuthController extends Controller
         }
     }
 
-    public function registration_form(Request $request)
+    public function registration_form()
     {
+        $this->shareMenuCategories();
         $data['user'] = auth()->user() ?? [];
         if (auth()->user()) {
             return redirect('/admin');

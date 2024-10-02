@@ -254,6 +254,7 @@ class ProductDetailsController extends Controller
 
     public function product_question(Request $request)
     {
+        $this->shareMenuCategories();
         $data['user'] = auth()->user() ?? [];
         if (auth()->user()) {
             if (isset(session('consultations')[$request->id])) {

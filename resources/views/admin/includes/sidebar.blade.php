@@ -7,14 +7,16 @@
 <!-- ======= Sidebar ======= -->
 <aside id="sidebar" class="sidebar">
     <ul class="sidebar-nav" id="sidebar-nav">
-        @can('home')
-            <li class="nav-item">
-                <a class="btn btn-success w-100 mb-2 rounded-pill px-5 py-2 fw-bold" href="{{route('web.index')}}">
-                    <i class="bi bi-arrow-right-circle"></i>
-                    <span>Go To Shop</span>
-                </a>
-            </li>
-        @endcan
+        @if(auth()->user()->HasRole('user'))
+            @can('home')
+                <li class="nav-item">
+                    <a class="btn btn-success w-100 mb-2 rounded-pill px-5 py-2 fw-bold" href="{{route('web.index')}}">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        <span>Go To Shop</span>
+                    </a>
+                </li>
+            @endcan
+        @endif
 
         @can('dashboard')
             <li class="nav-item">
