@@ -21,17 +21,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
+use App\Traits\MenuCategoriesTrait;
 
 class PaymentController extends Controller
 {
+    use MenuCategoriesTrait;
     public function payment(Request $request)
     {
-        // dd($request->all());
+        $this->shareMenuCategories();
         $user = auth()->user() ?? [];
         $data = $request->all();
         $order_ids = $request->input('order_id.order_id', []);
-        // dd($order_ids);
 
         if (!empty($order_ids)) {
             $order = Order::whereIn('id', $order_ids)->get();
@@ -51,7 +51,6 @@ class PaymentController extends Controller
                 ]);
             }
 
-            // dd($order);
             if ($order) {
                 $order_details = [];
                 $index = 0;
@@ -109,7 +108,6 @@ class PaymentController extends Controller
 
                     $index++;
                 }
-                // dd($order_details);
 
                 // Update or create OrderDetail records
                 foreach ($order_details as $detail) {
@@ -118,15 +116,12 @@ class PaymentController extends Controller
                         $detail
                     );
                 }
-                // dd ($order_detail_update);
 
                 Order::where(['id' => $order->id])->latest('created_at')->first()
                     ->update(['order_for' => $order_for]);
 
 
                 // $inserted =  OrderDetail::insert($order_details);
-
-                // dd($request->all());
                 if ($inserted) {
                     $shipping_details[] = [
                         'order_id' => $order->id,
@@ -151,7 +146,6 @@ class PaymentController extends Controller
                             $detail
                         );
                     }
-                    // dd($shiping);
                     if ($shiping) {
                         session()->put('order_id', $order->id);
                         $payable_ammount = $request->total_ammount * 100;
@@ -224,7 +218,6 @@ class PaymentController extends Controller
 
         if (empty($order_ids)) {
 
-            // dd($request->all());
             $order =  Order::create([
                 'user_id'        => $user->id ?? 'guest',
                 'email'          => $request->email,
@@ -424,7 +417,6 @@ class PaymentController extends Controller
     // response example  url : https://onlinepharmacy-4u.co.uk/Completed-order?t=8cbe1c22-08bf-46f7-815a-b4edf9c76c22&s=7217646205950618&lang=en-GB&eventId=0&eci=1
     public function completedOrder(Request $request)
     {
-
         $transetion_id = $request->query('t');
         $orderCode = $request->query('s');
         $payment_detail = PaymentDetail::where('orderCode', $orderCode)->firstOrFail();
@@ -485,7 +477,7 @@ class PaymentController extends Controller
                 </script>";
                 exit;
             } else {
-                dd('Order could not developer');
+                return $response->json('Order could not developer');
             }
         } else {
             dd('No Payment details found.');
@@ -554,7 +546,7 @@ class PaymentController extends Controller
                     exit;
                 }
             } else {
-                dd('Order could not  found.');
+                return $response->json('Order could not found.');
             }
         } else {
             dd('No Payment details found.');
@@ -623,8 +615,9 @@ class PaymentController extends Controller
             return redirect()->back()->with(['msg' => $message]);
         }
     }
+
     public function successfullyRefunded(Request $request)
     {
-        return 'ammount is refunded';
+        return 'amount is refunded';
     }
 }

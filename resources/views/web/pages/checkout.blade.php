@@ -192,7 +192,7 @@
                 </div>
             </div>
             <div style="float: right;">
-                <button id="placeOrderBtn" class="btn theme-btn-1 btn-effect-1 text-uppercase" type="button" style="margin-top: 30px;">Procceed To Pay</button>
+                <button id="placeOrderBtn" class="btn theme-btn-1 btn-effect-1 text-uppercase" type="button" style="margin-top: 30px;">Proceed To Pay</button>
             </div>
         </form>
         <div id="iframeContainer" class="vh-100 w-100 "></div>
