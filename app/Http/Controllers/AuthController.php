@@ -243,6 +243,7 @@ class AuthController extends Controller
 
     public function profileSettingPage()
     {
+        // profile setting page
         $user = auth()->user();
         $data['user'] = $user;
         return view('admin.pages.profile_setting', $data);
