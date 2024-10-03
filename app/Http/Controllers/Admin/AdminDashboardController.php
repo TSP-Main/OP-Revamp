@@ -55,19 +55,13 @@ use App\Models\PMedGeneralQuestion;
 use App\Models\PrescriptionMedGeneralQuestion;
 use App\Models\SOP;
 use App\Models\HumanRequestForm;
+use App\Traits\UserStatusTrait;
 
 class AdminDashboardController extends Controller
 {
-    protected $status;
-    protected $user;
+    use UserStatusTrait;
     private $username = 'dkwrul3i0r4pwsgkko3nr8c4vs0h5yn5tunio398ik403.apps.vivapayments.com'; //client id
     private $password = 'BuLY8U1pEsXNPBgaqz98y54irE7OpL'; // secrit key
-
-    public function __construct()
-    {
-        $this->user = auth()->user();
-        $this->status = config('constants.USER_STATUS');
-    }
 
     private function getAccessToken()
     {
@@ -101,31 +95,14 @@ class AdminDashboardController extends Controller
         // return view('admin.pages.dashboard');
     }
 
-    // system roles .... Super Admin, Dispensary, Doctor,User,
-//    public function admins(Request $request)
-//    {
-//        $user = auth()->user();
-//        $page_name = 'dispensaries';
-//        if (!view_permission($page_name)) {
-//            return redirect()->back();
-//        }
-//
-//        $data['user'] = auth()->user();
-//
-//        if (isset($user->role) && $user->role == user_roles('1')) {
-//            $data['admins'] = User::where(['role' => user_roles('2')])->latest('id')->get()->toArray();
-//        }
-//
-//        return view('admin.pages.admins', $data);
-//    }
     public function admins()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('dispensaries');
         $data['user'] = $user;
 
         if ($user->hasRole('super_admin')) {
-            $data['admins'] = User::role('dispensary')->latest('id')->get()->toArray();
+            $data['admins'] = User::with('profile', 'address')->role('dispensary')->latest('id')->get()->toArray();
         }
 
         return view('admin.pages.admins', $data);
@@ -133,12 +110,12 @@ class AdminDashboardController extends Controller
 
     public function add_admin(Request $request)
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('add_dispensary');
 
         $data['state_list'] = STATE_LIST();
         if ($request->has('id')) {
-            $data['admin'] = User::findOrFail($request->id)->toArray();
+            $data['admin'] = User::with('profile', 'address')->findOrFail($request->id)->toArray();
         }
 
         return view('admin.pages.add_admin', $data);
@@ -146,8 +123,7 @@ class AdminDashboardController extends Controller
 
     public function store_admin(StoreAdminRequest $request)
     {
-        $user = auth()->user();
-        // Authorize the user to add dispensary (already handled in the StoreAdminRequest class)
+        $user = $this->getAuthUser();
 
         // Prepare data for creating or updating the admin
         $updateData = [
@@ -159,7 +135,7 @@ class AdminDashboardController extends Controller
             'zip_code' => $request->zip_code,
             'city' => $request->city,
             'state' => $request->state,
-            'status' => $this->status['Active'],
+            'status' => $this->getUserStatus('Active'),
             'created_by' => $user->id,
         ];
 
@@ -187,14 +163,13 @@ class AdminDashboardController extends Controller
     // doctors managment ...
     public function doctors()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('doctors');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
 
         if ($user->hasRole('super_admin')) {
-//            $data['doctors'] = User::where(['role' => user_roles('3')])->latest('id')->get()->toArray();
-            $data['doctors'] = User::role('doctor')->latest('id')->get()->toArray();
+            $data['doctors'] = User::with('address', 'profile')->role('doctor')->latest('id')->get()->toArray();
         }
 
         return view('admin.pages.doctors', $data);
@@ -204,9 +179,9 @@ class AdminDashboardController extends Controller
     {
         $this->authorize('add_doctor');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         if ($request->has('id')) {
-            $data['doctor'] = User::findOrFail($request->id)->toArray();
+            $data['doctor'] = User::with('address', 'profile')->findOrFail($request->id)->toArray();
         }
 
         return view('admin.pages.add_doctor', $data);
@@ -214,46 +189,75 @@ class AdminDashboardController extends Controller
 
     public function store_doctor(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_doctor');
 
-        $updateData = [
-            'name' => ucwords($request->name),
-            'email' => $request->email,
-//            'role' => $request->role,
-            'phone' => $request->phone,
-            'gender' => $request->gender,
-            'address' => $request->address,
-            'short_bio' => $request->short_bio,
-            'zip_code' => $request->zip_code,
-            'city' => $request->city,
-            'status' => $this->status['Active'],
-            'created_by' => $user->id,
-        ];
+        // Start a DB transaction
+        DB::beginTransaction();
 
-        if ($request->password) {
-            $updateData['password'] = Hash::make($request->password);
-        }
+        try {
+            // User data to update
+            $updateUserData = [
+                'name' => ucwords($request->name),
+                'email' => $request->email,
+                'status' => $this->getUserStatus('Active'),
+                'created_by' => $user->id,
+            ];
 
-        $saved = User::updateOrCreate(
-            ['id' => $request->id ?? NULL],
-            $updateData
-        );
-        $message = "Doctor " . ($request->id ? "Updated" : "Saved") . " Successfully";
-        if ($saved) {
-            $saved->syncRoles($request->role);
+            // If password is provided, hash and add it to the update data
+            if ($request->password) {
+                $updateUserData['password'] = Hash::make($request->password);
+            }
+
+            // Save or update user
+            $savedUser = User::updateOrCreate(
+                ['id' => $request->id ?? NULL],
+                $updateUserData
+            );
+
+            $profileData = [
+                'phone' => $request->phone,
+                'gender' => $request->gender,
+                'short_bio' => $request->short_bio,
+            ];
+
+            $savedUser->profile()->updateOrCreate(
+                ['user_id' => $savedUser->id],
+                $profileData
+            );
+
+            $addressData = [
+                'address' => $request->address,
+                'zip_code' => $request->zip_code,
+                'city' => $request->city,
+            ];
+
+            $savedUser->address()->updateOrCreate(
+                ['user_id' => $savedUser->id],
+                $addressData
+            );
+
+            $savedUser->syncRoles($request->role);
+
+            DB::commit();
+            $message = "Doctor " . ($request->id ? "Updated" : "Saved") . " Successfully";
             return redirect()->route('admin.doctors')->with(['msg' => $message]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with(['msg' => 'Operation failed. Please try again.']);
         }
     }
 
     //users management ...
     public function users()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('users');
         $data['user'] = $user;
         if ($user->hasRole('super_admin')) {
-            $data['users'] = User::role('user')->latest('id')->get()->toArray();
+            $data['users'] = User::with('profile', 'address')->role('user')->latest('id')->get()->toArray();
         }
 
         return view('admin.pages.users', $data);
@@ -262,7 +266,7 @@ class AdminDashboardController extends Controller
     // categories managment ...
     public function categories()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('categories');
         $data['user'] = $user;
 
@@ -275,7 +279,7 @@ class AdminDashboardController extends Controller
 
     public function sub_categories()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('sub_categories');
         $data['user'] = $user;
 
@@ -288,7 +292,7 @@ class AdminDashboardController extends Controller
 
     public function child_categories()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('child_categories');
         $data['user'] = $user;
 
@@ -301,10 +305,10 @@ class AdminDashboardController extends Controller
 
     public function add_category(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_category');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $data['title'] = 'Add Category';
         if ($request->has('id')) {
             $data['title'] = 'Edit Category';
@@ -330,10 +334,10 @@ class AdminDashboardController extends Controller
     //sop management
     public function sops()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('sops');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $data['title'] = "SOP's";
         if ($user->hasRole('super_admin')) {
             $data['sops'] = SOP::get()->toArray();
@@ -348,7 +352,7 @@ class AdminDashboardController extends Controller
 
     public function add_sop($id = null)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_sop');
 
         $data['user'] = $user;
@@ -364,7 +368,7 @@ class AdminDashboardController extends Controller
 
     public function store_sop(StoreSopRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('store_sop');
 
         // Handle file upload
@@ -540,7 +544,7 @@ class AdminDashboardController extends Controller
     public function store_category(Request $request)
     {
         // use for main,sub and child categories
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_category');
 
         $selection = $request->selection;
@@ -551,8 +555,6 @@ class AdminDashboardController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-
-        $data['user'] = auth()->user();
 
         if ($request->hasFile('image') || !$request->id) {
             $rules['image'] = [
@@ -748,7 +750,6 @@ class AdminDashboardController extends Controller
 
     public function delete_category(DeleteCategoryRequest $request)
     {
-        $user = auth()->user();
         $this->authorize('dell_category');
 
         $status = 'Success';
@@ -785,7 +786,7 @@ class AdminDashboardController extends Controller
 
     public function trash_categories(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('categories');
         $data['user'] = $user;
         $data['route'] = '';
@@ -809,7 +810,7 @@ class AdminDashboardController extends Controller
     // question management ...
     public function question_categories()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('question_categories');
 
         $data['user'] = $user;
@@ -823,7 +824,7 @@ class AdminDashboardController extends Controller
 
     public function add_question_category(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_question_category');
 
         $data['user'] = $user;
@@ -836,7 +837,7 @@ class AdminDashboardController extends Controller
 
     public function store_question_category(StoreQuestionCategoryRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_question_category'); // Authorization
 
         // Save or update the question category
@@ -859,7 +860,7 @@ class AdminDashboardController extends Controller
 
     public function questions()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('questions');
 
         $data['user'] = $user;
@@ -881,9 +882,9 @@ class AdminDashboardController extends Controller
 
     public function trash_questions(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('questions');
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $data['route'] = '';
         $data['q_type'] = $request->q_type;
         if ($request->q_type === 'pro_question') {
@@ -913,7 +914,7 @@ class AdminDashboardController extends Controller
 
     public function faq_questions()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('faq_questions');
 
         $data['user'] = $user;
@@ -937,7 +938,7 @@ class AdminDashboardController extends Controller
     {
         $this->authorize('p_med_gq');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $data['questions'] = PMedGeneralQuestion::where(['status' => 'Active'])->get()->toArray();
 
         return view('admin.pages.questions.p_med_gq', $data);
@@ -947,7 +948,7 @@ class AdminDashboardController extends Controller
     {
         $this->authorize('prescription_med_gq');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $data['questions'] = PrescriptionMedGeneralQuestion::where(['status' => 'Active'])->get()->toArray();
 
         return view('admin.pages.questions.prescription_med_gq', $data);
@@ -956,7 +957,7 @@ class AdminDashboardController extends Controller
     public function add_question(Request $request)
     {
         $this->authorize('add_question');
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $data['categories'] = QuestionCategory::latest('id')->get()->toArray();
         if ($request->has('id')) {
             $data['question'] = Question::findOrFail($request->id)->toArray();
@@ -967,7 +968,7 @@ class AdminDashboardController extends Controller
     public function add_faq_question(Request $request)
     {
         $this->authorize('faq_questions');
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $data['products'] = Product::where(['status' => '1'])->latest('id')->get()->toArray();
         if ($request->has('id')) {
             $data['question'] = FaqProduct::findOrFail($request->id)->toArray();
@@ -977,7 +978,7 @@ class AdminDashboardController extends Controller
 
     public function store_question(StoreQuestionRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_question');
         $data['user'] = $user;
 
@@ -1087,7 +1088,7 @@ class AdminDashboardController extends Controller
 
     public function store_faq_question(StoreFaqQuestionRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('faq_questions');
 
         $question = FaqProduct::updateOrCreate(
@@ -1139,7 +1140,7 @@ class AdminDashboardController extends Controller
     public function assign_question()
     {
         // question mapping screen
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('assign_question');
         $data['user'] = $user;
         if ($user->hasRole('super_admin')) {
@@ -1150,7 +1151,7 @@ class AdminDashboardController extends Controller
 
     public function get_assign_quest(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('assign_question');
 
         $questions = [];
@@ -1169,7 +1170,7 @@ class AdminDashboardController extends Controller
 
     public function store_assign_quest(StoreAssignQuestRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('assign_question');
 
         // Delete previous records for the given category_id
@@ -1182,7 +1183,7 @@ class AdminDashboardController extends Controller
                 'category_title' => Category::findOrFail($request->category_id)->name,
                 'question_id' => $questionId,
                 'question_title' => Question::findOrFail($questionId)->title,
-                'status' => $this->status['Active'],
+                'status' => $this->getUserStatus('Active'),
                 'created_by' => $user->id,
             ]);
         }
@@ -1195,7 +1196,7 @@ class AdminDashboardController extends Controller
     // Question Mapping ...
     public function question_mapping(QuestionMappingRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         // Remove in-method validation since it's handled in the request class
         $options = ['optA', 'optB', 'optC', 'optD', 'optY', 'optN', 'openBox', 'file'];
 
@@ -1280,7 +1281,7 @@ class AdminDashboardController extends Controller
     // orders managment ...
     public function order_detail(Request $request)
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders');
         if ($request->id) {
             $id = base64_decode($request->id);
@@ -1303,7 +1304,7 @@ class AdminDashboardController extends Controller
 
     public function consultation_view(Request $request)
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('consultation_view');
         if ($request->odd_id) {
             $odd_id = base64_decode($request->odd_id);
@@ -1372,7 +1373,7 @@ class AdminDashboardController extends Controller
 
     public function consultation_user_view(Request $request)
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('consultation_view');
         if ($request->odd_id) {
             $odd_id = base64_decode($request->odd_id);
@@ -1441,7 +1442,7 @@ class AdminDashboardController extends Controller
 
     public function ordersReceived()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Received'])->latest('created_at')->get()->toArray();
 
@@ -1455,7 +1456,7 @@ class AdminDashboardController extends Controller
 
     public function all_orders()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
 
@@ -1469,7 +1470,7 @@ class AdminDashboardController extends Controller
 
     public function unpaid_orders()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid'])->latest('created_at')->get()->toArray();
 
@@ -1483,7 +1484,7 @@ class AdminDashboardController extends Controller
 
     public function orders_created()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_created');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid', 'status' => 'Created'])
             ->orWhere('status', 'Duplicate')
@@ -1582,7 +1583,7 @@ class AdminDashboardController extends Controller
 
     public function orders_refunded()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_refunded');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Refund'])->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -1595,7 +1596,7 @@ class AdminDashboardController extends Controller
 
     public function doctors_approval()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('doctors_approval');
         if (isset($data['user']->role) && $data['user']->role == user_roles('2')) {
             $orders = Order::with(['user', 'approved_by:id,name,email', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
@@ -1613,7 +1614,7 @@ class AdminDashboardController extends Controller
 
     public function dispensary_approval()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('dispensary_approval');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
 
@@ -1626,7 +1627,7 @@ class AdminDashboardController extends Controller
 
     public function orders_shipped()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -1639,7 +1640,7 @@ class AdminDashboardController extends Controller
 
     public function orders_unshipped()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_unshipped');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -1652,7 +1653,7 @@ class AdminDashboardController extends Controller
 
     public function gpa_letters()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('gpa_letters');
         $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,address', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -1664,7 +1665,7 @@ class AdminDashboardController extends Controller
 
     public function vet_prescriptions()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('vet_prescription');
         $data['queries'] = HumanRequestForm::latest('created_at')->get()->toArray();
 
@@ -1682,7 +1683,7 @@ class AdminDashboardController extends Controller
 
     public function orders_audit()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
 
         $orders = Order::with('user', 'shipingdetails', 'orderdetails:id,order_id,product_name')
@@ -1736,22 +1737,22 @@ class AdminDashboardController extends Controller
 
     public function add_order()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_created');
-        $data['products'] = Product::with('variants')->where('status', $this->status['Active'])->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
+        $data['products'] = Product::with('variants')->where('status', $this->getUserStatus('Active'),)->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
 
         foreach ($data['products'] as $key => $product) {
             if ($product['variants']) {
                 $data['variants'][$product['id']] = $product['variants'];
             }
         }
-        $data['users'] = User::where(['status' => $this->status['Active'], 'role' => user_roles('4')])->latest('id')->get()->sortBy('name')->keyBy('id')->toArray();
+        $data['users'] = User::where(['status' => $this->getUserStatus('Active'), 'role' => user_roles('4')])->latest('id')->get()->sortBy('name')->keyBy('id')->toArray();
         return view('admin.pages.add_order', $data);
     }
 
     public function store_order(StoreOrderRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('orders_created');
 
         $shippingCost = $request->shiping_cost;
@@ -1895,7 +1896,7 @@ class AdminDashboardController extends Controller
 
     public function create_shiping_order(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('orders');
 
         $validatedData = $request->validate([
@@ -2174,7 +2175,6 @@ class AdminDashboardController extends Controller
 
     public function comment_store(Request $request): JsonResponse
     {
-        $data['user'] = auth()->user();
         $this->authorize('comment_store');
 
         try {
@@ -2198,7 +2198,7 @@ class AdminDashboardController extends Controller
 
     public function update_additional_note(UpdateAdditionalNoteRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('orders_received');
 
         $updateData = [
@@ -2218,7 +2218,7 @@ class AdminDashboardController extends Controller
 
     public function update_shipping_address(Request $request)
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
 
         $updateData = [];
@@ -2251,10 +2251,10 @@ class AdminDashboardController extends Controller
 
     public function gp_locations()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('gp_locations');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
 
         if ($user->hasRole('super_admin')) {
             $data['gp_locations'] = Pharmacy4uGpLocation::where('status', 'Active')->latest('id')->get()->toArray();
@@ -2266,7 +2266,7 @@ class AdminDashboardController extends Controller
     public function Add_PMedQuestion(request $request)
     {
         $this->authorize('add_question');
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         if ($request->has('id')) {
             $data['question'] = PMedGeneralQuestion::findOrFail($request->id)->toArray();
         }
@@ -2290,7 +2290,7 @@ class AdminDashboardController extends Controller
 
     public function create_PMedQuestion(StorePmedQuestionRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_question');
 
         $question = PMedGeneralQuestion::updateOrCreate(
@@ -2421,7 +2421,7 @@ class AdminDashboardController extends Controller
     public function Add_PrescriptionMedQuestion(Request $request)
     {
         $this->authorize('add_question');
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         if ($request->has('id')) {
             $data['question'] = PrescriptionMedGeneralQuestion::findOrFail($request->id)->toArray();
         }
@@ -2445,7 +2445,7 @@ class AdminDashboardController extends Controller
 
     public function create_PrescriptionMedQuestion(CreatePrescriptionMedQuestionRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_question');
 
         $question = PrescriptionMedGeneralQuestion::updateOrCreate(

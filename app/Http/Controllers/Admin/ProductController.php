@@ -6,6 +6,7 @@ use App\Http\Requests\Product\DeleteFeaturedProductRequest;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateBuyLimitsRequest;
 use App\Imports\importProduct;
+use App\Traits\UserStatusTrait;
 use Illuminate\Support\Facades\Response;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Requests\Product\StoreFeaturedProductRequest;
@@ -28,25 +29,18 @@ use SplTempFileObject;
 
 class ProductController extends Controller
 {
-    protected $status;
-    protected $user;
-
-    public function __construct()
-    {
-        $this->user = auth()->user();
-        $this->status = config('constants.STATUS');
-    }
+    use UserStatusTrait;
 
     public function products(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('products');
 
         $data = [];
         if ($user->hasRole('super_admin')) {
             if ($request->ajax()) {
                 $query = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
-                    ->whereIn('status', [$this->status['Active']]);
+                    ->whereIn('status', $this->getUserStatus('Active'));
 
                 return DataTables::of($query)
                     ->filter(function ($query) use ($request) {
@@ -115,7 +109,7 @@ class ProductController extends Controller
             }
 
             $productsFilter = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
-                ->whereIn('status', [$this->status['Active']])
+                ->whereIn('status', $this->getUserStatus('Active'))
                 ->latest('id')->get();
             $data['filters'] = [];
             if ($productsFilter->isNotEmpty()) {
@@ -132,11 +126,11 @@ class ProductController extends Controller
 
     public function product_trash()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('products');
 
         if ($user->hasRole('super_admin')) {
-            $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')->whereIn('status', [$this->status['Deactive']])->latest('id')->get()->toArray();
+            $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')->whereIn('status', $this->getUserStatus('Deactive'))->latest('id')->get()->toArray();
             $data['filters'] = [];
             if ($products) {
                 $data['filters']['titles'] = array_unique(array_column($products, 'title'));
@@ -153,7 +147,7 @@ class ProductController extends Controller
 
     public function imported_products()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('products');
 
         if ($user->hasRole('super_admin')) {
@@ -164,7 +158,7 @@ class ProductController extends Controller
 
     public function products_limits()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('products');
 
         if ($user->hasRole('super_admin')) {
@@ -176,7 +170,7 @@ class ProductController extends Controller
 
     public function import_products()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('products');
 
         return view('admin.pages.products.import_products', $data);
@@ -184,10 +178,10 @@ class ProductController extends Controller
 
     public function featured_products()
     {
-        $data['user'] = auth()->user();
+        $data['user'] = $this->getAuthUser();
         $this->authorize('featured_products');
 
-        $data['products'] = Product::with('variants')->where('status', $this->status['Active'])->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
+        $data['products'] = Product::with('variants')->where('status', $this->getUserStatus('Active'))->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
 
 
         $data['f_products'] = FeaturedProduct::with('product')
@@ -199,7 +193,7 @@ class ProductController extends Controller
 
     public function store_featured_products(StoreFeaturedProductRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('add_product');
 
         // Update or create a new featured product
@@ -240,7 +234,7 @@ class ProductController extends Controller
 
     public function add_product(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $page_name = 'add_product';
         if (!view_permission($page_name)) {
             return redirect()->back();
@@ -275,7 +269,7 @@ class ProductController extends Controller
 
     public function store_product(StoreProductRequest $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
 
         $this->authorize('add_product');
 
@@ -309,7 +303,7 @@ class ProductController extends Controller
                 'stock'      => $request->stock,
                 'stock_status' => $request->stock_status,
                 'price'      => $request->price,
-                'status'     => $this->status['Active'],
+                'status'     => $this->getUserStatus('Active'),
                 'created_by' => $user->id,
             ]
         );
@@ -329,7 +323,7 @@ class ProductController extends Controller
                     DB::table('product_attributes')->insert([
                         'product_id' => $product->id,
                         'image'      => $uploadedImage,
-                        'status'     => $this->status['Active'],
+                        'status'     => $this->getUserStatus('Active'),
                         'created_by' => $user->id,
                     ]);
                 }
@@ -463,7 +457,6 @@ class ProductController extends Controller
 
     public function update_buy_limits(UpdateBuyLimitsRequest $request)
     {
-        $user = auth()->user();
         $this->authorize('add_product');
 
         // Find the product and update the limits
@@ -492,7 +485,6 @@ class ProductController extends Controller
 
     public function update_status(Request $request)
     {
-        $user = auth()->user();
         $this->authorize('add_product');
 
         $product = Product::findOrFail($request->id);
@@ -533,14 +525,14 @@ class ProductController extends Controller
 
     public function search_products(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $this->authorize('products');
 
         $data = [];
         if ($user->hasRole('super_admin')) {
             $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
                 ->where('title', 'like', '%'.$request->string.'%')
-                ->whereIn('status', [$this->status['Active']])
+                ->whereIn('status', $this->getUserStatus('Active'))
                 ->latest('id')
                 ->paginate(50); // Set pagination to 50 items per page
 

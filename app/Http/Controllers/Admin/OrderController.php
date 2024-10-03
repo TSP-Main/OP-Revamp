@@ -7,24 +7,18 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use App\Traits\UserStatusTrait;
 
 class OrderController extends Controller
 {
-    protected $status;
-    protected $user;
-
-    public function __construct()
-    {
-        $this->user = auth()->user();
-        $this->status = config('constants.USER_STATUS');
-    }
+    use UserStatusTrait;
 
     public function prescription_orders()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $user->hasPermissionTo('prescription_orders');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'user_id' => $user->id, 'order_for' => 'doctor'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -37,10 +31,10 @@ class OrderController extends Controller
 
     public function online_clinic_orders()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $user->hasPermissionTo('online_clinic_orders');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'email' => $user->email, 'order_for' => 'despensory'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -56,10 +50,10 @@ class OrderController extends Controller
 
     public function shop_orders()
     {
-        $user = auth()->user();
+        $user = $this->getAuthUser();
         $user->hasPermissionTo('shop_orders');
 
-        $data['user'] = auth()->user();
+        $data['user'] = $user;
         $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'email' => $user->email, 'order_for' => 'despensory'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);

@@ -70,7 +70,7 @@ class UserSeeder extends Seeder
         ]);
 
         $dispensaryAddress = UserAddress::create([
-            'user_id' => $superAdmin->id,
+            'user_id' => $dispensary->id,
             'address' => '123 Admin Street',
             'apartment' => 'green aid',
             'city' => 'Dispensary City',
@@ -97,7 +97,7 @@ class UserSeeder extends Seeder
         ]);
 
         $doctorAddress = UserAddress::create([
-            'user_id' => $superAdmin->id,
+            'user_id' => $doctor->id,
             'address' => '123 Admin Street',
             'apartment' => 'green aid',
             'city' => 'Doctor City',
@@ -123,7 +123,7 @@ class UserSeeder extends Seeder
         ]);
 
         $userAddress = UserAddress::create([
-            'user_id' => $superAdmin->id,
+            'user_id' => $user->id,
             'address' => '123 Admin Street',
             'apartment' => 'green aid',
             'city' => 'User City',

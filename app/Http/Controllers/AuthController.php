@@ -142,7 +142,7 @@ class AuthController extends Controller
             }
 
             $user = Auth::user();
-            $token = $user->createToken('MyApp')->plainTextToken;
+//            $token = $user->createToken('MyApp')->plainTextToken;
 
             return $this->redirectBasedOnRole($user);
 
@@ -176,7 +176,7 @@ class AuthController extends Controller
             return redirect('/');
         }
 
-        return redirect('/');
+        return redirect('/sign-in');
     }
 
     public function forgot_password()

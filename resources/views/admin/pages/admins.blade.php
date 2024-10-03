@@ -89,15 +89,15 @@
 
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;" >
-                                        <p class="fw-normal mb-1">{{ $value['phone'] ?? ''}}</p>
+                                        <p class="fw-normal mb-1">{{ $value['profile']['phone'] ?? ''}}</p>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;" >
-                                        <p class="text-muted mb-0">{{ $value['address'] ?? ''}}</p>
+                                        <p class="text-muted mb-0">{{ $value['address']['address'] ?? ''}}</p>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;" >
                                         <span class="badge  {{($value['status'] == 1) ? 'bg-success' : 'bg-danger' }}  rounded-pill d-inline">{{ ($value['status'] == 1) ? 'Active' : 'Deactive' }} </span>
                                     </td>
-                                    <td style="vertical-align: middle; text-align: center;" > 
+                                    <td style="vertical-align: middle; text-align: center;" >
                                         <a class="edit" style="cursor: pointer;" title="Edit" data-id="{{$value['id']}}" data-toggle="tooltip">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
@@ -142,14 +142,14 @@
     });
     $(document).ready(function () {
         $('.edit').click(function () {
-            var id = $(this).data('id'); 
-            $('#edit_form_id_input').val(id); 
-            $('#edit_form').submit(); 
+            var id = $(this).data('id');
+            $('#edit_form_id_input').val(id);
+            $('#edit_form').submit();
         });
 
         $('.delete').click(function () {
-            var id = $(this).data('id'); 
-            $('#edit_form_id_input').val(id); 
+            var id = $(this).data('id');
+            $('#edit_form_id_input').val(id);
             $('#edit_form').submit();
         });
     });

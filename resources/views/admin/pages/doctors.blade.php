@@ -167,12 +167,12 @@
                 <div class="col-md-4 col-sm-4  col-lg-3">
                     <div class="profile-widget">
                         <div class="doctor-img">
-                            <a class="avatar" href="profile.html"> <img class="img-fluid" src="http://127.0.0.1:8000/assets/admin/img/profile-img.jpg" alt=""></a>
+                            <a class="avatar" href="#"> <img class="img-fluid" src="http://127.0.0.1:8000/assets/admin/img/profile-img.jpg" alt=""></a>
                         </div>
                         <h4 class="doctor-name text-ellipsis"><a href="profile.html">{{ $value['name'] ?? ''}}</a></h4>
-                        <div class="doc-prof">{{ $value['speciality'] ?? ''}}</div>
+                        <div class="doc-prof">{{ $value['profile']['speciality'] ?? ''}}</div>
                         <div class="user-country">
-                            <i class="bi bi-geo-alt-fill"></i> {{ $value['address'] ?? ''}}
+                            <i class="bi bi-geo-alt-fill"></i> {{ $value['address']['address'] ?? ''}}
                         </div>
                         <div class="row">
                             <div class="d-grid mt-2">
@@ -217,14 +217,14 @@
 
     $(document).ready(function () {
         $('.edit').click(function () {
-            var id = $(this).data('id'); 
-            $('#edit_form_id_input').val(id); 
-            $('#edit_form').submit(); 
+            var id = $(this).data('id');
+            $('#edit_form_id_input').val(id);
+            $('#edit_form').submit();
         });
 
         $('.delete').click(function () {
-            var id = $(this).data('id'); 
-            $('#edit_form_id_input').val(id); 
+            var id = $(this).data('id');
+            $('#edit_form_id_input').val(id);
             $('#edit_form').submit();
         });
     })
