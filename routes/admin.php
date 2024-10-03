@@ -7,14 +7,12 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 
-
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.index');
 Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     //Auth
     Route::match(['get', 'post'], '/passwordChange', [AuthController::class, 'password_change'])->name('admin.passwordChange');
-    Route::match(['get', 'post'], '/setting', [AuthController::class, 'profile_setting'])->name('admin.profileSetting');
 
     //Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.index');
     Route::get('/faq', [DashboardController::class, 'faq'])->name('admin.faq');
     Route::get('/allReadNotifications', [DashboardController::class, 'read_notifications'])->name('admin.allReadNotifications');
     Route::get('/notifications/unread', [DashboardController::class, 'get_unread_notifications'])->name('admin.notifications.unread');
@@ -26,11 +24,11 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     //Product Controller
     Route::match(['get', 'post'], '/products', [ProductController::class, 'products'])->name('admin.products');
     Route::match(['get', 'post'], '/proTrash', [ProductController::class, 'product_trash'])->name('admin.proTrash');
-    Route::match(['get', 'post'], '/productsLimits', [ProductController::class, 'products_limits'])->name('admin.prodcutsLimits');
+    Route::match(['get', 'post'], '/productsLimits', [ProductController::class, 'products_limits'])->name('admin.productsLimits');
     Route::match(['get', 'post'], '/featuredProducts', [ProductController::class, 'featured_products'])->name('admin.featuredProducts');
     Route::match(['get', 'post'], '/storeFeaturedProducts', [ProductController::class, 'store_featured_products'])->name('admin.storeFeaturedProducts');
     Route::match(['get', 'post'], '/deleteFeaturedProducts', [ProductController::class, 'delete_featured_products'])->name('admin.deleteFeaturedProducts');
-    Route::match(['get', 'post'], '/importedProducts', [ProductController::class, 'imported_products'])->name('admin.importedProdcuts');
+    Route::match(['get', 'post'], '/importedProducts', [ProductController::class, 'imported_products'])->name('admin.importedProducts');
     Route::get('/importProducts', [ProductController::class, 'import_products'])->name('admin.importProducts');
     Route::post('/importProducts', [ProductController::class, 'store_import_products'])->name('admin.importProducts');
     Route::match(['get', 'post'], '/addProduct', [ProductController::class, 'add_product'])->name('admin.addProduct');

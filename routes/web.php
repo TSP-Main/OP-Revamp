@@ -34,6 +34,8 @@ Route::match(['get', 'post'],'/login', [AuthController::class, 'login'])->name('
 Route::match(['get', 'post'], '/register', [AuthController::class, 'registration_form'])->name('register');
 Route::match(['get', 'post'], '/registrationFrom', [AuthController::class, 'registerUser'])->name('web.user_register');
 Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('web.logout');
+Route::match(['get', 'post'], '/setting', [AuthController::class, 'profile_setting'])->name('web.profileSetting');
+Route::match(['get', 'post'], '/profile-setting', [AuthController::class, 'profileSettingPage'])->name('web.profileSettingForm');
 // forgot password
 Route::match(['get', 'post'], '/forgotPassword', [AuthController::class, 'forgot_password'])->name('forgotPassword');
 Route::match(['get', 'post'], '/sendOtp', [AuthController::class, 'send_otp'])->name('sendOtp');
@@ -42,7 +44,7 @@ Route::match(['get', 'post'], '/changePassword', [AuthController::class, 'change
 
 //Dashboard
 Route::get('/dashboard/details', [DashboardController::class, 'dashboard_details'])->name('dashboard.details');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('web.index');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('web.dashboard');
 
 //Product Details
 Route::get('/shop', [ProductDetailsController::class, 'shop'])->name('shop');

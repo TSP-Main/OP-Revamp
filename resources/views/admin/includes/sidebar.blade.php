@@ -152,14 +152,14 @@
                         </a>
                     </li>
                     <li>
-                        <a class="{{(request()->routeIs(['admin.importedProdcuts'])) ? 'nav-link ' : ''}} "
-                           href="{{route('admin.importedProdcuts')}}">
+                        <a class="{{(request()->routeIs(['admin.importedProducts'])) ? 'nav-link ' : ''}} "
+                           href="{{route('admin.importedProducts')}}">
                             <i class="bi bi-circle"></i><span>Imported Products</span>
                         </a>
                     </li>
                     <li>
-                        <a class="{{(request()->routeIs(['admin.prodcutsLimits'])) ? 'nav-link ' : ''}} "
-                           href="{{route('admin.prodcutsLimits')}}">
+                        <a class="{{(request()->routeIs(['admin.productsLimits'])) ? 'nav-link ' : ''}} "
+                           href="{{route('admin.productsLimits')}}">
                             <i class="bi bi-circle"></i><span>Products Limits</span>
                         </a>
                     </li>
@@ -403,26 +403,26 @@
             </li>
         @endif
 
-        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('shop_orders'))
-            <li class="nav-item">
-                <a class="nav-link {{(request()->routeIs('admin.gpaLeters')) ? '' : 'collapsed'}}"
-                   href="{{route('admin.gpaLeters')}}">
-                    <i class="bi bi-bar-chart"></i><span>GP Letters</span>
-                </a>
-            </li>
-        @endif
-
-        <li class="nav-heading">-------- user's Basic Settings --------</li>
-
-        {{--        @if(auth()->user()->hasPermissionTo('setting'))--}}
+        {{--        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('shop_orders'))--}}
         {{--            <li class="nav-item">--}}
-        {{--                <a class="nav-link {{(request()->routeIs('admin.profileSetting')) ? '' : 'collapsed'}} "--}}
-        {{--                   href="{{route('admin.profileSetting')}}">--}}
-        {{--                    <i class="bi bi-person"></i>--}}
-        {{--                    <span>Profile Setting</span>--}}
+        {{--                <a class="nav-link {{(request()->routeIs('admin.gpaLeters')) ? '' : 'collapsed'}}"--}}
+        {{--                   href="{{route('admin.gpaLeters')}}">--}}
+        {{--                    <i class="bi bi-bar-chart"></i><span>GP Letters</span>--}}
         {{--                </a>--}}
         {{--            </li>--}}
         {{--        @endif--}}
+
+        <li class="nav-heading">-------- user's Basic Settings --------</li>
+
+        @can('setting')
+            <li class="nav-item">
+                <a class="nav-link {{(request()->routeIs('web.profileSettingForm')) ? '' : 'collapsed'}}"
+                   href="{{route('web.profileSettingForm')}}">
+                    <i class="bi bi-person"></i>
+                    <span>Profile Setting</span>
+                </a>
+            </li>
+        @endcan
 
         @if(auth()->user()->hasPermissionTo('faq'))
             <li class="nav-item displaynone">

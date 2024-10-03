@@ -142,7 +142,7 @@ class AuthController extends Controller
             }
 
             $user = Auth::user();
-//            $token = $user->createToken('MyApp')->plainTextToken;
+            $token = $user->createToken('MyApp')->plainTextToken;
 
             return $this->redirectBasedOnRole($user);
 
@@ -241,7 +241,12 @@ class AuthController extends Controller
         }
     }
 
-
+    public function profileSettingPage()
+    {
+        $user = auth()->user();
+        $data['user'] = $user;
+        return view('admin.pages.profile_setting', $data);
+    }
     public function profile_setting(ProfileRequest $request)
     {
         $user = auth()->user();
@@ -293,7 +298,7 @@ class AuthController extends Controller
             DB::commit();
 
             $message = "Profile " . ($user->wasChanged() ? "Updated" : "Saved") . " Successfully";
-            return redirect()->route('web.index')->with('msg', $message);
+            return redirect()->route('web.dashboard')->with('msg', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();

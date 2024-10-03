@@ -215,7 +215,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- below containerrrrrrrrrrrrrrrrrrrrrrrr -->
+                    <!-- below container -->
                     <div style="margin-top: 10px;margin-bottom:5px">
                         <div class="row" style="padding-right: 12px;">
                             @foreach($product['product_attributes'] ?? [] as $key => $val1)

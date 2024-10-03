@@ -64,7 +64,7 @@
 
                             <div class="col-md-4">
                                 <label for="phone" class="form-label">Phone</label>
-                                <input type="number" name="phone" value="{{  $doctor['profile']['phone'] ?? old('phone') }}" class="form-control" id="phone" required>
+                                <input type="tel" name="phone" value="{{  $doctor['profile']['phone'] ?? old('phone') }}" class="form-control" id="phone" required>
                                 <div class="invalid-feedback">Please enter valid Phone No!</div>
                                 @error('phone')
                                 <div class="alert-danger text-danger ">{{ $message }}</div>

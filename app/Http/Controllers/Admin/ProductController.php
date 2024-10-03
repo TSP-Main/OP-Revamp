@@ -109,7 +109,7 @@ class ProductController extends Controller
             }
 
             $productsFilter = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
-                ->whereIn('status', $this->getUserStatus('Active'))
+                ->where('status', [$this->getUserStatus('Active')])
                 ->latest('id')->get();
             $data['filters'] = [];
             if ($productsFilter->isNotEmpty()) {
@@ -134,9 +134,9 @@ class ProductController extends Controller
             $data['filters'] = [];
             if ($products) {
                 $data['filters']['titles'] = array_unique(array_column($products, 'title'));
-                $data['filters']['categories'] =  collect($products)->pluck('category.name')->unique()->values()->all();
-                $data['filters']['sub_cat'] =  collect($products)->pluck('sub_cat.name')->unique()->values()->all();
-                $data['filters']['child_cat'] =  collect($products)->pluck('child_cat.name')->unique()->values()->all();
+                $data['filters']['categories'] = collect($products)->pluck('category.name')->unique()->values()->all();
+                $data['filters']['sub_cat'] = collect($products)->pluck('sub_cat.name')->unique()->values()->all();
+                $data['filters']['child_cat'] = collect($products)->pluck('child_cat.name')->unique()->values()->all();
                 $data['filters']['templates'] = array_unique(array_column($products, 'product_template'));
                 $data['products'] = $products;
             }
@@ -234,11 +234,8 @@ class ProductController extends Controller
 
     public function add_product(Request $request)
     {
-        $user = $this->getAuthUser();
-        $page_name = 'add_product';
-        if (!view_permission($page_name)) {
-            return redirect()->back();
-        }
+        $this->authorize('add_product');
+
         $data['categories'] = Category::where('status', 'Active')->latest('id')->get()->toArray();
         $data['templates'] = config('constants.PRODUCT_TEMPLATES');
         $data['question_category'] = QuestionCategory::latest('id')->get()->toArray();
@@ -287,8 +284,8 @@ class ProductController extends Controller
         $product = Product::updateOrCreate(
             ['id' => (isset($request->id) && $request->duplicate == 'no') ? $request->id : null],
             [
-                'title'      => ucwords($request->title),
-                'desc'       => $request->desc,
+                'title' => ucwords($request->title),
+                'desc' => $request->desc,
                 'short_desc' => $request->short_desc ?? null,
                 'main_image' => $mainImagePath ?? Product::findOrFail($request->id)->main_image,
                 'category_id' => $request->category_id,
@@ -296,14 +293,14 @@ class ProductController extends Controller
                 'child_category' => $request->child_category ?? null,
                 'product_template' => $request->product_template ?? null,
                 'question_category' => $question_category ?? null,
-                'cut_price'    => $request->cut_price,
-                'barcode'    => $request->barcode,
-                'SKU'        => $request->SKU,
-                'weight'     => $request->weight ?? 0,
-                'stock'      => $request->stock,
+                'cut_price' => $request->cut_price,
+                'barcode' => $request->barcode,
+                'SKU' => $request->SKU,
+                'weight' => $request->weight ?? 0,
+                'stock' => $request->stock,
                 'stock_status' => $request->stock_status,
-                'price'      => $request->price,
-                'status'     => $this->getUserStatus('Active'),
+                'price' => $request->price,
+                'status' => $this->getUserStatus('Active'),
                 'created_by' => $user->id,
             ]
         );
@@ -322,8 +319,8 @@ class ProductController extends Controller
                 foreach ($uploadedImages as $uploadedImage) {
                     DB::table('product_attributes')->insert([
                         'product_id' => $product->id,
-                        'image'      => $uploadedImage,
-                        'status'     => $this->getUserStatus('Active'),
+                        'image' => $uploadedImage,
+                        'status' => $this->getUserStatus('Active'),
                         'created_by' => $user->id,
                     ]);
                 }
@@ -462,8 +459,8 @@ class ProductController extends Controller
         // Find the product and update the limits
         $product = Product::findOrFail($request->id);
         $product->update([
-            'min_buy'       => $request->min_buy,
-            'max_buy'       => $request->max_buy,
+            'min_buy' => $request->min_buy,
+            'max_buy' => $request->max_buy,
             'comb_variants' => $request->comb_variants,
         ]);
 
@@ -489,7 +486,7 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($request->id);
         $product->update([
-            'status'       => $request->status,
+            'status' => $request->status,
         ]);
 
         $message = "Product status " . ($request->id ? "Updated" : "Saved") . " Successfully";
@@ -531,7 +528,7 @@ class ProductController extends Controller
         $data = [];
         if ($user->hasRole('super_admin')) {
             $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
-                ->where('title', 'like', '%'.$request->string.'%')
+                ->where('title', 'like', '%' . $request->string . '%')
                 ->whereIn('status', $this->getUserStatus('Active'))
                 ->latest('id')
                 ->paginate(50); // Set pagination to 50 items per page
@@ -551,7 +548,7 @@ class ProductController extends Controller
         // Add CSV header
         $csv->insertOne([
             'ID', 'Title', 'Slug', 'Short Description', 'Description', 'Main Image',
-            'Sale Price', 'Stock', 'Availability' , 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
+            'Sale Price', 'Stock', 'Availability', 'Weight', 'Min Buy', 'Max Buy', 'Combination Variants',
             'SKU', 'Barcode', 'Price', 'Product Type', 'Sub Category', 'Child Category',
             'Product Template', 'Question Category', 'Status', 'Created By', 'Updated By',
             'Created At', 'Updated At'

@@ -230,7 +230,7 @@
 
                                     <!-- Profile Edit Form -->
                                     <form class="row g-3 mt-3 needs-validation" method="post"
-                                        action="{{ route('admin.profileSetting') }}" novalidate
+                                        action="{{ route('web.profileSetting') }}" novalidate
                                         enctype="multipart/form-data">
                                         @csrf
                                         <div class="row mb-3">
