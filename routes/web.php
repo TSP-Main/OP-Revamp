@@ -50,6 +50,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('web.dashb
 Route::get('/shop', [ProductDetailsController::class, 'shop'])->name('shop');
 Route::match(['get', 'post'], '/category/{main_category?}/{sub_category?}/{child_category?}', [ProductDetailsController::class, 'show_products'])->name('category.products');
 Route::get('/product/{id:slug}', [ProductDetailsController::class, 'product_detail'])->name('web.product');
+Route::post('/notify-me/{product}', [ProductDetailsController::class, 'notify'])->name('notify.me');
 Route::match(['get', 'post'], '/productQuestion/{id}', [ProductDetailsController::class, 'product_question'])->name('web.productQuestion');
 Route::get('/treatment', [ProductDetailsController::class, 'treatment'])->name('web.treatment');
 // temporary route for generating slugs for existing products

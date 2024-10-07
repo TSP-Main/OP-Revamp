@@ -19,7 +19,10 @@ use App\Models\QuestionCategory;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ProductRestockNotification;
 use App\Models\ProductVariant;
+use App\Models\ProductNotification;
 use App\Models\FeaturedProduct;
 use App\Models\ProductAttribute;
 use \Cviebrock\EloquentSluggable\Services\SlugService;
@@ -264,6 +267,29 @@ class ProductController extends Controller
         return view('admin.pages.products.add_product', $data);
     }
 
+    public function sendStockNotificationForProduct($productId)
+    {
+        // Fetch the product
+        $product = Product::findOrFail($productId);
+    
+        // Check if the product is in stock
+        if ($product->stock > 0 || $product->stock_status == 'IN' ) {
+            // Fetch all users who registered for notifications for this product
+            $notifications = ProductNotification::where('product_id', $productId)->get();
+    
+            // Check if there are any notifications
+            if ($notifications->isEmpty()) {
+                return;
+            }
+    
+            // Send email to each user
+            foreach ($notifications as $notification) {
+                Mail::to($notification->email)
+                    ->send(new ProductRestockNotification($productId));
+            }
+        }
+    }
+
     public function store_product(StoreProductRequest $request)
     {
         $user = $this->getAuthUser();
@@ -299,6 +325,8 @@ class ProductController extends Controller
                 'weight' => $request->weight ?? 0,
                 'stock' => $request->stock,
                 'stock_status' => $request->stock_status,
+                'high_risk'      => $request->high_risk,
+                'leaflet_link'   => $request->leaflet_link,
                 'price' => $request->price,
                 'status' => $this->getUserStatus('Active'),
                 'created_by' => $user->id,
@@ -341,6 +369,9 @@ class ProductController extends Controller
                 $this->duplicateVariants($request, $product);
             }
         }
+
+         // After updating or creating, check stock and notify users
+         $this->sendStockNotificationForProduct($product->id);
 
         $message = "Product " . ($request->id ? "Updated" : "Saved") . " Successfully";
         return response()->json(['status' => 'success', 'message' => $message, 'data' => []]);

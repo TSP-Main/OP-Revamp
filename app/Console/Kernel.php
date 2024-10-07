@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Jobs\NotifyUsersOfRestock; // Import the job
 
 class Kernel extends ConsoleKernel
 {
@@ -13,9 +14,12 @@ class Kernel extends ConsoleKernel
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
+    
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Use the imported class directly
+        $schedule->job(new NotifyUsersOfRestock)->daily(); // Runs every day 
+
     }
 
     /**

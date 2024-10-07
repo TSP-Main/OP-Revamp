@@ -46,7 +46,7 @@
                         <div class="card info-card revenue-card">
                             @include('admin.filter.index',['card'=>'card1','lastDay' => 'salesThisDay','last7Day' => 'salesThisWeek','last30Day' => 'salesThisMonth','last90Day' => 'salesThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card1">Revenue <span>| This Month</span></h5>
+                                <h5 class="card-title card1">Revenue <span>| This Day</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -69,7 +69,7 @@
                         <div class="card info-card customers-card">
                             @include('admin.filter.index',['card'=>'card2','lastDay' => 'doctorOrdersThisDay','last7Day' => 'doctorOrdersThisWeek','last30Day' => 'doctorOrdersThisMonth','last90Day' => 'doctorOrdersThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card2">Order For Doctor <span>| This Month</span></h5>
+                                <h5 class="card-title card2">Order For Doctor <span>| This Day</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -91,7 +91,7 @@
                     <div class="col-xl-4">
                         <div class="card info-card customers-card">
                             @include('admin.filter.index',['card'=>'card3','lastDay' => 'despensoryOrdersThisDay','last7Day' => 'despensoryOrdersThisWeek','last30Day' => 'despensoryOrdersThisMonth','last90Day' => 'despensoryOrdersThisYear']) <div class="card-body">
-                                <h5 class="card-title card3">Order For Dispensary <span>| This Month</span></h5>
+                                <h5 class="card-title card3">Order For Dispensary <span>| This Day</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -124,7 +124,7 @@
                         <div class="card info-card total-orders-card">
                             @include('admin.filter.index',['card'=>'card4','lastDay' => 'totalOrdersThisDay','last7Day' => 'totalOrdersThisWeek','last30Day' => 'totalOrdersThisMonth','last90Day' => 'totalOrdersThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card4">Total Orders <span>| This Month</span></h5>
+                                <h5 class="card-title card4">Total Orders <span>| This Day</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -147,7 +147,7 @@
                         <div class="card info-card pending-orders-card">
                             @include('admin.filter.index',['card'=>'card5','lastDay' => 'pendingOrdersThisDay','last7Day' => 'pendingOrdersThisWeek','last30Day' => 'pendingOrdersThisMonth','last90Day' => 'pendingOrdersThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card5">Pending Orders <span>| This Month</span></h5>
+                                <h5 class="card-title card5">Pending Orders <span>| This Day</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -170,7 +170,7 @@
                         <div class="card info-card paid-orders-card">
                             @include('admin.filter.index',['card'=>'card6','lastDay' => 'paidOrdersThisDay','last7Day' => 'paidOrdersThisWeek','last30Day' => 'paidOrdersThisMonth','last90Day' => 'paidOrdersThisYear'])
                             <div class="card-body">
-                                <h5 class="card-title card6">Paid Orders <span>| This Month</span></h5>
+                                <h5 class="card-title card6">Paid Orders <span>| This Day</span></h5>
 
                                 <div class="d-flex align-items-center">
                                     <div
@@ -199,7 +199,7 @@
                                     </li>
                                     <li><a class="dropdown-item" href="#" onclick="updateChart('weekly')">This Week</a></li>
                                     <li><a class="dropdown-item" href="#" onclick="updateChart('monthly')">This Month</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="updateChart('yearly')">This Year</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="updateChart('yearly')">Last Three Month</a></li>
                                 </ul>
                             </div>
 
@@ -340,7 +340,7 @@
                                     </li>
                                     <li><a class="dropdown-item" href="#">Today</a></li>
                                     <li><a class="dropdown-item" href="#">This Month</a></li>
-                                    <li><a class="dropdown-item" href="#">This Year</a></li>
+                                    <li><a class="dropdown-item" href="#">Last Three Month</a></li>
                                 </ul>
                             </div>
 
@@ -706,12 +706,12 @@ function updateDashboard(data) {
     console.log(data.doctorOrdersThisMonth);
 
     // Format numbers with commas
-    let formattedSales = formatNumberWithCommas(parseFloat(data.salesThisMonth).toFixed(2));
-    let formattedDoctorOrders = formatNumberWithCommas(parseFloat(data.doctorOrdersThisMonth));
-    let formattedDispensaryOrders = formatNumberWithCommas(parseFloat(data.despensoryOrdersThisMonth));
-    let formattedTotalOrders = formatNumberWithCommas(parseFloat(data.totalOrdersThisMonth));
-    let formattedPendingOrders = formatNumberWithCommas(parseFloat(data.pendingOrdersThisMonth));
-    let formattedPaidOrders = formatNumberWithCommas(parseFloat(data.paidOrdersThisMonth));
+    let formattedSales = formatNumberWithCommas(parseFloat(data.salesThisDay).toFixed(2));
+    let formattedDoctorOrders = formatNumberWithCommas(parseFloat(data.doctorOrdersThisDay));
+    let formattedDispensaryOrders = formatNumberWithCommas(parseFloat(data.despensoryOrdersThisDay));
+    let formattedTotalOrders = formatNumberWithCommas(parseFloat(data.totalOrdersThisDay));
+    let formattedPendingOrders = formatNumberWithCommas(parseFloat(data.pendingOrdersThisDay));
+    let formattedPaidOrders = formatNumberWithCommas(parseFloat(data.paidOrdersThisDay));
 
     // Update the HTML elements with formatted values
     $('#total-revenue').text('£' + formattedSales);

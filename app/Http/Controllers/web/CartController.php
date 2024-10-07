@@ -24,27 +24,43 @@ class CartController extends Controller
     public function addToCart(Request $request)
     {
         $product = Product::find($request->id);
-        $variant_id =  $request->variantId ?? NULL;
-        $quantity =  $request->quantity ?? 1;
+        $variant_id = $request->variantId ?? null;
+        $quantity = $request->quantity ?? 1;
         $cartItems = collect(Cart::content());
         $prod_id = $request->id;
-
+    
         $variant = null;
         if ($variant_id) {
             $variant = ProductVariant::find($variant_id);
         }
-
-        $item = $cartItems->filter(function ($value) use ($prod_id) {
-            return strpos($value->id, $prod_id) !== false;
-        });
-
-        if (($product->min_buy && $quantity < $product->min_buy && count($item) == 0)) {
+    
+        // Check if the product is high risk
+        $isHighRisk = $product->high_risk == 2;
+    
+        // Check if there's already a high-risk product in the cart
+        if ($isHighRisk && $cartItems->contains(function ($item) {
+            $cartProduct = Product::find(explode('_', $item->id)[0]); // Get the product ID from the cart item ID
+            return $cartProduct && $cartProduct->high_risk == 2;
+        })) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can only add one high-risk product to the cart.'
+            ]);
+        }
+    
+        // Check minimum buy quantity
+        if (($product->min_buy && $quantity < $product->min_buy && $cartItems->isEmpty())) {
             return response()->json([
                 'status' => false,
                 'message' => 'Buy minimum ' . $product->min_buy . ' quantity'
             ]);
         }
-
+    
+        // Check maximum buy quantity
+        $item = $cartItems->filter(function ($value) use ($prod_id) {
+            return strpos($value->id, $prod_id) !== false;
+        });
+    
         if (count($item) == 0) {
             if ($product->max_buy && $quantity > $product->max_buy) {
                 return response()->json([
@@ -57,11 +73,12 @@ class CartController extends Controller
             if ($product->max_buy && ($quantity + $sumOfQty > $product->max_buy)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Max buy ' . $product->max_buy . ' quantity.' . ' you already add ' . $sumOfQty
+                    'message' => 'Max buy ' . $product->max_buy . ' quantity. You already added ' . $sumOfQty
                 ]);
             }
         }
-
+    
+        // Add the product to the cart
         if ($variant) {
             $vart_type = explode(';', $variant->title);
             $vart_value = explode(';', $variant->value);
@@ -73,14 +90,38 @@ class CartController extends Controller
                 }
             }
             $variant['new_var_info'] = $var_info;
-            Cart::add($product->id . '_' . $variant->id, $product->title , $quantity, $variant->price, ['productImage' => (!empty($product->main_image)) ? $product->main_image : '', 'variant_info' => $variant, 'slug' => $product->slug]);
+            Cart::add($product->id . '_' . $variant->id, $product->title, $quantity, $variant->price, [
+                'productImage' => (!empty($product->main_image)) ? $product->main_image : '',
+                'variant_info' => $variant,
+                'slug' => $product->slug,
+                'high_risk' => $product->high_risk,
+                'max_buy' => $product->max_buy,
+                'min_buy' => $product->min_buy,
+
+            ]);
         } else {
-            Cart::add($product->id, $product->title, $quantity, $product->price, ['productImage' => (!empty($product->main_image)) ? $product->main_image : '', 'slug' => $product->slug]);
+            Cart::add($product->id, $product->title, $quantity, $product->price,[
+                'productImage' => (!empty($product->main_image)) ? $product->main_image : '',
+                'slug' => $product->slug,
+                'high_risk' => $product->high_risk,
+                'max_buy' => $product->max_buy,
+                'min_buy' => $product->min_buy,
+            ]);
         }
 
+          // Log the cart data for debugging
+            // \Log::info('Product added to cart:', [
+            //     'product_id' => $product->id,
+            //     'product_title' => $product->title,
+            //     'quantity' => $quantity,
+            //     'high_risk' => $product->high_risk,
+            //     'cart_content' => Cart::content()
+            // ]);
+        
         $status = true;
-        $message = $product->title . " added in cart 2";
-
+        $message = $product->title . " added to cart.";
+        
+       // dd(Cart::content());
         return response()->json([
             'status'    => $status,
             'message'   => $message,
