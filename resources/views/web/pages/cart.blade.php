@@ -2,7 +2,7 @@
 @section('title', 'Cart')
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    
     <!-- BREADCRUMB AREA START -->
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image "  data-bs-bg="img/bg/14.jpg">
         <div class="container">
@@ -23,7 +23,7 @@
     </div>
     <!-- BREADCRUMB AREA END -->
 
-    <!-- SHOPING CART AREA START -->
+    <!-- SHOPPING CART AREA START -->
     <div class="liton__shoping-cart-area mb-120">
         <div class="container">
             <div class="row">
@@ -48,34 +48,27 @@
                                     </thead>
                                     <tbody>
                                         @foreach($cartContent as $item)
-                                            <tr>
-                                                <td class="cart-product-remove"><a href="javascript:void(0)" onclick="deleteItem('{{ $item->rowId }}', false);">x</a></td>
-                                                <td class="cart-product-image">
-                                                    <a href="{{ route('web.product', ['id' => $item->options->slug]) }}"><img src="{{ asset('storage/'.$item->options->productImage)}}" alt="#"></a>
-                                                </td>
-                                                <td class="cart-product-info">
-                                                    <h6><a href="{{ route('web.product', ['id' => $item->options->slug]) }}">{!! $item->name !!} {!! $item->options->variant_info ? $item->options->variant_info->new_var_info : '' !!}</a></h6>
-                                                </td>
-                                                <td class="cart-product-price">£{{ $item->price }}</td>
-                                                <td class="cart-product-quantity" data-id="{{ $item->rowId }}">
-                                                    <div class="cart-plus-minus" role="button">
+                                        <tr>
+                                            <td class="cart-product-remove"><a href="javascript:void(0)" onclick="deleteItem('{{ $item->rowId }}', false);">x</a></td>
+                                            <td class="cart-product-image">
+                                                <a href="{{ route('web.product', ['id' => $item->options->slug]) }}"><img src="{{ asset('storage/'.$item->options->productImage) }}" alt="#"></a>
+                                            </td>
+                                            <td class="cart-product-info">
+                                                <h6><a href="{{ route('web.product', ['id' => $item->options->slug]) }}">{!! $item->name !!} {!! $item->options->variant_info ? $item->options->variant_info->new_var_info : '' !!}</a></h6>
+                                            </td>
+                                            <td class="cart-product-price">£{{ $item->price}}</td>
+                                            <td class="cart-product-quantity" data-id="{{ $item->rowId }}">
+                                                @if($item->options->high_risk == "2" || ($item->options->max_buy !== null && $item->qty >= $item->options->max_buy))
+                                                    <span>{{ $item->qty }}</span> <!-- Just show the quantity for high-risk products or if buy limit reached -->
+                                                @else
+                                                    <div class="cart-plus-minus">
                                                         <input type="text" value="{{ $item->qty }}" name="qtybutton" class="cart-plus-minus-box">
                                                     </div>
-                                                </td>
-                                                <td class="cart-product-subtotal">£{{ $item->price * $item->qty }}</td>
-                                            </tr>
-                                        @endforeach
-                                        {{-- <tr class="cart-coupon-row">
-                                            <td colspan="6">
-                                                <div class="cart-coupon">
-                                                    <input type="text" name="cart-coupon" placeholder="Coupon code">
-                                                    <button type="submit" class="btn theme-btn-2 btn-effect-2">Apply Coupon</button>
-                                                </div>
+                                                @endif
                                             </td>
-                                            <td>
-                                                <button type="submit" class="btn theme-btn-2 btn-effect-2-- disabled">Update Cart</button>
-                                            </td>
-                                        </tr> --}}
+                                            <td class="cart-product-subtotal">£{{ $item->price * $item->qty }}</td>
+                                        </tr>
+                                    @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -85,29 +78,16 @@
                                     <tbody>
                                         <tr>
                                             <td>Cart Subtotal</td>
-                                            <td class="cart-subtotal">£{{ Cart::subTotal()}}</td>
+                                            <td class="cart-subtotal">£{{ Cart::subTotal() }}</td>
                                         </tr>
-                                        {{-- <tr>
-                                            <td>Shipping and Handing</td>
-                                            <td>£0</td>
-                                        </tr> --}}
                                         <tr>
                                             <td><strong>Order Total</strong></td>
-                                            <td class="cart-total"><strong>£{{ Cart::subTotal()}}</strong></td>
+                                            <td class="cart-total"><strong>£{{ Cart::subTotal() }}</strong></td>
                                         </tr>
                                     </tbody>
                                 </table>
                                 <div class="btn-wrapper text-right">
-                                    <form class="needs-validation" action="" method="post">
-                                        @csrf
-                                        {{-- <input type="hidden" id="quantity" name="quantity" value="{{$cart['quantity']}}">
-                                        <input type="hidden" name="variant_id" value="{{$cart['variant_id'] ?? ''}}">
-                                        <input type="hidden" class="total-hidden" name="total" value="{{ $cart['total'] ?? 0}}">
-                                        <input type="hidden" class="shiping_cost" name="cost" value="4.95">
-                                        <input type="hidden" name="title" value="{{ $cart['title'] }}"> --}}
-
-                                        <a href="{{ route('web.checkout') }}" class="theme-btn-1 btn btn-effect-1">Proceed to checkout</a>
-                                    </form>
+                                    <a href="{{ route('web.checkout') }}" class="theme-btn-1 btn btn-effect-1">Proceed to checkout</a>
                                 </div>
                             </div>
                         </div>
@@ -116,8 +96,7 @@
             </div>
         </div>
     </div>
-    <!-- SHOPING CART AREA END -->
-
+    <!-- SHOPPING CART AREA END -->
 
 @stop
 
@@ -127,7 +106,7 @@
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
-	});
+    });
 
     $(document).delegate(".qtybutton", "click", function(e) {
         var rowId = $(this).closest('tr').find('.cart-product-quantity').data('id');
@@ -148,6 +127,5 @@
             }
         });
     }
-
 </script>
 @endPushOnce

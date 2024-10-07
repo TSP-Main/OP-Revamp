@@ -39,6 +39,13 @@
     .btn.out-of-stock i {
         margin-right: 5px;
     }
+    .custom-tooltip {
+    background-color: #fc9898; /* Background color */
+    color: #fff; /* Text color */
+    padding: 10px; /* Padding */
+    border-radius: 5px; /* Rounded corners */
+}
+
 </style>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <!-- BREADCRUMB AREA START -->
@@ -138,58 +145,121 @@
                                         </li>
                                     </ul>
                                 </div>
+                                @if($product->high_risk == '2')
+                                <a href="{{ $product->leaflet_link }}" target="_blank">
+                                    <div class="d-flex align-items-center" style="max-width: 350px; margin-bottom: 20px; font-size: 12px;">
+                                    <i class="fas fa-info-circle" style="color: #007bff; margin-right: 8px;  font-size: 20px;"></i>
+                                    <span style="font-size: 15px;">Information Leaflet</span>
+                                </div> </a>
+                                <div class="alert alert-warning" role="alert" style="max-width: 350px; padding: 10px; font-size: 12px;">
+                                    <h4 class="alert-heading" style="font-size: 14px;">Product & Safety Notice</h4>
+                                    <ul>
+                                        <li>The maximum purchase for this product is 1.</li>
+                                        <li>3 days use only. This product can cause addiction.</li>
+                                        <li>
+                                            <a href="https://www.gov.uk/guidance/opioid-medicines-and-the-risk-of-addiction" class="alert-link">Click here</a> for advice.
+                                        </li>
+                                    </ul>                                    
+                                </div>
+                                @endif
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
                                         <li>
-                                            <div class="cart-plus-minus" role="button">
-                                                <input type="text" value="1" name="qtybutton" class="cart-plus-minus-box">
-                                            </div>
+                                            @if($product->stock_status == 'IN')
+                                                @if($product->high_risk == 2)
+                                                    <input type="hidden" id="quantity-input" value="1" name="qtybutton">
+                                                @else
+                                                    <div class="cart-plus-minus">
+                                                        <input type="text" value="1" name="qtybutton" class="cart-plus-minus-box" id="quantity-input">
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <!-- Hide the quantity counter -->
+                                                <div style="display: none;">
+                                                    <input type="text" value="1" name="qtybutton" class="cart-plus-minus-box" id="quantity-input">
+                                                </div>
+                                            @endif
                                         </li>
                                         <li>
+                                            @php
+                                                $cartItems = Cart::content();
+                                                $hasHighRiskProduct = $cartItems->contains(function ($item) {
+                                                    return $item->options->high_risk == 2;
+                                                });
+                                                $highRiskProductNames = $cartItems->filter(function ($item) {
+                                                    return $item->options->high_risk == 2;
+                                                })->pluck('name')->toArray();
+                                                
+                                                $tooltipMessage = "Adding multiple high-risk medications to your cart is not permitted. ";
+                                                if (!empty($highRiskProductNames)) {
+                                                    $tooltipMessage .= "Currently in cart: " . implode(", ", $highRiskProductNames);
+                                                }
+                                            @endphp
+                                
                                             @if($product->stock_status == 'IN')
-                                            @if($product->product_template == config('constants.PRESCRIPTION_MEDICINE') && $pre_add_to_cart == 'yes')
-                                            <a href="javascript:void(0)" onclick="addToCart(@json($product->id));" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                <span>ADD TO CART</span>
-                                            </a>
-                                            @elseif($product->product_template == config('constants.PHARMACY_MEDECINE') && isset(session('consultations')[$product->id]))
-                                            <a href="javascript:void(0)" onclick="addToCart(@json($product->id));" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                <span>ADD TO CART</span>
-                                            </a>
-                                            @elseif($product->product_template == 1)
-                                            <form action="{{ route('web.consultationForm') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="template" value="{{ config('constants.PHARMACY_MEDECINE') }}">
-                                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
-                                                    <i class="fas fa-shopping-cart"></i>
-                                                    <span>Start Consultation</span>
-                                                </button>
-                                            </form>
-                                            @elseif ($product->product_template == 2)
-                                            <form action="{{ route('category.products', ['main_category' => $product->category->slug ?? NULL,'sub_category' => $product->sub_cat->slug ?? NULL, 'child_category' => $product->child_cat->slug ?? NULL]) }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
-                                                    <span>Start Consultation</span>
-                                                </button>
-                                            </form>
-                                            @elseif ($product->product_template == 3)
-                                            <a href="javascript:void(0)" onclick="addToCart({{ $product->id }});" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                <span>ADD TO CART</span>
-                                            </a>
-                                            @endif
-                                            @else
-                                            <a class="btn btn-secondary disabled" title="Out of Stock" aria-disabled="true">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                <span> Out of Stock</span>
-                                            </a>
-                                            @endif
+                                                @if($product->high_risk == 2 && $hasHighRiskProduct)
+                                                    <button type="button" class="btn btn-secondary"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                                            data-bs-custom-class="tooltip"
+                                                            data-bs-title="{{ $tooltipMessage }}" 
+                                                            data-bs-html="true">
+                                                        <i class="fas fa-exclamation-circle"></i> Unavailable
+                                                    </button>
+                                                    <a href='/medicine-restriction-policy' style='color: blue;' target='_blank'>Learn more</a>
+                                                @else
+                                                    @if($product->product_template == config('constants.PRESCRIPTION_MEDICINE') && $pre_add_to_cart == 'yes')
+                                                        <a href="javascript:void(0)" onclick="addToCart(@json($product->id));" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
+                                                            <i class="fas fa-shopping-cart"></i>
+                                                            <span>ADD TO CART</span>
+                                                        </a>
+                                                    @elseif($product->product_template == config('constants.PHARMACY_MEDECINE') && isset(session('consultations')[$product->id]))
+                                                        <a href="javascript:void(0)" onclick="addToCart(@json($product->id));" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
+                                                            <i class="fas fa-shopping-cart"></i>
+                                                            <span>ADD TO CART</span>
+                                                        </a>
+                                                    @elseif($product->product_template == 1)
+                                                        <form action="{{ route('web.consultationForm') }}" method="POST">
+                                                            @csrf
+                                                            <input type="hidden" name="template" value="{{ config('constants.PHARMACY_MEDECINE') }}">
+                                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                            <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Start Consultation">
+                                                                <span>Start Consultation</span>
+                                                            </button>
+                                                        </form>
+                                                    @elseif ($product->product_template == 2)
+                                                        <form action="{{ route('category.products', ['main_category' => $product->category->slug ?? NULL, 'sub_category' => $product->sub_cat->slug ?? NULL, 'child_category' => $product->child_cat->slug ?? NULL]) }}" method="POST">
+                                                            @csrf
+                                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                            <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Start Consultation">
+                                                                <span>Start Consultation</span>
+                                                            </button>
+                                                        </form>
+                                                    @elseif ($product->product_template == 3)
+                                                        <a href="javascript:void(0)" onclick="addToCart({{ $product->id }});" class="theme-btn-1 btn btn-effect-1" title="Add to Cart">
+                                                            <i class="fas fa-shopping-cart"></i>
+                                                            <span>ADD TO CART</span>
+                                                        </a>
+                                                    @endif
+                                                @endif
+                                                @else
+                                                 <!-- Notify Me Button -->
+                                                 <form action="{{ route('notify.me', $product->id) }}" method="POST" class="d-inline-block" id="notify-form-{{ $product->id }}">
+                                                    @csrf
+                                                    <input type="hidden" name="email" value="{{ auth()->user()->email ?? '' }}" required>
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    <span>Out of Stock</span> <br>
+                                                    <button type="button" class="theme-btn-1 btn btn-effect-1" title="Notify Me" onclick="notifyMe({{ auth()->check() ? 'true' : 'false' }}, '{{ route('notify.me', $product->id) }}')">
+                                                        <span>Notify on Restock</span>
+                                                    </button>
+                                                </form>
+                                                {{-- <a class="btn btn-secondary disabled" title="Out of Stock" aria-disabled="true">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    <span>Out of Stock</span>
+                                                </a> --}}
+                                            @endif                                            
                                         </li>
                                     </ul>
-                                </div>
+                                </div>                               
                                 <div class="ltn__product-details-menu-3 ">
                                     <ul>
                                         @if(!$product['variants']->isEmpty())
@@ -298,7 +368,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2">
-                    <h4 class="title-2">Related Products<span>.</span></h4>
+                    <h4 class="title-2">Related Products<span>.</span></h1>
                 </div>
             </div>
         </div>
@@ -456,5 +526,36 @@
         return url;
     }
 });
+
+$(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').tooltip({
+        trigger: 'manual' // Prevents it from hiding automatically
+    }).on('mouseenter', function() {
+        // Show the tooltip when mouse enters
+        $(this).tooltip('show');
+    }).on('mouseleave', function() {
+        // Hide the tooltip when mouse leaves, but only if the user hasn't clicked the button
+        if (!$(this).data('clicked')) {
+            $(this).tooltip('hide');
+        }
+    }).on('click', function() {
+        // Prevent the tooltip from hiding when clicked
+        $(this).data('clicked', true);
+    });
+});
+
+function notifyMe(isLoggedIn, actionUrl) {
+    if (!isLoggedIn) {
+        // alert('You must be logged in to receive notifications.');
+        // Optionally redirect to login page
+        window.location.href = '/login';
+        return;
+    }
+
+    // If logged in, submit the form
+    document.getElementById('notify-form-' + actionUrl.split('/').pop()).submit();
+}
+
+
 </script>
 @endPushOnce

@@ -215,7 +215,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- below container -->
+                    <!-- below containerrrrrrrrrrrrrrrrrrrrrrrr -->
                     <div style="margin-top: 10px;margin-bottom:5px">
                         <div class="row" style="padding-right: 12px;">
                             @foreach($product['product_attributes'] ?? [] as $key => $val1)
@@ -401,6 +401,25 @@
                     <div class="invalid-feedback">Select Stock Status!</div>
                     @error('stock_status')
                     <div class="alert-danger text-danger ">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-4">
+                    <label for="high_risk" class="col-form-label"> High Risk</label>
+                    <select id="high_risk" name="high_risk" class="form-select"  required onchange="toggleLeafletLink()">
+                        <option value="1" {{ (isset($product['high_risk']) && $product['high_risk'] == '1') ? 'selected' : '' }}>NO</option>
+                        <option value="2" {{ (isset($product['high_risk']) && $product['high_risk'] == '2') ? 'selected' : '' }}>YES</option>
+                    </select>
+                    <div class="invalid-feedback">Select Medicine Intensity!</div>
+                    @error('stock_status')
+                    <div class="alert-danger text-danger ">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-4" id="leaflet_link_container" style="display: none;">
+                    <label for="leaflet_link" class="col-form-label">Provide Leaflet Link</label>
+                    <input type="url" id="leaflet_link" name="leaflet_link" class="form-control" placeholder="Enter Leaflet Link" value="{{ old('leaflet_link', $product['leaflet_link'] ?? '') }}">
+                    <div class="invalid-feedback">Please enter a leaflet URL!</div>
+                    @error('leaflet_link')
+                    <div class="alert-danger text-danger">{{ $message }}</div>
                     @enderror
                 </div>
             </div>
@@ -771,8 +790,22 @@
             reader.readAsDataURL(file);
         }
     }
+    function toggleLeafletLink() {
+        const highRiskSelect = document.getElementById('high_risk');
+        const leafletLinkContainer = document.getElementById('leaflet_link_container');
 
-    // new row add
+        if (highRiskSelect.value === '2') { // YES
+            leafletLinkContainer.style.display = 'block';
+        } else {
+            leafletLinkContainer.style.display = 'none';
+        }
+    }
+
+    // Initialize the visibility on page load
+    document.addEventListener('DOMContentLoaded', toggleLeafletLink);
+
+
+    // new row add 
     var new_row = `<div class="row bg-white rounded-3  mb-4 py-2">
                         <div class="col-12">
                             <hr class="">
