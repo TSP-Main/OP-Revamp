@@ -4,7 +4,32 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="ltn__utilize-overlay"></div>
+<style>
+   .card {
+    position: relative;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 4px 4px 4px rgba(62, 224, 207, 0.5); 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 4px px rgb(62, 224, 207); 
+}
+
+
+.card-body {
+    padding: 20px;
+    text-align: center;
+}
+
+.product-price {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+}
+</style>
 <!-- clinic online -->
 <section class="clinic-main">
     <div class="container py-5">

@@ -194,7 +194,7 @@
                 <ul id="charts-nav"
                     class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  "
                     data-bs-parent="#sidebar-nav">
-                    @if(view_permission('admin.allOrders'))
+                    @if(auth()->user()->hasPermissionTo('admin.allOrders'))
                         <li>
                             <a class="{{(request()->routeIs(['admin.allOrders'])) ? 'nav-link ' : ''}}"
                                href="{{route('admin.allOrders')}}">
@@ -218,7 +218,7 @@
                             </a>
                         </li>
                     @endif
-                    @if(view_permission('orders_refunded'))
+                    @if(auth()->user()->hasPermissionTo('orders_refunded'))
                         <li>
                             <a class="{{(request()->routeIs(['admin.ordersRefunded'])) ? 'nav-link ' : ''}}"
                                href="{{route('admin.ordersRefunded')}}">

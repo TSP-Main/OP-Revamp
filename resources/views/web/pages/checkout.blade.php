@@ -155,7 +155,7 @@
                                     </div>
                                     <span class="float-right">Free Shipping (3-5 Working Days)</span>
                                     <span class="float-right"> (£0.00)</span>
-                                    <div class="ml-4 mb-2 small">(For orders over £40)</div>
+                                    <div class="ml-4 mb-2 small">(For orders over £45)</div>
                                 </div>
                             </div>
                         </div>
@@ -321,7 +321,7 @@ $(document).ready(function() {
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
 
-        if (subTotal >= 40) {
+        if (subTotal > 45) {
             $('#free_shipping').closest('.col-md-6').show();
         } else {
             $('#free_shipping').closest('.col-md-6').hide();

@@ -325,6 +325,16 @@
                 margin: 0;
             }
         }
+        .custom-dropdown {
+                width: 190px; /* Adjust the width as needed */
+                display: inline-block; /* Keeps it inline with the label */
+            }
+
+            .text-end {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end; /* Aligns the content to the end */
+            }
     </style>
 
     <div class="pagetitle">
@@ -344,7 +354,7 @@
 
                 <div class="card">
                     <div class="card-header mt-3 d-flex justify-content-between align-items-center">
-                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
+                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"></div>
                         </div>
                         <div class="p-2">
                             <div id="container">
@@ -368,11 +378,19 @@
                         </div>
                     </div>
                     <div class="row mb-3 px-4">
-                        <div class="col-md-12 mt-3 text-center d-block">
-                            <label for="search" class="form-label fw-bold">Search From Table </label>
+                        <div class="col-md-8 text-start">
+                            <label for="search" class="form-label fw-bold">Search From Table</label>
                             <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
                         </div>
-                    </div>
+                        <div class="col-md-4 text-end mt-auto">
+                            <label for="order_filter" class="form-label fw-bold mt-1">Filter Orders</label>
+                            <select id="order_filter" class="form-control custom-dropdown mt-0" aria-label="Order Filter">
+                                <option value="all">All Orders</option>
+                                <option value="approved">Approved Orders</option>
+                                <option value="not_approved">Not Approved Orders</option>
+                            </select>
+                        </div>
+                    </div>                    
                     <div class="card-body">
                         <table id="tbl_data" class="table table-striped">
                             <thead class="thead-dark">
@@ -383,61 +401,58 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    <th>Email</th>
                                     @if($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
                                     <th>Payment Status</th>
                                     <th>Order Status</th>
-                                    <th> Shiped Order</th>
+                                    <th>Shipped Order</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($orders ?? [] as $key => $val)
                                 <tr>
-                                    <td style="align-items: center; ">
+                                    <td style="align-items: center;">
                                         <div class="text-center d-flex align-items-center justify-content-center">
                                             <input class="custom-checkbox" id="checkbox_{{$val['id']}}" name="checkbox_{{$val['id']}}" type="checkbox" value="{{$val['id']}}">
                                         </div>
                                     </td>
                                     <td>{{ ++$key }}</td>
                                     <td>
-                                        <a href="{{ route('admin.orderDetail',['id'=> base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex; ">
+                                        <a href="{{ route('admin.orderDetail',['id'=> base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex;">
                                             #{{ $val['id'] }}
                                         </a>
                                     </td>
                                     <td>
                                         @if(isset($order_history[$val['email']]))
-                                        <span class=" px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0}} </span>
+                                        <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0}} </span>
                                         @endif
                                     </td>
-                                    @php
-                                    $isNewOrder = null;
-                                    if($val['status'] == 'Received'):
-                                    $createdAt = isset($val['created_at']) ? strtotime($val['created_at']) : null;
-                                    $isNewOrder = $createdAt && ($createdAt > strtotime('-3 days'));
-                                    endif;
-                                    @endphp
-
+                                    <td>{{date_time_uk($val['created_at'])}}</td>
+                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name'] }}</td>
                                     <td>
-                                        @if($isNewOrder)
-                                        <span class="badge bg-primary">New Order</span> <br>
+                                        @if (isset($val['shipingdetails']['email']))
+                                            {{ $val['shipingdetails']['email'] }}
+                                        @elseif (isset($val['user']['email']))
+                                            {{ $val['user']['email'] }}
+                                        @else
+                                            N/A
                                         @endif
-                                        {{date_time_uk($val['created_at'])}}
                                     </td>
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
                                     @if($user->role == user_roles('1'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
-                                    <td><span class="btn  fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span> </td>
-                                    <td><span class="btn fw-bold rounded-pill btn-success"> {{$val['payment_status'] ?? ''}}</span> </td>
-                                    <td><span class="btn  fw-bold {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }} {{ $val['status'] == 'Approved' ?  'btn-success' :'' }} {{ $val['status'] == 'Received' ?  'btn-primary' :'' }} {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }} rounded-pill">{{ $val['status'] ?? '' }}</span></td>
+                                    <td><span class="btn fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span></td>
+                                    <td><span class="btn fw-bold rounded-pill btn-success"> {{$val['payment_status'] ?? ''}}</span></td>
+                                    <td><span class="btn fw-bold {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }} {{ $val['status'] == 'Approved' ?  'btn-success' :'' }} {{ $val['status'] == 'Received' ?  'btn-primary' :'' }} rounded-pill">{{ $val['status'] ?? '' }}</span></td>
                                     <td style="display: inline-block;">
                                         @if($val['status'] == 'Approved')
-                                        <span data-order_id="{{$val['id']}}" class="btn ship_now  fw-bold btn-primary no-wrap rounded-pill">Ship Now</span>
+                                        <span data-order_id="{{$val['id']}}" class="btn ship_now fw-bold btn-primary no-wrap rounded-pill">Ship Now</span>
                                         @endif
-                                        @if($val['status'] == 'Shiped')
-                                        <span class="btn  fw-bold btn-success no-wrap rounded-pill">Shiped</span>
+                                        @if($val['status'] == 'Shipped')
+                                        <span class="btn fw-bold btn-success no-wrap rounded-pill">Shipped</span>
                                         @endif
                                     </td>
 
@@ -499,6 +514,11 @@
 
     $(document).ready(function() {
         var tableApi = $('#tbl_data').DataTable();
+        $('#order_filter').on('change', function() {
+        var filterValue = $(this).val();
+        tableApi.column(9).search(filterValue === 'all' ? '' : filterValue.charAt(0).toUpperCase() + filterValue.slice(1)).draw();
+      });
+
         $('#search').on('input', function() {
             let text = $(this).val();
             if (text === '') {

@@ -204,7 +204,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card card-radius">
-                        <a href="{{ url('/chronic-conditions/diabetes-medication') }}"><img src="img/product/chan.webp"
+                        <a href="{{ url('/search?q=freestyle') }}"><img src="img/product/chan.webp"
                                                                                             class="card-img-top card-radius"
                                                                                             alt="..."
                                                                                             style="border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;"></a>
@@ -218,7 +218,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card card-radius">
-                        <a href="{{ url('/pharmacy-shop') }}"><img src="img/product/jungle formula.webp"
+                        <a href="{{ url('/pharmacy-shop/travel-health') }}"><img src="img/product/jungle formula.webp"
                                                                    class="card-img-top card-radius" alt="..."
                                                                    style="border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;"></a>
                         <div class="card-body tabPadding" style="text-align: center;">

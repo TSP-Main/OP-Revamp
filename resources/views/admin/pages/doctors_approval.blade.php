@@ -344,6 +344,10 @@
 
                 <div class="card">
                     <div class="card-header mt-3 d-flex justify-content-between align-items-center">
+                         <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
+                            <button id="batch-shipping" class="btn btn-primary" disabled>Batch Shipping</button>
+                            {{-- <button><a href="{{ route('admin.POMorders.exportCsv') }}" class="btn btn-primary me-1">Export CSV</a></button> --}}
+                         </div>
                         <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                         </div>
                         <div class="p-2">
@@ -408,54 +412,65 @@
                                     </td>
                                     <td>{{ ++$key }}</td>
                                     <td>
-                                        <a href="{{ route('admin.orderDetail',['id'=> base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex; ">
+                                        <a href="{{ route('admin.orderDetail', ['id' => base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex;">
                                             #{{ $val['id'] }}
                                         </a>
                                     </td>
                                     <td>
                                         @if(isset($order_history[$val['email']]))
-                                        <span class=" px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0}} </span>
+                                            <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }}</span>
                                         @endif
                                     </td>
                                     @php
-                                    $isNewOrder = null;
-                                    if($val['status'] == 'Received'):
-                                    $createdAt = isset($val['created_at']) ? strtotime($val['created_at']) : null;
-                                    $isNewOrder = $createdAt && ($createdAt > strtotime('-3 days'));
-                                    endif;
+                                        $isNewOrder = null;
+                                        if($val['status'] == 'Received') {
+                                            $createdAt = isset($val['created_at']) ? strtotime($val['created_at']) : null;
+                                            $isNewOrder = $createdAt && ($createdAt > strtotime('-3 days'));
+                                        }
                                     @endphp
                                     <td>
                                         @if($isNewOrder)
-                                        <span class="badge bg-primary">New Order</span> <br>
+                                            <span class="badge bg-primary">New Order</span> <br>
                                         @endif
-                                        {{date_time_uk($val['created_at'])}}
+                                        {{ date_time_uk($val['created_at'] ?? '') }}
                                     </td>
-
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    <td>
+                                        {{ ($val['shipingdetails']['firstName'] ?? '') . ' ' . ($val['shipingdetails']['lastName'] ?? '') ?: ($val['user']['name'] ?? 'Unknown User') }}
+                                    </td>
                                     @if($user->role == user_roles('1'))
-                                    <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
+                                        <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount'] ?? 0), 2) }}</td>
                                     @endif
-                                    <td><span class="btn  fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span> </td>
-                                    <td><span class="btn fw-bold rounded-pill btn-success"> {{$val['payment_status'] ?? ''}}</span> </td>
-                                    <td><span class="btn  fw-bold {{ $val['status'] == 'Not_Approved'  || $val['status'] == 'ShippingFail' ?  'btn-danger' :'' }} {{ $val['status'] == 'Approved' ?  'btn-success' :'' }} {{ $val['status'] == 'Received' ?  'btn-primary' :'' }} {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }}">{{ $val['status'] ?? '' }}</span></td>
+                                    <td>
+                                        <span class="btn fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary' : (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">
+                                            {{ ($val['order_type'] == 'premd') ? 'POM' : (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="btn fw-bold rounded-pill btn-success">{{ $val['payment_status'] ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="btn fw-bold {{ $val['status'] == 'Not_Approved' || $val['status'] == 'ShippingFail' ? 'btn-danger' : '' }} {{ $val['status'] == 'Approved' ? 'btn-success' : '' }} {{ $val['status'] == 'Received' ? 'btn-primary' : '' }}">
+                                            {{ $val['status'] ?? 'Unknown' }}
+                                        </span>
+                                    </td>
                                     <td style="display: inline-block;">
                                         @if($val['status'] != 'Received')
-                                        <span>{{ $val['approved_by']['name'] }} ({{ $val['approved_by']['email'] }} )</span>
+                                            <span>{{ $val['approved_by']['name'] ?? 'Unknown' }} ({{ $val['approved_by']['email'] ?? 'N/A' }})</span>
                                         @endif
                                     </td>
                                     @if($user->role != user_roles('3'))
-                                    <td style="display: inline-block;">
-                                        @if($val['status'] == 'Approved' || $val['status'] == 'ShippingFail' )
-                                        <span data-order_id="{{$val['id']}}" class="btn  ship_now fw-bold btn-primary no-wrap">Ship Now</span>
-                                        @endif
-                                        @if($val['status'] == 'Shiped')
-                                        <span class="btn  fw-bold btn-success no-wrap">Shiped</span>
-                                        @endif
-                                    </td>
+                                        <td style="display: inline-block;">
+                                            @if(in_array($val['status'], ['Approved', 'ShippingFail']))
+                                                <span data-order_id="{{$val['id']}}" class="btn ship_now fw-bold btn-primary no-wrap">Ship Now</span>
+                                            @endif
+                                            @if($val['status'] == 'Shipped')
+                                                <span class="btn fw-bold btn-success no-wrap">Shipped</span>
+                                            @endif
+                                        </td>
                                     @endif
                                     @if($user->role == user_roles('1'))
                                     <th style="vertical-align: middle; text-align: center;">
-                                        <button type="button" data-order-id="{{ $val['id'] }}" class="btn btn-small bg-primary  rounded-pill text-center duplicate-order">
+                                            <button type="button" data-order-id="{{ $val['id'] }}" class="btn btn-small bg-primary rounded-pill text-center duplicate-order">
                                             <i class="bi bi-arrow-repeat"></i>
                                         </button>
                                     </th>
