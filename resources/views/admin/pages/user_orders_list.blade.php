@@ -74,7 +74,7 @@
                                     <th>Customer Name</th>
                                     <th>D.O.B</th>
                                     <th>Address</th>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>View Questionnaire </th>

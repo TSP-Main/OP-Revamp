@@ -43,7 +43,7 @@ class ProductController extends Controller
         if ($user->hasRole('super_admin')) {
             if ($request->ajax()) {
                 $query = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')
-                    ->whereIn('status', $this->getUserStatus('Active'));
+                    ->where('status', $this->getUserStatus('Active'));
 
                 return DataTables::of($query)
                     ->filter(function ($query) use ($request) {

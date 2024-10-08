@@ -383,6 +383,7 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    @if($user->hasRole('super_admin'))
                                     <th>Email</th>
                                     @if($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
@@ -416,6 +417,7 @@
                                     {{date_time_uk($val['created_at'])}}
                                     </td>
                                     <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    @if ($user->hasRole('super_admin'))
                                     <td>
                                         @if (isset($val['shipingdetails']['email']))
                                             {{ $val['shipingdetails']['email'] }}

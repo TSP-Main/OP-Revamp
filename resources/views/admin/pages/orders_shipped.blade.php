@@ -383,13 +383,13 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Type</th>
                                     <th>Payment</th>
                                     <th>Status</th>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th> Duplicate</th>
                                     @endif
                                 </tr>
@@ -424,7 +424,7 @@
                                     <td><span class="btn  fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span> </td>
                                     <td><span class="btn  fw-bold btn-success rounded-pill">{{$val['payment_status'] ?? ''}}</span></td>
                                     <td><span class="btn  fw-bold btn-success rounded-pill">{{$val['status'] ?? ''}}</span></td>
-                                    @if($user->role == user_roles('1'))
+                                    @if ($user->hasRole('super_admin'))
                                     <th style="vertical-align: middle; text-align: center;">
                                         <button type="button" data-order-id="{{ $val['id'] }}" class="btn btn-small bg-primary  rounded-pill text-center duplicate-order">
                                             <i class="bi bi-arrow-repeat"></i>
@@ -472,7 +472,7 @@
                 // {
                 //     extend: 'excel',
                 //     text: 'Donwload Excel ',
-                //     className: 'btn-blue', 
+                //     className: 'btn-blue',
                 // },
 
                 {

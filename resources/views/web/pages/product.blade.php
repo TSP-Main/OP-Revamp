@@ -159,7 +159,7 @@
                                         <li>
                                             <a href="https://www.gov.uk/guidance/opioid-medicines-and-the-risk-of-addiction" class="alert-link">Click here</a> for advice.
                                         </li>
-                                    </ul>                                    
+                                    </ul>
                                 </div>
                                 @endif
                                 <div class="ltn__product-details-menu-2">
@@ -189,19 +189,19 @@
                                                 $highRiskProductNames = $cartItems->filter(function ($item) {
                                                     return $item->options->high_risk == 2;
                                                 })->pluck('name')->toArray();
-                                                
+
                                                 $tooltipMessage = "Adding multiple high-risk medications to your cart is not permitted. ";
                                                 if (!empty($highRiskProductNames)) {
                                                     $tooltipMessage .= "Currently in cart: " . implode(", ", $highRiskProductNames);
                                                 }
                                             @endphp
-                                
+
                                             @if($product->stock_status == 'IN')
                                                 @if($product->high_risk == 2 && $hasHighRiskProduct)
                                                     <button type="button" class="btn btn-secondary"
                                                             data-bs-toggle="tooltip" data-bs-placement="top"
                                                             data-bs-custom-class="tooltip"
-                                                            data-bs-title="{{ $tooltipMessage }}" 
+                                                            data-bs-title="{{ $tooltipMessage }}"
                                                             data-bs-html="true">
                                                         <i class="fas fa-exclamation-circle"></i> Unavailable
                                                     </button>
@@ -256,10 +256,10 @@
                                                     <i class="fas fa-exclamation-circle"></i>
                                                     <span>Out of Stock</span>
                                                 </a> --}}
-                                            @endif                                            
+                                            @endif
                                         </li>
                                     </ul>
-                                </div>                               
+                                </div>
                                 <div class="ltn__product-details-menu-3 ">
                                     <ul>
                                         @if(!$product['variants']->isEmpty())
