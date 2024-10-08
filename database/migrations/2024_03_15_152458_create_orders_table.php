@@ -16,22 +16,21 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id');
-            $table->string('email');
-            $table->bigInteger('shipped_order_id')->nullable();
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('payment_id')->constrained('payment_details')->nullable();
+//            $table->string('email');
             $table->string('note')->nullable();
-            $table->string('coupon_code')->nullable();
-            $table->string('coupon_value')->nullable();
+//            $table->string('coupon_code')->nullable();
+//            $table->string('coupon_value')->nullable();
             $table->string('print')->default('Print Out');
             $table->string('total_ammount');
-            $table->string('shiping_cost');
-            $table->string('payment_id')->nullable();
-            $table->string('order_identifier')->nullable();
-            $table->string('tracking_no')->nullable();
+//            $table->string('shiping_cost');
+//            $table->string('order_identifier')->nullable();
+//            $table->string('tracking_no')->nullable();
             $table->string('payment_status')->default('Unpaid');
             $table->text('hcp_remarks')->nullable();
             $table->string('order_for')->default('despensory');
-            $table->string('status')->default('Received');
+            $table->string('status')->default('Received')->comment('Received,Approved,Not_Approved,Shipped,Refund,ShippingFail');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('approved_by')->nullable()->default(null);
             $table->unsignedBigInteger('updated_by')->nullable()->default(null);

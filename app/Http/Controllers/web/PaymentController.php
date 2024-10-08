@@ -555,6 +555,7 @@ class PaymentController extends Controller
 
     public function error404()
     {
+        $this->shareMenuCategories();
         return view('web.pages.404');
     }
     public function thankYou(Request $request)

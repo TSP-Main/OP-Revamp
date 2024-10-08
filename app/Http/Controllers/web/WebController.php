@@ -24,6 +24,7 @@ class WebController extends Controller
     // cloned methods of myweightloss
     public function account()
     {
+        $this->shareMenuCategories();
         $data['user'] = auth()->user() ?? [];
         return view('web.pages.account', $data);
     }
