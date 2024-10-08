@@ -459,8 +459,16 @@ class PaymentController extends Controller
                 $user = auth()->user() ?? [];
                 $order->update(['payment_status' => 'Paid']);
                 $name = $order->shipingdetails->firstName;
-                $order_for = [user_roles('1'), ($order->order_for == 'doctor') ? user_roles('3') : user_roles('2')];
-                $users = User::where('status', 1)->WhereIn('role', $order_for)->get();
+//                $order_for = [$user->hasRole('super_admin'), ($order->order_for == 'doctor') ? $user->hasRole('doctor') : $user->hasRole('dispensary')];
+//                $users = User::where('status', 1)->WhereIn('role', $order_for)->get();
+                $rolesToCheck = ['super_admin'];
+                if ($order->order_for == 'doctor') {
+                    $rolesToCheck[] = 'doctor';
+                } else {
+                    $rolesToCheck[] = 'dispensary';
+                }
+                // Get users with these roles using Spatie's role handling
+                $users = User::role($rolesToCheck)->where('status', 1)->get();
                 Notification::send($users, new UserOrderNotification($order));
                 Mail::to($order->shipingdetails->email)->send(new OrderConfirmation($order));
                 Session::flush();
