@@ -1444,7 +1444,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Received'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Received'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1458,7 +1458,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1486,7 +1486,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_created');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid', 'status' => 'Created'])
+        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid', 'status' => 'Created'])
             ->orWhere('status', 'Duplicate')
             ->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -1746,7 +1746,15 @@ class AdminDashboardController extends Controller
                 $data['variants'][$product['id']] = $product['variants'];
             }
         }
-        $data['users'] = User::where(['status' => $this->getUserStatus('Active'), 'role' => user_roles('4')])->latest('id')->get()->sortBy('name')->keyBy('id')->toArray();
+        // Fetch active users who have the 'user' role
+        $data['users'] = User::where('status', $this->getUserStatus('Active'))
+        ->get()
+        ->filter(function ($user) {
+            return $user->hasRole('user'); 
+        })
+        ->sortBy('name')
+        ->keyBy('id')
+        ->toArray();
         return view('admin.pages.add_order', $data);
     }
 

@@ -116,7 +116,18 @@
                                     </td>
                                     <td>{{date_time_uk($val['created_at'])}}
                                     </td>
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    <td>
+                                        {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
+                                        @if (isset($val['shipingdetails']) && $val['shipingdetails'])
+                                        {{ $val['shipingdetails']['firstName'] ?? '' }}
+                                        {{ $val['shipingdetails']['lastName'] ?? '' }}
+                                        @elseif(isset($val['user']) && $val['user'])
+                                        {{ $val['user']['name'] ?? '' }}
+                                        @else
+                                        N/A
+                                        @endif
+
+                                    </td>
                                     <td>{{ $val['email'] ?? '' }}</td>
                                     <!-- <td>{{$val['shipingdetails']['address'] ?? ''}}</td> -->
                                     <td style="vertical-align: middle; text-align: center;">

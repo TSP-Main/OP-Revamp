@@ -394,6 +394,8 @@
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
                                     @if ($user->hasRole('super_admin'))
+                                    <th>Email</th>
+                                    @if ($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
@@ -448,7 +450,15 @@
                                         @else
                                         N/A
                                         @endif
-
+                                    </td>
+                                    <td>
+                                        @if (isset($val['shipingdetails']['email']))
+                                            {{ $val['shipingdetails']['email'] }}
+                                        @elseif (isset($val['user']['email']))
+                                            {{ $val['user']['email'] }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
                                     @if ($user->hasRole('super_admin'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>

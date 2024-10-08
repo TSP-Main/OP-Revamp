@@ -398,6 +398,7 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    <th>Email</th>
                                     @if ($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
                                     @endif
@@ -453,7 +454,15 @@
                                         @else
                                         N/A
                                         @endif
-
+                                    </td>
+                                    <td>
+                                        @if (isset($val['shipingdetails']['email']))
+                                            {{ $val['shipingdetails']['email'] }}
+                                        @elseif (isset($val['user']['email']))
+                                            {{ $val['user']['email'] }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
                                     @if ($user->role == user_roles('1'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>

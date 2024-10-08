@@ -344,7 +344,7 @@
                 </div>
                 <div class="col-md-6">
                     <label for="cut_price" class="col-form-label"> Cut Price <span class="cut-price"></span></label>
-                    <input type="text" name="cut_price" id="cut_price" value="{{  $product['cut_price'] ?? old('cut_price') }}" class="form-control">
+                    <input type="number" name="cut_price" id="cut_price" value="{{  $product['cut_price'] ?? old('cut_price') }}" class="form-control">
                     <div class="invalid-feedback">Enter Cut Price!</div>
                     @error('cut_price')
                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -353,7 +353,7 @@
 
                 <div class="col-md-6">
                     <label for="price" class="col-form-label"> Price <span class="extra-text">(Price in UK Pound)</span></label>
-                    <input type="text" name="price" id="price" value="{{  $product['price'] ?? old('price') }}" class="form-control" required>
+                    <input type="number" name="price" id="price" value="{{  $product['price'] ?? old('price') }}" class="form-control" required>
                     <div class="invalid-feedback">Enter product price!</div>
                     @error('price')
                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -385,7 +385,7 @@
                 </div>
                 <div class="col-md-4 mt-2">
                     <label for="weight" class="form-label">Weight (gm) - If Weight is zero, enter '0' (not '0.0')</label>
-                    <input type="number" min="0" name="weight" id="weight" value="{{  $product['weight'] ?? old('weight') }}" class="form-control">
+                    <input type="text" name="weight" id="weight" value="{{ $product['weight'] ?? old('weight') }}" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
                     <div class="invalid-feedback">Enter product weight!</div>
                     @error('weight')
                     <div class="alert-danger text-danger ">{{ $message }}</div>

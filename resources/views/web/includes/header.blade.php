@@ -80,7 +80,7 @@
                     </div>
                     <div class="col">
                         <!-- header-options -->
-                        <div class="ltn__header-options">
+                        <div class="ltn__header-options justify-content-end">
                             <ul>
                                 <li class="d-none--- ">
                                     <!-- header-search-1 -->
@@ -110,7 +110,7 @@
                                                 <a href="#" class=" poppins-thin "><i class="icon-user"></i></a>
                                                 <ul>
                                                     @if(auth()->user())
-                                                        <li><a href="{{ route('web.index') }}">My Account</a></li>
+                                                        <li><a href="{{ route('admin.index') }}">My Account</a></li>
                                                         <li><a href="{{ route('web.logout') }}">Sign Out</a></li>
                                                     @else
                                                         <li><a href="{{ route('sign_in_form') }}">Sign in</a></li>
@@ -133,6 +133,11 @@
                                     </div>
                                 </li>
                             </ul>
+                            <div class="d-flex logo-container">
+                                <a class="new-logo" href="/">
+                                    <img src="{{ asset('img/newlogo.png') }}" width="100px" alt="Logo">
+                                </a>
+                    <       </div>
                         </div>
                     </div>
                 </div>
@@ -142,6 +147,24 @@
 
 
         <style>
+            @media (max-width: 768px) {
+                .ltnheader-options {
+                    display: flex;
+                    flex-wrap: wrap;
+                }
+
+                .ltnheader-options ul {
+                    flex: 1 1 auto;
+                    order: 0;
+                }
+
+                .logo-container {
+                    flex-basis: 100%;
+                    order: 1;
+                    text-align: center;
+                    margin-top: 10px;
+                }
+            }
             .mobile-res-secton {
                 display: none !important;
             }

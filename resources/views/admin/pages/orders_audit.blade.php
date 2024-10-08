@@ -84,7 +84,10 @@
             <div class="col-lg-12">
 
                 <div class="card">
-                    <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"></div>
+                    {{-- <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"><a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary me-1">Export CSV</a></div> --}}
+                    {{-- <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
+                        <a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary">Export CSV</a>
+                    </div> --}}
                     <div class="row mb-3 px-4">
                         <div class="col-md-3 text-center d-block">
                             <label for="startDate" class="form-label fw-bold">Start Date Time</label>
@@ -137,6 +140,7 @@
                                     <th>Order No.</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    <th>Email</th>
                                     <th>Postal Code</th>
                                     <th>Product Name</th>
                                     <th>Address</th>
@@ -154,6 +158,15 @@
                                     </td>
                                     <td>{{ isset($val['created_at']) ? date('Y-m-d h:i A', strtotime($val['created_at'])) : '' }}</td>
                                     <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    <td>
+                                        @if (isset($val['shipingdetails']['email']))
+                                            {{ $val['shipingdetails']['email'] }}
+                                        @elseif (isset($val['user']['email']))
+                                            {{ $val['user']['email'] }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td>{{$val['shipingdetails']['zip_code'] ?? ''}}</td>
                                     <td>
                                         @foreach($val['orderdetails'] as $detail)
@@ -244,61 +257,43 @@
         function(settings, data, dataIndex) {
             var min = $('#startDate').val();
             var max = $('#endDate').val();
-            var date = data[2] || ''; // Date is in the 3rd column (index 2)
+            var date = data[2] || ''; 
             var startDate = new Date(min);
             var endDate = new Date(max);
             var currentDate = new Date(date);
 
-            if ((min === "" || startDate <= currentDate) &&
-                (max === "" || currentDate <= endDate)) {
-                return true;
-            }
-            return false;
+            return (min === "" || startDate <= currentDate) &&
+                   (max === "" || currentDate <= endDate);
         }
     );
 
     // Filter by Address
     $('#addresses').on('change', function() {
         var address = $(this).val();
-        var addressColumnIndex = 6; // Address column is index 6
-        tableApi.column(addressColumnIndex).search(address === 'All' ? '' : address).draw();
+        console.log('Filtering by address:', address); 
+        tableApi.column(7).search(address === 'All' ? '' : address).draw();
     });
 
     // Filter by Postal Code
     $('#postal_codes').on('change', function() {
         var postalCode = $(this).val();
-        var postalCodeColumnIndex = 4; // Postal Code column is index 4
-        tableApi.column(postalCodeColumnIndex).search(postalCode === 'All' ? '' : postalCode).draw();
+        console.log('Filtering by postal code:', postalCode); 
+        tableApi.column(5).search(postalCode === 'All' ? '' : postalCode).draw();
     });
 
     // Filter by Product
     $('#products').on('change', function() {
         var product = $(this).val();
-        console.log('Filtering by product:', product); // Debugging
-        var productColumnIndex = 5; // Product Name column is index 5
-        tableApi.column(productColumnIndex).search(product === 'All' ? '' : product).draw();
+        console.log('Filtering by product:', product); 
+        tableApi.column(6).search(product === 'All' ? '' : product).draw(); 
     });
 
     // General Search
     $('#search').on('input', function() {
         var text = $(this).val();
+        console.log('General search:', text); 
         tableApi.search(text).draw();
     });
-
-    // Edit and Delete Button Handling
-    $(document).on('click', '.edit', function() {
-        var id = $(this).data('id');
-        $('#edit_form_id_input').val(id);
-        $('#edit_form').submit();
-    });
-
-    $(document).on('click', '.delete', function() {
-        var id = $(this).data('id');
-        $('#edit_form_id_input').val(id);
-        $('#edit_form').submit();
-    });
 });
-
-
 </script>
 @endPushOnce
