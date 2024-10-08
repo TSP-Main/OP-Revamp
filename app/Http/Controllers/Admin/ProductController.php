@@ -271,17 +271,17 @@ class ProductController extends Controller
     {
         // Fetch the product
         $product = Product::findOrFail($productId);
-    
+
         // Check if the product is in stock
         if ($product->stock > 0 || $product->stock_status == 'IN' ) {
             // Fetch all users who registered for notifications for this product
             $notifications = ProductNotification::where('product_id', $productId)->get();
-    
+
             // Check if there are any notifications
             if ($notifications->isEmpty()) {
                 return;
             }
-    
+
             // Send email to each user
             foreach ($notifications as $notification) {
                 Mail::to($notification->email)

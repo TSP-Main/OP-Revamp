@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('user_id');
             $table->string('method');
             $table->string('cost');
-            $table->string('old_address')->default('yes');
+//            $table->string('old_address')->default('yes');
             $table->string('firstName')->nullable();
             $table->string('lastName')->nullable();
             $table->string('email')->nullable();
