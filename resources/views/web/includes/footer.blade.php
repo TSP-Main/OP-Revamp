@@ -103,7 +103,7 @@
                             <img src="{{ asset('img/icons/payment-4.png') }}" alt="Payment Image">
                         </div>
                         <div class="footer-widget pt-5">
-                            <a href="https://www.pharmacyregulation.org/registers/pharmacy/location/ng19%2B9qh">
+                            <a href="https://www.pharmacyregulation.org/registers/pharmacy/location/NG19%209QH ">
                                 <div>
                                     <img class="cert-auther" src="{{ asset('img/brand-logo/R.avif') }}" width="200px" height="auto" alt="Logo">
                                 </div>
