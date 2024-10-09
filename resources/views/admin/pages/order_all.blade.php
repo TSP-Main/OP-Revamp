@@ -1,5 +1,5 @@
 @extends('admin.layouts.default')
-@section('title', 'Orders Received')
+@section('title', 'All Orders')
 @section('content')
 <!-- main stated -->
 <main id="main" class="main">
@@ -334,14 +334,14 @@
             </form>
             <h1 class="w-100">
                 <a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary-outline fw-bold ">
-                    <i class="bi bi-arrow-left"></i> Back</a> | Orders Recieved
+                    <i class="bi bi-arrow-left"></i> Back</a> | All Orders
                 <a href="{{ route('admin.addOrder') }}" class="btn fs-5 py-1 mx-2 btn-secondary fw-semibold bg-dark" style="float:right;"> <i class="bi bi-plus"></i>Create Order</a>
             </h1>
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
                     <li class="breadcrumb-item">Pages</li>
-                    <li class="breadcrumb-item active">Orders Recieved</li>
+                    <li class="breadcrumb-item active">All Orders</li>
                 </ol>
             </nav>
         </div>
@@ -399,7 +399,7 @@
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
                                     <th>Email</th>
-                                    @if ($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
@@ -446,9 +446,9 @@
                                     </td>
                                     <td>
                                         {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
-                                        @if (isset($val['shipingdetails']) && $val['shipingdetails'])
-                                        {{ $val['shipingdetails']['firstName'] ?? '' }}
-                                        {{ $val['shipingdetails']['lastName'] ?? '' }}
+                                        @if (isset($val['shipping_details']) && $val['shipping_details'])
+                                        {{ $val['shipping_details']['firstName'] ?? '' }}
+                                        {{ $val['shipping_details']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
                                         {{ $val['user']['name'] ?? '' }}
                                         @else
@@ -456,15 +456,15 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if (isset($val['shipingdetails']['email']))
-                                            {{ $val['shipingdetails']['email'] }}
+                                        @if (isset($val['shipping_details']['email']))
+                                            {{ $val['shipping_details']['email'] }}
                                         @elseif (isset($val['user']['email']))
                                             {{ $val['user']['email'] }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
-                                    @if ($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
                                     <td><span class="btn  fw-bold rounded-pill {{ $val['order_type'] == 'premd' ? 'btn-primary' : ($val['order_type'] == 'pmd' ? 'btn-warning' : 'btn-success') }}">{{ $val['order_type'] == 'premd' ? 'POM' : ($val['order_type'] == 'pmd' ? 'P.Med' : 'O.T.C') }}</span>

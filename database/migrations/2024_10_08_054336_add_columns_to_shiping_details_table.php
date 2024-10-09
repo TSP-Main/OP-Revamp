@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('shiping_details', function (Blueprint $table) {
+        Schema::table('shipping_details', function (Blueprint $table) {
             $table->string('order_identifier')->nullable()->after('email');
             $table->string('tracking_no')->nullable()->after('order_identifier');
         });
@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('shiping_details', function (Blueprint $table) {
+        Schema::table('shipping_details', function (Blueprint $table) {
             $table->dropColumn('order_identifier');
             $table->dropColumn('tracking_no');
         });

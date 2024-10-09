@@ -393,6 +393,7 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    <th>Email</th>
                                     @if ($user->hasRole('super_admin'))
                                     <th>Email</th>
                                     <th>Total Atm.</th>
@@ -441,9 +442,9 @@
                                     </td>
                                     <td>
                                         {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
-                                        @if (isset($val['shipingdetails']) && $val['shipingdetails'])
-                                        {{ $val['shipingdetails']['firstName'] ?? '' }}
-                                        {{ $val['shipingdetails']['lastName'] ?? '' }}
+                                        @if (isset($val['shipping_details']) && $val['shipping_details'])
+                                        {{ $val['shipping_details']['firstName'] ?? '' }}
+                                        {{ $val['shipping_details']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
                                         {{ $val['user']['name'] ?? '' }}
                                         @else
@@ -451,8 +452,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if (isset($val['shipingdetails']['email']))
-                                            {{ $val['shipingdetails']['email'] }}
+                                        @if (isset($val['shipping_details']['email']))
+                                            {{ $val['shipping_details']['email'] }}
                                         @elseif (isset($val['user']['email']))
                                             {{ $val['user']['email'] }}
                                         @else

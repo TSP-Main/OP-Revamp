@@ -128,17 +128,17 @@
                     <div class="card-body flex-grow-1">
                         <div class="text">
                             <h4 class="fw-bold">Customer Details</h4>
-                            <span><b>Name: </b>{{ ($order['shipingdetails']['firstName']) ? $order['shipingdetails']['firstName'].' '.$order['shipingdetails']['lastName'] : $order['user']['name'] }}</span><br>
+                            <span><b>Name: </b>{{ ($order['shippingDetails']['firstName']) ? $order['shipingdetails']['firstName'].' '.$order['shipingdetails']['lastName'] : $order['user']['name'] }}</span><br>
                             <span><b>Order Id: </b><span class="text-primary">#{{$order['id']}}</span></span>
                         </div>
                         <div class="text">
                             <p class="pr-2">
-                                <span><b>Phone #:</b> {{$order['shipingdetails']['phone'] ?? $order['user']['phone'] }}</span>
+                                <span><b>Phone #:</b> {{$order['shippingDetails']['phone'] ?? $order['user']['phone'] }}</span>
                             </p>
-                            <a href="mailTo:{{$order['shipingdetails']['email'] ?? $order['user']['email']}}">
+                            <a href="mailTo:{{$order['shippingDetails']['email'] ?? $order['user']['email']}}">
                                 <p class="fw-bold m-0">Send Mail: </p>
                                 <p class="mt-0 text-dark">
-                                    <b class="">Email: </b>{{$order['shipingdetails']['email'] ?? $order['user']['email']}}
+                                    <b class="">Email: </b>{{$order['shippingDetails']['email'] ?? $order['user']['email']}}
                                 </p>
                             </a>
                         </div>

@@ -395,7 +395,7 @@
                                         <th>Date-Time</th>
                                         <th>Customer Name</th>
                                         <th>Email</th>
-                                        @if ($user->role == user_roles('1'))
+                                        @if($user->hasRole('super_admin'))
                                             <th>Total Atm.</th>
                                         @endif
                                         <th>Order Type</th>
@@ -433,9 +433,9 @@
                                             </td>
                                             <td>
                                                 {{-- {{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }} --}}
-                                                @if (isset($val['shipingdetails']) && $val['shipingdetails'])
-                                                    {{ $val['shipingdetails']['firstName'] ?? '' }}
-                                                    {{ $val['shipingdetails']['lastName'] ?? '' }}
+                                                @if (isset($val['shipping_details']) && $val['shipping_details'])
+                                                    {{ $val['shipping_details']['firstName'] ?? '' }}
+                                                    {{ $val['shipping_details']['lastName'] ?? '' }}
                                                 @elseif(isset($val['user']) && $val['user'])
                                                     {{ $val['user']['name'] ?? '' }}
                                                 @else
@@ -443,15 +443,15 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if (isset($val['shipingdetails']['email']))
-                                                    {{ $val['shipingdetails']['email'] }}
+                                                @if (isset($val['shipping_details']['email']))
+                                                    {{ $val['shipping_details']['email'] }}
                                                 @elseif (isset($val['user']['email']))
                                                     {{ $val['user']['email'] }}
                                                 @else
                                                     N/A
                                                 @endif
                                             </td>
-                                            @if ($user->role == user_roles('1'))
+                                            @if($user->hasRole('super_admin'))
                                                 <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                             @endif
                                             <td>
