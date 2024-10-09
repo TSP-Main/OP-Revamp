@@ -157,23 +157,23 @@
                                         </a>
                                     </td>
                                     <td>{{ isset($val['created_at']) ? date('Y-m-d h:i A', strtotime($val['created_at'])) : '' }}</td>
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name']  }}</td>
                                     <td>
-                                        @if (isset($val['shipingdetails']['email']))
-                                            {{ $val['shipingdetails']['email'] }}
+                                        @if (isset($val['shipping_details']['email']))
+                                            {{ $val['shipping_details']['email'] }}
                                         @elseif (isset($val['user']['email']))
                                             {{ $val['user']['email'] }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
-                                    <td>{{$val['shipingdetails']['zip_code'] ?? ''}}</td>
+                                    <td>{{$val['shipping_details']['zip_code'] ?? ''}}</td>
                                     <td>
                                         @foreach($val['orderdetails'] as $detail)
-                                            {{ $detail['product_name'] }}@if (!$loop->last), @endif
+                                            {{ $detail['product']['title'] }}@if (!$loop->last), @endif
                                         @endforeach
                                     </td>
-                                    <td>{{$val['shipingdetails']['address'] ?? ''}}</td>
+                                    <td>{{$val['shipping_details']['address'] ?? ''}}</td>
                                     <th> <button class="btn btn-success rounded-pill text-center"> {{$val['status'] ?? ''}} </button></th>
                                 </tr>
                                 @endforeach
@@ -257,7 +257,7 @@
         function(settings, data, dataIndex) {
             var min = $('#startDate').val();
             var max = $('#endDate').val();
-            var date = data[2] || ''; 
+            var date = data[2] || '';
             var startDate = new Date(min);
             var endDate = new Date(max);
             var currentDate = new Date(date);
@@ -270,28 +270,28 @@
     // Filter by Address
     $('#addresses').on('change', function() {
         var address = $(this).val();
-        console.log('Filtering by address:', address); 
+        console.log('Filtering by address:', address);
         tableApi.column(7).search(address === 'All' ? '' : address).draw();
     });
 
     // Filter by Postal Code
     $('#postal_codes').on('change', function() {
         var postalCode = $(this).val();
-        console.log('Filtering by postal code:', postalCode); 
+        console.log('Filtering by postal code:', postalCode);
         tableApi.column(5).search(postalCode === 'All' ? '' : postalCode).draw();
     });
 
     // Filter by Product
     $('#products').on('change', function() {
         var product = $(this).val();
-        console.log('Filtering by product:', product); 
-        tableApi.column(6).search(product === 'All' ? '' : product).draw(); 
+        console.log('Filtering by product:', product);
+        tableApi.column(6).search(product === 'All' ? '' : product).draw();
     });
 
     // General Search
     $('#search').on('input', function() {
         var text = $(this).val();
-        console.log('General search:', text); 
+        console.log('General search:', text);
         tableApi.search(text).draw();
     });
 });

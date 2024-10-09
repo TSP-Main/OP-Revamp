@@ -60,6 +60,7 @@ use App\Traits\UserStatusTrait;
 class AdminDashboardController extends Controller
 {
     use UserStatusTrait;
+
     private $username = 'dkwrul3i0r4pwsgkko3nr8c4vs0h5yn5tunio398ik403.apps.vivapayments.com'; //client id
     private $password = 'BuLY8U1pEsXNPBgaqz98y54irE7OpL'; // secrit key
 
@@ -1686,18 +1687,25 @@ class AdminDashboardController extends Controller
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
 
-        $orders = Order::with('user', 'shippingDetails', 'orderdetails:id,order_id,product_name')
+        $orders = Order::with([
+            'user',
+            'shippingDetails',
+            'orderdetails' => function ($query) {
+                $query->with('product:id,title');
+            }
+        ])
             ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
             ->latest('created_at')
             ->get()
             ->toArray();
+
 
         $data['filters'] = [];
         $postalCodeProductCount = [];
 
         if ($orders) {
             $combined = array_map(function ($order) {
-                return $order['shippingDetails']['address'] . '_chapi_' . $order['shippingDetails']['zip_code'];
+                return $order['shipping_details']['address'] . '_chapi_' . $order['shipping_details']['zip_code'];
             }, $orders);
 
             $uniqueCombined = array_unique($combined);
@@ -1714,12 +1722,12 @@ class AdminDashboardController extends Controller
 
             // Aggregate product counts by postal code
             foreach ($orders as $order) {
-                $postalCode = $order['shippingDetails']['zip_code'];
+                $postalCode = $order['shipping_details']['zip_code'];
                 foreach ($order['orderdetails'] as $detail) {
                     if (!isset($postalCodeProductCount[$postalCode])) {
                         $postalCodeProductCount[$postalCode] = [];
                     }
-                    $productId = $detail['product_name'];
+                    $productId = $detail['product']['title'];
                     if (!isset($postalCodeProductCount[$postalCode][$productId])) {
                         $postalCodeProductCount[$postalCode][$productId] = 0;
                     }
@@ -1739,7 +1747,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_created');
-        $data['products'] = Product::with('variants')->where('status', $this->getUserStatus('Active'),)->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
+        $data['products'] = Product::with('variants')->where('status', $this->getUserStatus('Active'))->latest('id')->get()->sortBy('title')->values()->keyBy('id')->toArray();
 
         foreach ($data['products'] as $key => $product) {
             if ($product['variants']) {
@@ -1748,13 +1756,13 @@ class AdminDashboardController extends Controller
         }
         // Fetch active users who have the 'user' role
         $data['users'] = User::where('status', $this->getUserStatus('Active'))
-        ->get()
-        ->filter(function ($user) {
-            return $user->hasRole('user');
-        })
-        ->sortBy('name')
-        ->keyBy('id')
-        ->toArray();
+            ->get()
+            ->filter(function ($user) {
+                return $user->hasRole('user');
+            })
+            ->sortBy('name')
+            ->keyBy('id')
+            ->toArray();
         return view('admin.pages.add_order', $data);
     }
 
