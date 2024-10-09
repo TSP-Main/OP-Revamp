@@ -1285,7 +1285,7 @@ class AdminDashboardController extends Controller
         $this->authorize('orders');
         if ($request->id) {
             $id = base64_decode($request->id);
-            $order = Order::with('user', 'shipingdetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+            $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
             if ($order) {
                 $data['userOrders'] = Order::select('id')->where('email', $order->email)->where('payment_status', 'Paid')->where('id', '!=', $order->id)->get()->toArray() ?? [];
                 $data['order'] = $order->toArray() ?? [];
@@ -1444,7 +1444,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Received'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Received'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1458,7 +1458,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1472,7 +1472,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1486,7 +1486,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_created');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid', 'status' => 'Created'])
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Unpaid', 'status' => 'Created'])
             ->orWhere('status', 'Duplicate')
             ->latest('created_at')->get()->toArray();
         if ($orders) {
@@ -1499,7 +1499,7 @@ class AdminDashboardController extends Controller
     public function duplicate_Order(Request $request)
     {
         $orderId = $request->input('order_id');
-        $existingOrder = Order::with(['shipingdetails', 'orderdetails'])->find($orderId);
+        $existingOrder = Order::with(['shippingDetails', 'orderdetails'])->find($orderId);
 
         if (!$existingOrder) {
             return redirect()->back()->with(['error' => 'Order not found.']);
@@ -1527,17 +1527,17 @@ class AdminDashboardController extends Controller
             $newShippingDetail = ShipingDetail::create([
                 'order_id' => $newOrder->id,
                 'user_id' => $existingOrder->user_id,
-                'firstName' => $existingOrder->shipingdetails->firstName,
-                'lastName' => $existingOrder->shipingdetails->lastName,
+                'firstName' => $existingOrder->shippingDetails->firstName,
+                'lastName' => $existingOrder->shippingDetails->lastName,
                 'email' => $existingOrder->email,
-                'phone' => $existingOrder->shipingdetails->phone,
-                'address' => $existingOrder->shipingdetails->address,
-                'address2' => $existingOrder->shipingdetails->address2,
-                'city' => $existingOrder->shipingdetails->city,
-                'zip_code' => $existingOrder->shipingdetails->zip_code,
-                'method' => $existingOrder->shipingdetails->method,
-                'cost' => $existingOrder->shipingdetails->cost,
-                'state' => $existingOrder->shipingdetails->state,
+                'phone' => $existingOrder->shippingDetails->phone,
+                'address' => $existingOrder->shippingDetails->address,
+                'address2' => $existingOrder->shippingDetails->address2,
+                'city' => $existingOrder->shippingDetails->city,
+                'zip_code' => $existingOrder->shippingDetails->zip_code,
+                'method' => $existingOrder->shippingDetails->method,
+                'cost' => $existingOrder->shippingDetails->cost,
+                'state' => $existingOrder->shippingDetails->state,
                 'status' => 'Created', // Assuming status should be reset to Created
                 'created_by' => auth()->id(),
                 'updated_by' => auth()->id(),
@@ -1585,7 +1585,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_refunded');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Refund'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Refund'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1599,9 +1599,9 @@ class AdminDashboardController extends Controller
         $data['user'] = $this->getAuthUser();
         $this->authorize('doctors_approval');
         if (isset($data['user']->role) && $data['user']->role == user_roles('2')) {
-            $orders = Order::with(['user', 'approved_by:id,name,email', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
+            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
         } else {
-            $orders = Order::with(['user', 'approved_by:id,name,email', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])
+            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])
                 ->whereIn('status', ['Received', 'Approved', 'Not_Approved'])
                 ->latest('created_at')->get()->toArray();
         }
@@ -1616,7 +1616,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('dispensary_approval');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1629,7 +1629,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1642,7 +1642,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_unshipped');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1655,7 +1655,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('gpa_letters');
-        $orders = Order::with(['user', 'shipingdetails:id,order_id,firstName,lastName,address', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,address', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1686,7 +1686,7 @@ class AdminDashboardController extends Controller
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
 
-        $orders = Order::with('user', 'shipingdetails', 'orderdetails:id,order_id,product_name')
+        $orders = Order::with('user', 'shippingDetails', 'orderdetails:id,order_id,product_name')
             ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
             ->latest('created_at')
             ->get()
@@ -1697,7 +1697,7 @@ class AdminDashboardController extends Controller
 
         if ($orders) {
             $combined = array_map(function ($order) {
-                return $order['shipingdetails']['address'] . '_chapi_' . $order['shipingdetails']['zip_code'];
+                return $order['shippingDetails']['address'] . '_chapi_' . $order['shippingDetails']['zip_code'];
             }, $orders);
 
             $uniqueCombined = array_unique($combined);
@@ -1714,7 +1714,7 @@ class AdminDashboardController extends Controller
 
             // Aggregate product counts by postal code
             foreach ($orders as $order) {
-                $postalCode = $order['shipingdetails']['zip_code'];
+                $postalCode = $order['shippingDetails']['zip_code'];
                 foreach ($order['orderdetails'] as $detail) {
                     if (!isset($postalCodeProductCount[$postalCode])) {
                         $postalCodeProductCount[$postalCode] = [];
@@ -1750,7 +1750,7 @@ class AdminDashboardController extends Controller
         $data['users'] = User::where('status', $this->getUserStatus('Active'))
         ->get()
         ->filter(function ($user) {
-            return $user->hasRole('user'); 
+            return $user->hasRole('user');
         })
         ->sortBy('name')
         ->keyBy('id')
@@ -1911,7 +1911,7 @@ class AdminDashboardController extends Controller
             'id' => 'required|exists:orders,id'
         ]);
 
-        $order = Order::with('user', 'shipingdetails', 'orderdetails')->where(['id' => $request->id, 'payment_status' => 'Paid'])->first();
+        $order = Order::with('user', 'shippingDetails', 'orderdetails')->where(['id' => $request->id, 'payment_status' => 'Paid'])->first();
         if ($order) {
 
             try {
@@ -2061,18 +2061,18 @@ class AdminDashboardController extends Controller
                     "orderReference" => $order_ref,
                     "recipient" => [
                         "address" => [
-                            "fullName" => ($order['shipingdetails']['firstName']) ? $order['shipingdetails']['firstName'] . ' ' . $order['shipingdetails']['lastName'] : $order['user']['name'],
+                            "fullName" => ($order['shippingDetails']['firstName']) ? $order['shippingDetails']['firstName'] . ' ' . $order['shippingDetails']['lastName'] : $order['user']['name'],
                             "companyName" => null,
-                            "addressLine1" => $order['shipingdetails']['address'] ?? $order['user']['address'],
-                            "addressLine2" => $order['shipingdetails']['address2'] ?? '',
+                            "addressLine1" => $order['shippingDetails']['address'] ?? $order['user']['address'],
+                            "addressLine2" => $order['shippingDetails']['address2'] ?? '',
                             "addressLine3" => null,
-                            "city" => $order['shipingdetails']['city'] ?? $order['user']['city'],
+                            "city" => $order['shippingDetails']['city'] ?? $order['user']['city'],
                             "county" => "United Kingdom",
-                            "postcode" => $order['shipingdetails']['zip_code'] ?? $order['user']['zip_code'],
+                            "postcode" => $order['shippingDetails']['zip_code'] ?? $order['user']['zip_code'],
                             "countryCode" => "GB"
                         ],
-                        "phoneNumber" => $order['shipingdetails']['phone'] ?? $order['user']['phone'],
-                        "emailAddress" => $order['shipingdetails']['email'] ?? $order['user']['email'],
+                        "phoneNumber" => $order['shippingDetails']['phone'] ?? $order['user']['phone'],
+                        "emailAddress" => $order['shippingDetails']['email'] ?? $order['user']['email'],
                         "addressBookReference" => null
                     ],
                     "sender" => [
@@ -2082,18 +2082,18 @@ class AdminDashboardController extends Controller
                     ],
                     "billing" => [
                         "address" => [
-                            "fullName" => ($order['shipingdetails']['firstName']) ? $order['shipingdetails']['firstName'] . ' ' . $order['shipingdetails']['lastName'] : $order['user']['name'],
+                            "fullName" => ($order['shippingDetails']['firstName']) ? $order['shippingDetails']['firstName'] . ' ' . $order['shippingDetails']['lastName'] : $order['user']['name'],
                             "companyName" => null,
-                            "addressLine1" => $order['shipingdetails']['address'] ?? $order['user']['address'],
-                            "addressLine2" => $order['shipingdetails']['address2'] ?? '',
+                            "addressLine1" => $order['shippingDetails']['address'] ?? $order['user']['address'],
+                            "addressLine2" => $order['shippingDetails']['address2'] ?? '',
                             "addressLine3" => null,
-                            "city" => $order['shipingdetails']['city'] ?? $order['user']['city'],
+                            "city" => $order['shippingDetails']['city'] ?? $order['user']['city'],
                             "county" => "United Kingdom",
-                            "postcode" => $order['shipingdetails']['zip_code'] ?? $order['user']['zip_code'],
+                            "postcode" => $order['shippingDetails']['zip_code'] ?? $order['user']['zip_code'],
                             "countryCode" => "GB"
                         ],
-                        "phoneNumber" => $order['shipingdetails']['phone'] ?? $order['user']['phone'],
-                        "emailAddress" => $order['shipingdetails']['email'] ?? $order['user']['email']
+                        "phoneNumber" => $order['shippingDetails']['phone'] ?? $order['user']['phone'],
+                        "emailAddress" => $order['shippingDetails']['email'] ?? $order['user']['email']
                     ],
                     "packages" => [
                         [
@@ -2145,12 +2145,40 @@ class AdminDashboardController extends Controller
         return $payload;
     }
 
+//    private function get_prev_orders($orders)
+//    {
+//        $emails = array_unique(Arr::pluck($orders, 'email'));
+//        $prev_orders = Order::select('email', DB::raw('count(*) as total_orders'))
+//            ->whereIn('email', $emails)->where('payment_status', 'Paid')
+//            ->groupBy('email')->get()->sortBy('email')->values()->keyBy('email')->toArray();
+//        return $prev_orders;
+//    }
+
     private function get_prev_orders($orders)
     {
-        $emails = array_unique(Arr::pluck($orders, 'email'));
-        $prev_orders = Order::select('email', DB::raw('count(*) as total_orders'))->whereIn('email', $emails)->where('payment_status', 'Paid')->groupBy('email')->get()->sortBy('email')->values()->keyBy('email')->toArray();
+        $order_ids = Arr::pluck($orders, 'id');
+        $emails = Order::whereIn('id', $order_ids)
+            ->with('shippingdetails') // Corrected relationship name
+            ->get()
+            ->pluck('shippingdetails.email') // Corrected relationship and field
+            ->unique()
+            ->toArray();
+
+        $prev_orders = Order::with('shippingdetails') // Corrected relationship name
+        ->select('shipping_details.email', DB::raw('count(orders.id) as total_orders'))
+            ->join('shipping_details', 'orders.id', '=', 'shipping_details.order_id')
+            ->whereIn('shipping_details.email', $emails)
+            ->where('orders.payment_status', 'Paid')
+            ->groupBy('shipping_details.email')
+            ->get()
+            ->sortBy('shipping_details.email')
+            ->values()
+            ->keyBy('shipping_details.email')
+            ->toArray();
+
         return $prev_orders;
     }
+
 
     private function assign_order_types($orders)
     {
