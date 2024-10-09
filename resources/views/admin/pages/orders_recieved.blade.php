@@ -395,7 +395,6 @@
                                     <th>Customer Name</th>
                                     @if ($user->hasRole('super_admin'))
                                     <th>Email</th>
-                                    @if ($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>

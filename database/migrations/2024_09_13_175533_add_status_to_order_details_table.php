@@ -14,7 +14,7 @@ class AddStatusToOrderDetailsTable extends Migration
     public function up()
     {
         Schema::table('order_details', function (Blueprint $table) {
-            $table->string('product_status')->default('1')->after('product_name')->comment('1:pending, 2:reject, 3:approve'); //1= Pending
+            $table->string('product_status')->default('1')->comment('1:pending, 2:reject, 3:approve'); //1= Pending
         });
     }
 
