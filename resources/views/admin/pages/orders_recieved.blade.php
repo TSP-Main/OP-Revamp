@@ -393,7 +393,6 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
-                                    <th>Email</th>
                                     @if ($user->hasRole('super_admin'))
                                     <th>Email</th>
                                     <th>Total Atm.</th>

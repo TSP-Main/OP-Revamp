@@ -142,7 +142,7 @@ class AuthController extends Controller
             }
 
             $user = Auth::user();
-            $token = $user->createToken('MyApp')->plainTextToken;
+//            $token = $user->createToken('MyApp')->plainTextToken;
 
             return $this->redirectBasedOnRole($user);
 

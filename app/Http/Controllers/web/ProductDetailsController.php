@@ -225,16 +225,16 @@ class ProductDetailsController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login')->with('error', 'You need to be logged in to receive notifications.');
         }
-    
+
         // Validate and fetch user email
         $user = auth()->user();
         $request->validate([
             'email' => 'required|email|in:' . $user->email,
         ]);
-    
+
         // Check if the product exists
         $product = Product::findOrFail($productId);
-    
+
         // Create or update the notification record
         ProductNotification::updateOrCreate(
             [
@@ -245,9 +245,9 @@ class ProductDetailsController extends Controller
                 'email' => $user->email,
             ]
         );
-    
+
         return back()->with('success', 'You will be notified when this product is back in stock.');
-    }  
+    }
 
     public function get_related_products($product)
     {

@@ -1925,6 +1925,32 @@ class AdminDashboardController extends Controller
         return redirect()->back();
     }
 
+    public function get_shipping_order(Request $request)
+    {
+        $order_id = $request->id;
+        $order = Order::findOrFail($order_id);
+        $tracking_nos = Null;
+        $apiKey = env('ROYAL_MAIL_API_KEY');
+
+        $client = new Client();
+        $response = $client->get('https://api.parcel.royalmail.com/api/v1/orders/' . $order->order_identifier, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+            ]
+        ]);
+
+        $statusCode = $response->getStatusCode();
+        $body = json_decode($response->getBody()->getContents(), true);
+        if ($statusCode == '200') {
+            $tracking_nos = array_column($body, 'trackingNumber');
+        }
+
+        $order->shippingDetails->tracking_no = $tracking_nos[0] ?? Null;
+        $update = $order->save();
+        $msg = ($tracking_nos[0] ?? Null) ? 'Order is Tracked' : 'Order tracking failed';
+        $status = ($tracking_nos[0] ?? Null) ? 'success' : 'fail';
+        return redirect()->route('admin.orderDetail', ['id' => base64_encode($order->id)])->with('status', $status)->with('msg', $msg);
+    }
     public function create_shipping_order(Request $request)
     {
         $user = $this->getAuthUser();
@@ -2003,33 +2029,6 @@ class AdminDashboardController extends Controller
         return redirect()->back();
     }
 
-    public function get_shipping_order(Request $request)
-    {
-        $order_id = $request->id;
-        $order = Order::findOrFail($order_id);
-        $tracking_nos = Null;
-        $apiKey = env('ROYAL_MAIL_API_KEY');
-
-        $client = new Client();
-        $response = $client->get('https://api.parcel.royalmail.com/api/v1/orders/' . $order->order_identifier, [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-            ]
-        ]);
-
-        $statusCode = $response->getStatusCode();
-        $body = json_decode($response->getBody()->getContents(), true);
-        if ($statusCode == '200') {
-            $tracking_nos = array_column($body, 'trackingNumber');
-        }
-
-        $order->shippingDetails->tracking_no = $tracking_nos[0] ?? Null;
-        $update = $order->save();
-        $msg = ($tracking_nos[0] ?? Null) ? 'Order is Tracked' : 'Order tracking failed';
-        $status = ($tracking_nos[0] ?? Null) ? 'success' : 'fail';
-        return redirect()->route('admin.orderDetail', ['id' => base64_encode($order->id)])->with('status', $status)->with('msg', $msg);
-    }
-
     private function get_tracking_number($orderId)
     {
         $order_id = $orderId;
@@ -2042,11 +2041,11 @@ class AdminDashboardController extends Controller
                 'Authorization' => 'Bearer ' . $apiKey,
             ]
         ]);
-
         $statusCode = $response->getStatusCode();
         $body = json_decode($response->getBody()->getContents(), true);
         if ($statusCode == '200') {
             $tracking_nos = array_column($body, 'trackingNumber');
+            dd($response, $statusCode,$body, $tracking_nos);
         }
         return $tracking_nos[0] ?? Null;
     }

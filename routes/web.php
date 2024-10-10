@@ -59,8 +59,7 @@ Route::get('/generate_slug_variants_existing', [ProductDetailsController::class,
 
 //consultation
 Route::match(['get', 'post'], '/consultationForm', [ConsultancyController::class, 'consultationForm'])->name('web.consultationForm');
-Route::get('/idDocumentForm', [ConsultancyController::class, 'idDocumentForm'])->name('web.idDocumentForm');
-Route::post('/idDocumentForm', [ConsultancyController::class, 'idDocumentUpdate'])->name('web.idDocumentForm');
+Route::match(['get', 'post'],'/idDocumentForm', [ConsultancyController::class, 'idDocumentForm'])->name('web.idDocumentForm');
 Route::match(['get', 'post'], '/consultationStore', [ConsultancyController::class, 'consultationStore'])->name('web.consultationStore');
 Route::match(['get', 'post'], '/transactionStore/', [ConsultancyController::class, 'transactionStore'])->name('web.transactionStore');
 

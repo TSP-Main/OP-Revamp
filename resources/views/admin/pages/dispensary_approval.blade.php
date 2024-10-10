@@ -402,7 +402,7 @@
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
                                     <th>Email</th>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
@@ -517,7 +517,7 @@
         var tableApi = $('#tbl_data').DataTable();
         $('#order_filter').on('change', function() {
         var filterValue = $(this).val();
-        tableApi.column(9).search(filterValue === 'all' ? '' : filterValue.charAt(0).toUpperCase() + filterValue.slice(1)).draw();
+        tableApi.column(11).search(filterValue === 'all' ? '' : filterValue.charAt(0).toUpperCase() + filterValue.slice(1)).draw();
       });
 
         $('#search').on('input', function() {
