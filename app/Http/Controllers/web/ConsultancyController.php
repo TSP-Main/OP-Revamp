@@ -58,6 +58,7 @@ class ConsultancyController extends Controller
 
     public function idDocumentForm()
     {
+        $this->shareMenuCategories();
         $user = auth()->user();
         if ($user->id_document ?? Null) {
             return redirect()->back();

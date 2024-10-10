@@ -12,6 +12,7 @@ use App\Models\PaymentDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ShipingDetail;
+use App\Models\ShippingDetail;
 use App\Models\User;
 use App\Notifications\UserOrderNotification;
 use Illuminate\Http\Request;
@@ -93,11 +94,11 @@ class PaymentController extends Controller
                     $order_details[] = [
                         'product_id' => $pro_id,
                         'variant_id' => $variant_id ?? Null,
-                        'variant_details' => $var_info ?? Null,
-                        'weight' => Product::find($pro_id)->weight,
+//                        'variant_details' => $var_info ?? Null,
+//                        'weight' => Product::find($pro_id)->weight,
                         'order_id' => $order->id,
-                        'product_price' => $request->order_details['product_price'][$index],
-                        'product_name' => $request->order_details['product_name'][$index],
+//                        'product_price' => $request->order_details['product_price'][$index],
+//                        'product_name' => $request->order_details['product_name'][$index],
                         'product_qty' => $request->order_details['product_qty'][$index],
                         'generic_consultation' => $generic_consultation ?? NULL,
                         'product_consultation' => $product_consultation ?? NULL,
@@ -123,6 +124,7 @@ class PaymentController extends Controller
 
                 // $inserted =  OrderDetail::insert($order_details);
                 if ($inserted) {
+                    dd($request);
                     $shipping_details[] = [
                         'order_id' => $order->id,
                         'user_id' => $user->id ?? '',
@@ -141,7 +143,7 @@ class PaymentController extends Controller
                     ];
                     // $shiping =  ShipingDetail::create($shipping_details);
                     foreach ($shipping_details as $detail) {
-                        $shiping =  ShipingDetail::updateOrCreate(
+                        $shiping =  ShippingDetail::updateOrCreate(
                             ['order_id' => $detail['order_id']],
                             $detail
                         );
@@ -222,9 +224,9 @@ class PaymentController extends Controller
                 'user_id'        => $user->id ?? 'guest',
                 'email'          => $request->email,
                 'note'           => $request->note,
-                'shiping_cost'   => $request->shiping_cost,
-                'coupon_code'    => $request->coupon_code ?? Null,
-                'coupon_value'   => $request->coupon_value ?? Null,
+//                'shiping_cost'   => $request->shiping_cost,
+//                'coupon_code'    => $request->coupon_code ?? Null,
+//                'coupon_value'   => $request->coupon_value ?? Null,
                 'total_ammount'  => $request->total_ammount ?? Null,
             ]);
 
@@ -270,11 +272,11 @@ class PaymentController extends Controller
                     $order_details[] = [
                         'product_id' => $pro_id,
                         'variant_id' => $variant_id ?? Null,
-                        'variant_details' => $var_info ?? Null,
-                        'weight' => Product::find($pro_id)->weight,
+//                        'variant_details' => $var_info ?? Null,
+//                        'weight' => Product::find($pro_id)->weight,
                         'order_id' => $order->id,
-                        'product_price' => $request->order_details['product_price'][$index],
-                        'product_name' => $request->order_details['product_name'][$index],
+//                        'product_price' => $request->order_details['product_price'][$index],
+//                        'product_name' => $request->order_details['product_name'][$index],
                         'product_qty' => $request->order_details['product_qty'][$index],
                         'generic_consultation' => $generic_consultation ?? NULL,
                         'product_consultation' => $product_consultation ?? NULL,
@@ -306,7 +308,7 @@ class PaymentController extends Controller
                         'state' => $request->state,
                         'zip_code' => $request->zip_code,
                     ];
-                    $shiping =  ShipingDetail::create($shipping_details);
+                    $shiping =  ShippingDetail::create($shipping_details);
                     if ($shiping) {
                         session()->put('order_id', $order->id);
                         $payable_ammount = $request->total_ammount * 100;
@@ -458,7 +460,7 @@ class PaymentController extends Controller
             if ($order) {
                 $user = auth()->user() ?? [];
                 $order->update(['payment_status' => 'Paid']);
-                $name = $order->shipingdetails->firstName;
+                $name = $order->shippingDetails->firstName;
 //                $order_for = [$user->hasRole('super_admin'), ($order->order_for == 'doctor') ? $user->hasRole('doctor') : $user->hasRole('dispensary')];
 //                $users = User::where('status', 1)->WhereIn('role', $order_for)->get();
                 $rolesToCheck = ['super_admin'];
@@ -470,7 +472,7 @@ class PaymentController extends Controller
                 // Get users with these roles using Spatie's role handling
                 $users = User::role($rolesToCheck)->where('status', 1)->get();
                 Notification::send($users, new UserOrderNotification($order));
-                Mail::to($order->shipingdetails->email)->send(new OrderConfirmation($order));
+                Mail::to($order->shippingDetails->email)->send(new OrderConfirmation($order));
                 Session::flush();
                 if ($user) {
                     Auth::logout();
