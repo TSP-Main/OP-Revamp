@@ -1321,7 +1321,7 @@ class AdminDashboardController extends Controller
             $odd_id = base64_decode($request->odd_id);
             $user_result = [];
             $prod_result = [];
-            $consultaion = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
+            $consultaion = OrderDetail::where(['id' => $odd_id])->latest('created_at')->latest('id')->first();
             if ($consultaion) {
                 $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
                 $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
@@ -1367,7 +1367,7 @@ class AdminDashboardController extends Controller
                 }
 
                 $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
-                $data['order_user_detail'] = ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
+                $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
                 $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
                 $data['generic_consultation'] = $user_result;
                 $data['product_consultation'] = $prod_result ?? [];
@@ -1970,17 +1970,6 @@ class AdminDashboardController extends Controller
                                     'created_by' => $user->id,
                                 ],
                             );
-//                            $shipped[] = shippedOrder::create([
-//                                'user_id' => $order['user']['id'] ?? 'Guest',
-//                                'order_id' => $order['id'],
-//                                'order_identifier' => $val['orderIdentifier'],
-//                                'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
-//                                'order_date' => $val['orderDate'],
-//                                'cost' => $order['shipping_details']['cost'],
-//                                'errors' => json_encode($val['errors'] ?? []) ?? NULL,
-//                                'status' => 'Shipped',
-//                                'created_by' => $user->id,
-//                            ]);
                         }
                     }
                     if ($response['failedOrders']) {
@@ -1994,22 +1983,9 @@ class AdminDashboardController extends Controller
                                     'created_by' => $user->id,
                                 ]
                             );
-//                            $shipped[] = shippedOrder::create([
-//                                'user_id' => $order['user']['id'] ?? 'Guest',
-//                                'order_id' => $order['id'],
-//                                'order_identifier' => $val['orderIdentifier'] ?? NULL,
-//                                'order_date' => $val['orderDate'] ?? NULL,
-//                                'cost' => $order['shipping_details']['cost'],
-//                                'errors' => json_encode($val['errors'] ?? []),
-//                                'status' => 'ShippingFail',
-//                                'created_by' => $user->id,
-//                            ]);
                         }
                     }
                     $order = Order::findOrFail($order['id']);
-//                    $order->order_identifier = $shipped[0]->order_identifier;
-//                    $order->tracking_no = $shipped[0]->tracking_no;
-//                    $order->shipped_order_id = $shipped[0]->id;
                     $order->status = $shipped[0]->shipping_status;
                     $update = $order->save();
                     $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
@@ -2318,7 +2294,7 @@ class AdminDashboardController extends Controller
 
         if ($request->city || $request->postal_code || $request->address1 || $request->address2) {
             $updateData['updated_by'] = $data['user']->id;
-            $response = ShipingDetail::where('order_id', $request->order_id)->update($updateData);
+            $response = ShippingDetail::where('order_id', $request->order_id)->update($updateData);
             $message = "Data updated Successfully";
         } else {
             $message = "No data Received for update";

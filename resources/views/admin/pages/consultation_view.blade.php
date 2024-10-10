@@ -81,15 +81,16 @@
                     <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                     </div>
                     @if($user_profile_details)
+{{--                        @dd($user_profile_details->address->address)--}}
                     <div class="row px-4 mt-2 mb-3">
                         <div class="col-12">
                             <h4 class="fw-bold ">Customer Profile Details:</h4>
                             <label for="" class="fw-bold px-2 ">Name: </label> <span> {{$user_profile_details->name ?? '' }}</span><br>
-                            <label for="" class="fw-bold px-2">Phone: </label> <span> {{$user_profile_details->phone ?? '' }}</span><br>
-                            <label for="" class="fw-bold px-2">Gender: </label> <span> {{$user_profile_details->gender ?? '' }}</span><br>
-                            <label for="" class="fw-bold px-2">DOB: </label> <span> {{$user_profile_details->dob ?? '' }}</span><br>
-                            <label for="" class="fw-bold px-2">Address: </label> <span> {{$user_profile_details->address ?? '' }}</span><br>
-                            <label for="" class="fw-bold px-2">Postal Code: </label> <span> {{$user_profile_details->zip_code ?? '' }}</span><br>
+                            <label for="" class="fw-bold px-2">Phone: </label> <span> {{$user_profile_details->profile->phone ?? '' }}</span><br>
+                            <label for="" class="fw-bold px-2">Gender: </label> <span> {{$user_profile_details->profile->gender ?? '' }}</span><br>
+                            <label for="" class="fw-bold px-2">DOB: </label> <span> {{$user_profile_details->profile->date_of_birth ?? '' }}</span><br>
+                            <label for="" class="fw-bold px-2">Address: </label> <span> {{$user_profile_details->address->address ?? '' }}</span><br>
+                            <label for="" class="fw-bold px-2">Postal Code: </label> <span> {{$user_profile_details->address->zip_code ?? '' }}</span><br>
                             <label for="" class="fw-bold px-2">Identity Document: </label>
                             <span>
                                 @if($user_profile_details->id_document)
@@ -309,7 +310,7 @@
                 // {
                 //     extend: 'excel',
                 //     text: 'Donwload Excel ',
-                //     className: 'btn-blue', 
+                //     className: 'btn-blue',
                 // },
 
                 {

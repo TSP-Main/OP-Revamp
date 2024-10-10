@@ -91,10 +91,10 @@
 
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
-                                        <p class="fw-normal mb-1">{{ $value['phone'] ?? ''}}</p>
+                                        <p class="fw-normal mb-1">{{ $value['profile']['phone'] ?? ''}}</p>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
-                                        <p class="text-muted mb-0">{{ $value['address'] ?? ''}}</p>
+                                        <p class="text-muted mb-0">{{ $value['address']['address'] ?? ''}}</p>
                                     </td>
                                     <td style="vertical-align: middle; text-align: center;">
                                         <span class="badge  {{($value['status'] == 1) ? 'bg-success' : 'bg-danger' }}  rounded-pill d-inline">{{ ($value['status'] == 1) ? 'Active' : 'Deactive' }} </span>
