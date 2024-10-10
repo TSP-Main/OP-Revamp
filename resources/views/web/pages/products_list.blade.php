@@ -9,13 +9,13 @@
     position: relative;
     border: 2px solid #ddd;
     border-radius: 10px;
-    box-shadow: 4px 4px 4px rgba(62, 224, 207, 0.5); 
+    box-shadow: 4px 4px 4px rgba(62, 224, 207, 0.5);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 4px px rgb(62, 224, 207); 
+    box-shadow: 0 4px px rgb(62, 224, 207);
 }
 
 
