@@ -410,14 +410,14 @@
                                     </td>
                                     <td>
                                         @foreach($order_history as $ind => $value)
-                                        @if($value['email'] == $val['email'])
+                                        @if($value['email'] == $val['shipping_details']['email'])
                                         <span class=" px-5 fw-bold">{{$value['total_orders']}} </span>
                                         @endif
                                         @endforeach
                                     </td>
                                     <td>{{date_time_uk($val['created_at'])}}
                                     </td>
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name']  }}</td>
                                     @if($user->hasRole('super_admin'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif

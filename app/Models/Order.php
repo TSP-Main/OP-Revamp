@@ -29,11 +29,6 @@ class Order extends Model
         'updated_by'
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
     public function scopeWeekly(Builder $builder, ?string $status = null, ?string $payment_status = null): void
     {
         $builder->conditions($status, $payment_status)
@@ -82,6 +77,10 @@ class Order extends Model
     }
 
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     public function shippingDetails()
     {
         return $this->hasOne(ShippingDetail::class, 'order_id');
@@ -112,7 +111,6 @@ class Order extends Model
     {
         return strtolower($value);
     }
-
 
 //    public function shippingDetail()
 //    {

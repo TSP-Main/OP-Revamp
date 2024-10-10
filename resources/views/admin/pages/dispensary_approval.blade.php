@@ -390,7 +390,7 @@
                                 <option value="not_approved">Not Approved Orders</option>
                             </select>
                         </div>
-                    </div>                    
+                    </div>
                     <div class="card-body">
                         <table id="tbl_data" class="table table-striped">
                             <thead class="thead-dark">
@@ -426,12 +426,12 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if(isset($order_history[$val['email']]))
-                                        <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0}} </span>
+                                        @if(isset($val['email']) && isset($order_history[$val['email']]))
+                                            <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }} </span>
                                         @endif
                                     </td>
                                     <td>{{date_time_uk($val['created_at'])}}</td>
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name'] }}</td>
+                                    <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name'] }}</td>
                                     <td>
                                         @if (isset($val['shipingdetails']['email']))
                                             {{ $val['shipingdetails']['email'] }}
@@ -441,7 +441,7 @@
                                             N/A
                                         @endif
                                     </td>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
                                     <td><span class="btn fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span></td>
@@ -500,7 +500,7 @@
                 // {
                 //     extend: 'excel',
                 //     text: 'Donwload Excel ',
-                //     className: 'btn-blue', 
+                //     className: 'btn-blue',
                 // },
 
                 {

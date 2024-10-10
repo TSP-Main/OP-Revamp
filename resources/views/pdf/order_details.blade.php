@@ -148,12 +148,12 @@
                             <div class="ship">
                                 <p style=" margin:0 !important; padding:0 !important; text-align:left; ">
                                     <strong>Ship to</strong></br>
-                                    <small> <span style="font-weight: 500;">Customer Name: </span> {{$order['shipingdetails']['firstName'].' '.$order['shipingdetails']['lastName'] ?? ''}}</small></br>
-                                    <small> <span style="font-weight: 500;">Home Name/No: </span> {{$order['shipingdetails']['address2'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">Address: </span> {{$order['shipingdetails']['address'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">City: </span> {{$order['shipingdetails']['city'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">Postal Code: </span> {{$order['shipingdetails']['zip_code'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">Phone: </span> {{$order['shipingdetails']['phone'] ?? ''}}</small></br>
+                                    <small> <span style="font-weight: 500;">Customer Name: </span> {{$order['shipping_details']['firstName'].' '.$order['shipping_details']['lastName'] ?? ''}}</small></br>
+                                    <small> <span style="font-weight: 500;">Home Name/No: </span> {{$order['shipping_details']['address2'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">Address: </span> {{$order['shipping_details']['address'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">City: </span> {{$order['shipping_details']['city'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">Postal Code: </span> {{$order['shipping_details']['zip_code'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">Phone: </span> {{$order['shipping_details']['phone'] ?? ''}}</small></br>
                                 </p>
                             </div>
                         </div>
@@ -164,12 +164,12 @@
                             <div class="ship">
                                 <p style=" margin:0 !important; padding:0 !important; text-align:left; ">
                                     <strong>Bill to</strong></br>
-                                    <small> <span style="font-weight: 500;">Customer Name: </span> {{$order['shipingdetails']['firstName'].' '.$order['shipingdetails']['lastName'] ?? ''}}</small></br>
-                                    <small> <span style="font-weight: 500;">Home Name/No: </span> {{$order['shipingdetails']['address2'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">Address: </span> {{$order['shipingdetails']['address'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">City: </span> {{$order['shipingdetails']['city'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">Postal Code: </span> {{$order['shipingdetails']['zip_code'] ?? ''}}</small></br>
-                                    <small><span style="font-weight: 500;">Phone: </span> {{$order['shipingdetails']['phone'] ?? ''}}</small></br>
+                                    <small> <span style="font-weight: 500;">Customer Name: </span> {{$order['shipping_details']['firstName'].' '.$order['shipping_details']['lastName'] ?? ''}}</small></br>
+                                    <small> <span style="font-weight: 500;">Home Name/No: </span> {{$order['shipping_details']['address2'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">Address: </span> {{$order['shipping_details']['address'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">City: </span> {{$order['shipping_details']['city'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">Postal Code: </span> {{$order['shipping_details']['zip_code'] ?? ''}}</small></br>
+                                    <small><span style="font-weight: 500;">Phone: </span> {{$order['shipping_details']['phone'] ?? ''}}</small></br>
                                 </p>
                             </div>
                         </div>
@@ -200,6 +200,7 @@
                                     <img style="height:55px; margin:0 !important; padding:0 !important;" src="{{ public_path('storage/'.$src) }}" alt="Product Image">
                                 </td>
                                 <td>
+{{--                                    @dd($val)--}}
                                     <p style=" margin:0 !important; padding:0 !important; text-align:left; ">
                                         <small><strong>Product Name:</strong> {{$val['product_name'] ?? $val['product']['title']}}</small></br>
                                         <small><strong>Variant:</strong> {!! $val['variant_details'] ?? '' !!}</small></br>
@@ -209,11 +210,11 @@
                                 <td>
                                     <p style=" margin:0 !important; padding:0 !important;">{{$val['product_qty']}}</p>
                                 </td>
-                                @if((isset($role) && $role == user_roles('1') || $role == user_roles('2')))
+{{--                                @if((isset($role) && $role == auth()->user()->hasRole('super_admin') || $role == auth()->user()->hasRole('dispensary')))--}}
                                 <td>
-                                    <p style=" margin:0 !important; padding:0 !important;">£{{number_format((float)str_replace(',', '', $val['product_price'] ?? $val['product']['price']), 2)}}</p>
+                                    <p style=" margin:0 !important; padding:0 !important;">£{{number_format((float)str_replace(',', '', $val['product']['price']['product_price'] ?? $val['product']['price']), 2)}}</p>
                                 </td>
-                                @endif
+{{--                                @endif--}}
                             </tr>
                             @endforeach
 
