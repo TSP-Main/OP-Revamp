@@ -118,9 +118,9 @@
                                     </td>
                                     <td>
                                         {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
-                                        @if (isset($val['shipingdetails']) && $val['shipingdetails'])
-                                        {{ $val['shipingdetails']['firstName'] ?? '' }}
-                                        {{ $val['shipingdetails']['lastName'] ?? '' }}
+                                        @if (isset($val['shipping_details']) && $val['shipping_details'])
+                                        {{ $val['shipping_details']['firstName'] ?? '' }}
+                                        {{ $val['shipping_details']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
                                         {{ $val['user']['name'] ?? '' }}
                                         @else
@@ -128,8 +128,8 @@
                                         @endif
 
                                     </td>
-                                    <td>{{ $val['email'] ?? '' }}</td>
-                                    <!-- <td>{{$val['shipingdetails']['address'] ?? ''}}</td> -->
+                                    <td>{{ $val['shipping_details']['email'] ?? '' }}</td>
+                                    <!-- <td>{{$val['shipping_details']['address'] ?? ''}}</td> -->
                                     <td style="vertical-align: middle; text-align: center;">
                                         <input class="form-control" type="email" id="gpa_email_{{$val['id']}}" value="">
                                     </td>

@@ -426,15 +426,16 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if(isset($val['email']) && isset($order_history[$val['email']]))
-                                            <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }} </span>
-                                        @endif
+                                        @php
+                                            $totalOrderDetails = count($val['orderdetails']);
+                                        @endphp
+                                        <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                     </td>
                                     <td>{{date_time_uk($val['created_at'])}}</td>
                                     <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name'] }}</td>
                                     <td>
-                                        @if (isset($val['shipingdetails']['email']))
-                                            {{ $val['shipingdetails']['email'] }}
+                                        @if (isset($val['shipping_details']['email']))
+                                            {{ $val['shipping_details']['email'] }}
                                         @elseif (isset($val['user']['email']))
                                             {{ $val['user']['email'] }}
                                         @else

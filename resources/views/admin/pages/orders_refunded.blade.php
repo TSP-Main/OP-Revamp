@@ -405,12 +405,18 @@
                                             #{{ $val['id'] }}
                                         </a>
                                     </td>
+{{--                                    <td>--}}
+{{--                                        @foreach($order_history as $ind => $value)--}}
+{{--                                        @if($value['email'] == $val['shipping_details']['email'])--}}
+{{--                                        <span class=" px-5 fw-bold">{{$value['total_orders'] ?? 0}} </span>--}}
+{{--                                        @endif--}}
+{{--                                        @endforeach--}}
+{{--                                    </td>--}}
                                     <td>
-                                        @foreach($order_history as $ind => $value)
-                                        @if($value['email'] == $val['shipping_details']['email'])
-                                        <span class=" px-5 fw-bold">{{$value['total_orders'] ?? 0}} </span>
-                                        @endif
-                                        @endforeach
+                                        @php
+                                            $totalOrderDetails = count($val['orderdetails']);
+                                        @endphp
+                                        <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                     </td>
                                     <td>
                                     {{date_time_uk($val['created_at'])}}
