@@ -1627,7 +1627,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('dispensary_approval');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])
             ->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])
             ->whereIn('status', ['Received', 'Approved', 'Not_Approved'])
             ->latest('created_at')
@@ -1658,7 +1658,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_unshipped');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'ShippingFail'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1671,7 +1671,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('gpa_letters');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,address', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,address,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -2023,7 +2023,7 @@ class AdminDashboardController extends Controller
             $tracking_nos = array_column($body, 'trackingNumber');
         }
 
-        $order->tracking_no = $tracking_nos[0] ?? Null;
+        $order->shippingDetails->tracking_no = $tracking_nos[0] ?? Null;
         $update = $order->save();
         $msg = ($tracking_nos[0] ?? Null) ? 'Order is Tracked' : 'Order tracking failed';
         $status = ($tracking_nos[0] ?? Null) ? 'success' : 'fail';

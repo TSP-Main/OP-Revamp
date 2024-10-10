@@ -384,6 +384,7 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    <th>Email</th>
                                     @if($user->hasRole('super_admin'))
                                         <th>Total Atm.</th>
                                     @endif
@@ -412,10 +413,10 @@
                                             </a>
                                         </td>
                                         <td>
-                                            @if(isset($val['email']) && isset($order_history[$val['email']]))
-                                                <span
-                                                    class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }}</span>
-                                            @endif
+                                            @php
+                                                $totalOrderDetails = count($val['orderdetails']);
+                                            @endphp
+                                            <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                         </td>
                                         @php
                                             $isNewOrder = null;
@@ -432,7 +433,15 @@
                                             {{date_time_uk($val['created_at'])}}
                                         </td>
                                         <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName'] ?? $val['user']['name'] }}</td>
-
+                                        <td>
+                                            @if (isset($val['shipping_details']['email']))
+                                                {{ $val['shipping_details']['email']}}
+                                            @elseif (isset($val['user']['email']))
+                                                {{ $val['user']['email'] }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
                                         @if ($user->hasRole('super_admin'))
                                             <td>
                                                 £{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
