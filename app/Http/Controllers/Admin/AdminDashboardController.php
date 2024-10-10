@@ -17,6 +17,7 @@ use App\Http\Requests\AdminDashboard\StoreQuestionCategoryRequest;
 use App\Http\Requests\AdminDashboard\StoreQuestionRequest;
 use App\Http\Requests\AdminDashboard\StoreSopRequest;
 use App\Http\Requests\AdminDashboard\UpdateAdditionalNoteRequest;
+use App\Models\ShippingDetail;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Mail\otpVerifcation;
@@ -1288,7 +1289,16 @@ class AdminDashboardController extends Controller
             $id = base64_decode($request->id);
             $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
             if ($order) {
-                $data['userOrders'] = Order::select('id')->where('email', $order->email)->where('payment_status', 'Paid')->where('id', '!=', $order->id)->get()->toArray() ?? [];
+//                $data['userOrders'] = Order::select('id')->where('email', $order->email)->where('payment_status', 'Paid')->where('id', '!=', $order->id)->get()->toArray() ?? [];
+                $data['userOrders'] = Order::whereHas('shippingDetails', function ($query) use ($order) {
+                    $query->where('email', $order->shippingDetails->email);
+                })
+                    ->where('payment_status', 'Paid')
+                    ->where('id', '!=', $order->id)
+                    ->select('id')
+                    ->get()
+                    ->toArray() ?? [];
+
                 $data['order'] = $order->toArray() ?? [];
 
                 if ($order->approved_by) {
@@ -1525,7 +1535,7 @@ class AdminDashboardController extends Controller
             }
 
             // Create new shipping details for the duplicated order
-            $newShippingDetail = ShipingDetail::create([
+            $newShippingDetail = ShippingDetail::create([
                 'order_id' => $newOrder->id,
                 'user_id' => $existingOrder->user_id,
                 'firstName' => $existingOrder->shippingDetails->firstName,
@@ -1555,15 +1565,15 @@ class AdminDashboardController extends Controller
                     'order_id' => $newOrder->id,
                     'product_id' => $orderDetail->product_id,
                     'variant_id' => $orderDetail->variant_id,
-                    'weight' => $orderDetail->weight,
-                    'product_name' => $orderDetail->product_name,
-                    'variant_details' => $orderDetail->variant_details,
+//                    'weight' => $orderDetail->weight,
+//                    'product_name' => $orderDetail->product_name,
+//                    'variant_details' => $orderDetail->variant_details,
                     'product_qty' => $orderDetail->product_qty,
-                    'product_price' => $orderDetail->product_price,
+//                    'product_price' => $orderDetail->product_price,
                     'generic_consultation' => $orderDetail->generic_consultation,
                     'product_consultation' => $orderDetail->product_consultation,
                     'consultation_type' => $orderDetail->consultation_type,
-                    'status' => 'Duplicate', // Update status as needed
+                    'status' => 'Duplicate', // Update status as needed/
                     'created_by' => auth()->id(),
                 ]);
 
@@ -1610,7 +1620,6 @@ class AdminDashboardController extends Controller
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
         }
-       // dd($data);
         return view('admin.pages.doctors_approval', $data);
     }
 
@@ -1618,7 +1627,12 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('dispensary_approval');
-        $orders = Order::with(['user', 'shipingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])
+            ->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])
+            ->whereIn('status', ['Received', 'Approved', 'Not_Approved'])
+            ->latest('created_at')
+            ->get()
+            ->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
@@ -1631,7 +1645,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Shipped'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1795,7 +1809,7 @@ class AdminDashboardController extends Controller
         ]);
 
         if ($order) {
-            $shippingDetail = ShipingDetail::create([
+            $shippingDetail = ShippingDetail::create([
                 'order_id' => $order->id,
                 'user_id' => $request->user_id ?? 'guest',
                 'firstName' => $request->firstName,
@@ -1864,12 +1878,12 @@ class AdminDashboardController extends Controller
                         'order_id' => $order->id,
                         'product_id' => $productId,
                         'variant_id' => $variantId,
-                        'product_name' => $product ? $product->title : 'Unknown Product',
-                        'variant_details' => $variant ? $variant->slug : 'No Variant',
-                        'weight' => $product ? $product->weight : 0,
+//                        'product_name' => $product ? $product->title : 'Unknown Product',
+//                        'variant_details' => $variant ? $variant->slug : 'No Variant',
+//                        'weight' => $product ? $product->weight : 0,
                         'product_qty' => $quantity,
-                        'product_price' => $product ? $product->price : 0,
-                        'status' => 'Created',
+//                        'product_price' => $product ? $product->price : 0,
+//                        'status' => 'Created',
                         'consultation_type' => $consultaiontype,
                         'created_by' => $user->id,
                         'updated_by' => $user->id,
@@ -1911,7 +1925,7 @@ class AdminDashboardController extends Controller
         return redirect()->back();
     }
 
-    public function create_shiping_order(Request $request)
+    public function create_shipping_order(Request $request)
     {
         $user = $this->getAuthUser();
         $this->authorize('orders');
@@ -1920,7 +1934,7 @@ class AdminDashboardController extends Controller
             'id' => 'required|exists:orders,id'
         ]);
 
-        $order = Order::with('user', 'shippingDetails', 'orderdetails')->where(['id' => $request->id, 'payment_status' => 'Paid'])->first();
+        $order = Order::with('user', 'shippingDetails', 'orderdetails.product')->where(['id' => $request->id, 'payment_status' => 'Paid'])->first();
         if ($order) {
 
             try {
@@ -1947,41 +1961,59 @@ class AdminDashboardController extends Controller
                     $shipped = [];
                     if ($response['createdOrders']) {
                         foreach ($response['createdOrders'] as $key => $val) {
-                            $shipped[] = shippedOrder::create([
-                                'user_id' => $order['user']['id'] ?? 'Guest',
-                                'order_id' => $order['id'],
-                                'order_identifier' => $val['orderIdentifier'],
-                                'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
-                                'order_date' => $val['orderDate'],
-                                'cost' => $order['shiping_cost'],
-                                'errors' => json_encode($val['errors'] ?? []) ?? NULL,
-                                'status' => 'Shipped',
-                                'created_by' => $user->id,
-                            ]);
+                            $shipped[] = ShippingDetail::updateOrCreate(
+                                ['order_id' => $order['id']],
+                                [
+                                    'order_identifier' => $val['orderIdentifier'],
+                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
+                                    'shipping_status' => 'Shipped',
+                                    'created_by' => $user->id,
+                                ],
+                            );
+//                            $shipped[] = shippedOrder::create([
+//                                'user_id' => $order['user']['id'] ?? 'Guest',
+//                                'order_id' => $order['id'],
+//                                'order_identifier' => $val['orderIdentifier'],
+//                                'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
+//                                'order_date' => $val['orderDate'],
+//                                'cost' => $order['shipping_details']['cost'],
+//                                'errors' => json_encode($val['errors'] ?? []) ?? NULL,
+//                                'status' => 'Shipped',
+//                                'created_by' => $user->id,
+//                            ]);
                         }
                     }
                     if ($response['failedOrders']) {
                         foreach ($response['failedOrders'] as $key => $val) {
-                            $shipped[] = shippedOrder::create([
-                                'user_id' => $order['user']['id'] ?? 'Guest',
-                                'order_id' => $order['id'],
-                                'order_identifier' => $val['orderIdentifier'] ?? NULL,
-                                'order_date' => $val['orderDate'] ?? NULL,
-                                'cost' => $order['shiping_cost'],
-                                'errors' => json_encode($val['errors'] ?? []),
-                                'status' => 'ShippingFail',
-                                'created_by' => $user->id,
-                            ]);
+                            $shipped[] = ShippingDetail::updateOrCreate(
+                                ['order_id' => $order['id']],
+                                [
+                                    'order_identifier' => $val['orderIdentifier'],
+                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
+                                    'shipping_status' => 'ShippingFail',
+                                    'created_by' => $user->id,
+                                ]
+                            );
+//                            $shipped[] = shippedOrder::create([
+//                                'user_id' => $order['user']['id'] ?? 'Guest',
+//                                'order_id' => $order['id'],
+//                                'order_identifier' => $val['orderIdentifier'] ?? NULL,
+//                                'order_date' => $val['orderDate'] ?? NULL,
+//                                'cost' => $order['shipping_details']['cost'],
+//                                'errors' => json_encode($val['errors'] ?? []),
+//                                'status' => 'ShippingFail',
+//                                'created_by' => $user->id,
+//                            ]);
                         }
                     }
                     $order = Order::findOrFail($order['id']);
-                    $order->order_identifier = $shipped[0]->order_identifier;
-                    $order->tracking_no = $shipped[0]->tracking_no;
-                    $order->shipped_order_id = $shipped[0]->id;
-                    $order->status = $shipped[0]->status;
+//                    $order->order_identifier = $shipped[0]->order_identifier;
+//                    $order->tracking_no = $shipped[0]->tracking_no;
+//                    $order->shipped_order_id = $shipped[0]->id;
+                    $order->status = $shipped[0]->shipping_status;
                     $update = $order->save();
-                    $msg = ($shipped[0]->status == 'Shipped') ? 'Order is shipped' : 'Order shiping failed';
-                    $status = ($shipped[0]->status == 'Shipped') ? 'success' : 'fail';
+                    $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
+                    $status = ($shipped[0]->shipping_status == 'Shipped') ? 'success' : 'fail';
                     return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])->with('status', $status)->with('msg', $msg);
 
                     // return redirect()->route('admin.getShippingOrder', ['id' => $shipped[0]->order_identifier])->with(['msg' =>$msg ,'status'=>$shipped[0]->status]);
@@ -1995,7 +2027,7 @@ class AdminDashboardController extends Controller
         return redirect()->back();
     }
 
-    public function get_shiping_order(Request $request)
+    public function get_shipping_order(Request $request)
     {
         $order_id = $request->id;
         $order = Order::findOrFail($order_id);
@@ -2048,11 +2080,11 @@ class AdminDashboardController extends Controller
         $content = [];
         foreach ($order['orderdetails'] as $val) {
             $content[] = [
-                "name" => $val['product_name'],
+                "name" => $val['product']['title'],
                 "SKU" => null,
                 "quantity" => $val['product_qty'],
-                "unitValue" => $val['product_price'],
-                "unitWeightInGrams" => floatval($val['weight']),
+                "unitValue" => $val['product']['price'],
+                "unitWeightInGrams" => floatval($val['product']['weight']),
                 "customsDescription" => 'it is a medical product.',
                 "extendedCustomsDescription" => "",
                 "customsCode" => null,
@@ -2070,18 +2102,18 @@ class AdminDashboardController extends Controller
                     "orderReference" => $order_ref,
                     "recipient" => [
                         "address" => [
-                            "fullName" => ($order['shippingDetails']['firstName']) ? $order['shippingDetails']['firstName'] . ' ' . $order['shippingDetails']['lastName'] : $order['user']['name'],
+                            "fullName" => ($order['shipping_details']['firstName']) ? $order['shipping_details']['firstName'] . ' ' . $order['shipping_details']['lastName'] : $order['user']['name'],
                             "companyName" => null,
-                            "addressLine1" => $order['shippingDetails']['address'] ?? $order['user']['address'],
-                            "addressLine2" => $order['shippingDetails']['address2'] ?? '',
+                            "addressLine1" => $order['shipping_details']['address'] ?? $order['user']['address'],
+                            "addressLine2" => $order['shipping_details']['address2'] ?? '',
                             "addressLine3" => null,
-                            "city" => $order['shippingDetails']['city'] ?? $order['user']['city'],
+                            "city" => $order['shipping_details']['city'] ?? $order['user']['city'],
                             "county" => "United Kingdom",
-                            "postcode" => $order['shippingDetails']['zip_code'] ?? $order['user']['zip_code'],
+                            "postcode" => $order['shipping_details']['zip_code'] ?? $order['user']['zip_code'],
                             "countryCode" => "GB"
                         ],
-                        "phoneNumber" => $order['shippingDetails']['phone'] ?? $order['user']['phone'],
-                        "emailAddress" => $order['shippingDetails']['email'] ?? $order['user']['email'],
+                        "phoneNumber" => $order['shipping_details']['phone'] ?? $order['user']['phone'],
+                        "emailAddress" => $order['shipping_details']['email'] ?? $order['user']['email'],
                         "addressBookReference" => null
                     ],
                     "sender" => [
@@ -2091,18 +2123,18 @@ class AdminDashboardController extends Controller
                     ],
                     "billing" => [
                         "address" => [
-                            "fullName" => ($order['shippingDetails']['firstName']) ? $order['shippingDetails']['firstName'] . ' ' . $order['shippingDetails']['lastName'] : $order['user']['name'],
+                            "fullName" => ($order['shipping_details']['firstName']) ? $order['shipping_details']['firstName'] . ' ' . $order['shipping_details']['lastName'] : $order['user']['name'],
                             "companyName" => null,
-                            "addressLine1" => $order['shippingDetails']['address'] ?? $order['user']['address'],
-                            "addressLine2" => $order['shippingDetails']['address2'] ?? '',
+                            "addressLine1" => $order['shipping_details']['address'] ?? $order['user']['address'],
+                            "addressLine2" => $order['shipping_details']['address2'] ?? '',
                             "addressLine3" => null,
-                            "city" => $order['shippingDetails']['city'] ?? $order['user']['city'],
+                            "city" => $order['shipping_details']['city'] ?? $order['user']['city'],
                             "county" => "United Kingdom",
-                            "postcode" => $order['shippingDetails']['zip_code'] ?? $order['user']['zip_code'],
+                            "postcode" => $order['shipping_details']['zip_code'] ?? $order['user']['zip_code'],
                             "countryCode" => "GB"
                         ],
-                        "phoneNumber" => $order['shippingDetails']['phone'] ?? $order['user']['phone'],
-                        "emailAddress" => $order['shippingDetails']['email'] ?? $order['user']['email']
+                        "phoneNumber" => $order['shipping_details']['phone'] ?? $order['user']['phone'],
+                        "emailAddress" => $order['shipping_details']['email'] ?? $order['user']['email']
                     ],
                     "packages" => [
                         [
@@ -2120,8 +2152,8 @@ class AdminDashboardController extends Controller
                     "orderDate" => $order['created_at'],
                     "plannedDespatchDate" => null,
                     "specialInstructions" => $order['note'],
-                    "subtotal" => $order['total_ammount'] - $order['shiping_cost'],
-                    "shippingCostCharged" => $order['shiping_cost'],
+                    "subtotal" => $order['total_ammount'] - $order['shipping_details']['cost'],
+                    "shippingCostCharged" => $order['shipping_details']['cost'],
                     "otherCosts" => 0,
                     "customsDutyCosts" => null,
                     "total" => $order['total_ammount'],
@@ -2167,14 +2199,14 @@ class AdminDashboardController extends Controller
     {
         $order_ids = Arr::pluck($orders, 'id');
         $emails = Order::whereIn('id', $order_ids)
-            ->with('shippingdetails') // Corrected relationship name
+            ->with('shippingdetails')
             ->get()
-            ->pluck('shippingdetails.email') // Corrected relationship and field
+            ->pluck('shippingdetails.email')
             ->unique()
             ->toArray();
 
-        $prev_orders = Order::with('shippingdetails') // Corrected relationship name
-        ->select('shipping_details.email', DB::raw('count(orders.id) as total_orders'))
+        $prev_orders = Order::with('shippingdetails')
+            ->select('shipping_details.email', DB::raw('count(orders.id) as total_orders'))
             ->join('shipping_details', 'orders.id', '=', 'shipping_details.order_id')
             ->whereIn('shipping_details.email', $emails)
             ->where('orders.payment_status', 'Paid')
@@ -2184,6 +2216,7 @@ class AdminDashboardController extends Controller
             ->values()
             ->keyBy('shipping_details.email')
             ->toArray();
+        $prev_orders = array_values($prev_orders);
 
         return $prev_orders;
     }

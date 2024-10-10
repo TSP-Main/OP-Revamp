@@ -128,17 +128,17 @@
                     <div class="card-body flex-grow-1">
                         <div class="text">
                             <h4 class="fw-bold">Customer Details</h4>
-                            <span><b>Name: </b>{{ ($order['shippingDetails']['firstName']) ? $order['shipingdetails']['firstName'].' '.$order['shipingdetails']['lastName'] : $order['user']['name'] }}</span><br>
+                            <span><b>Name: </b>{{ ($order['shipping_details']['firstName']) ? $order['shipping_details']['firstName'].' '.$order['shipping_details']['lastName'] : $order['user']['name'] }}</span><br>
                             <span><b>Order Id: </b><span class="text-primary">#{{$order['id']}}</span></span>
                         </div>
                         <div class="text">
                             <p class="pr-2">
-                                <span><b>Phone #:</b> {{$order['shippingDetails']['phone'] ?? $order['user']['phone'] }}</span>
+                                <span><b>Phone #:</b> {{$order['shipping_details']['phone'] ?? $order['user']['phone'] }}</span>
                             </p>
-                            <a href="mailTo:{{$order['shippingDetails']['email'] ?? $order['user']['email']}}">
+                            <a href="mailTo:{{$order['shipping_details']['email'] ?? $order['user']['email']}}">
                                 <p class="fw-bold m-0">Send Mail: </p>
                                 <p class="mt-0 text-dark">
-                                    <b class="">Email: </b>{{$order['shippingDetails']['email'] ?? $order['user']['email']}}
+                                    <b class="">Email: </b>{{$order['shipping_details']['email'] ?? $order['user']['email']}}
                                 </p>
                             </a>
                         </div>
@@ -154,20 +154,20 @@
                             @csrf
                             <input type="hidden" name="order_id" value="{{  $order['id'] ?? '' }}">
                             <div class="col-12">
-                                <label class="form-label"><b>City:</b> {{$order['shipingdetails']['city'] ?? $order['user']['city'] }}</label>
-                                <input class="form-control me-2" type="text" name="city" id="city" value="{{$order['shipingdetails']['city'] ?? $order['user']['city'] }}" placeholder="Change City">
+                                <label class="form-label"><b>City:</b> {{$order['shipping_details']['city'] ?? $order['user']['city'] }}</label>
+                                <input class="form-control me-2" type="text" name="city" id="city" value="{{$order['shipping_details']['city'] ?? $order['user']['city'] }}" placeholder="Change City">
                             </div>
                             <div class="col-12">
-                                <label class="form-label"><b>Postal Code:</b> {{$order['shipingdetails']['zip_code'] ?? $order['user']['zip_code'] }}</label>
-                                <input class="form-control me-2" type="text" name="postal_code" id="postal_code" value=" {{$order['shipingdetails']['zip_code'] ?? $order['user']['zip_code'] }}" placeholder="Change Postal Code">
+                                <label class="form-label"><b>Postal Code:</b> {{$order['shipping_details']['zip_code'] ?? $order['user']['zip_code'] }}</label>
+                                <input class="form-control me-2" type="text" name="postal_code" id="postal_code" value=" {{$order['shipping_details']['zip_code'] ?? $order['user']['zip_code'] }}" placeholder="Change Postal Code">
                             </div>
                             <div class="col-12">
-                                <label class="form-label"><b>Address 1:</b> {{$order['shipingdetails']['address'] ?? $order['user']['address'] }}</label>
-                                <input class="form-control me-2" type="text" name="address1" id="address1" value="{{$order['shipingdetails']['address'] ?? $order['user']['address'] }}" placeholder="Change Address 1">
+                                <label class="form-label"><b>Address 1:</b> {{$order['shipping_details']['address'] ?? $order['user']['address'] }}</label>
+                                <input class="form-control me-2" type="text" name="address1" id="address1" value="{{$order['shipping_details']['address'] ?? $order['user']['address'] }}" placeholder="Change Address 1">
                             </div>
                             <div class="col-12">
-                                <label class="form-label"><b>Address 2:</b> {{(isset($order['shipingdetails']['address2'])) ? $order['shipingdetails']['address2'] :($order['user']['apartment'] ?? '') }}</label>
-                                <input class="form-control me-2" type="text" name="address2" id="address2" value="{{(isset($order['shipingdetails']['address2'])) ? $order['shipingdetails']['address2'] :($order['user']['apartment'] ?? '') }}" placeholder="Change Address 2">
+                                <label class="form-label"><b>Address 2:</b> {{(isset($order['shipping_details']['address2'])) ? $order['shipping_details']['address2'] :($order['user']['apartment'] ?? '') }}</label>
+                                <input class="form-control me-2" type="text" name="address2" id="address2" value="{{(isset($order['shipping_details']['address2'])) ? $order['shipping_details']['address2'] :($order['user']['apartment'] ?? '') }}" placeholder="Change Address 2">
                             </div>
                             <div class=" mt-4 text-end px-4 d-flex d-md-block">
                                 <button class="btn btn-primary bg-primary">Update</button>
@@ -288,8 +288,8 @@
                                 @if($order['status'] == 'Shipped')
                                 <div class="d-flex justify-content-between pt-2">
                                     <p class="fw-bold mb-0 ">Tracking Number:</p>
-                                    @if($order['tracking_no'])
-                                    <a class="fw-bold  mb-0" href="https://www.royalmail.com/track-your-item#/tracking-results/{{$order['tracking_no']}}">{{$order['tracking_no']}} </a>
+                                    @if($order['shipping_details']['tracking_no'])
+                                    <a class="fw-bold  mb-0" href="https://www.royalmail.com/track-your-item#/tracking-results/{{$order['shipping_details']['tracking_no']}}">{{$order['shipping_details']['tracking_no']}} </a>
                                     @else
                                     <a class=" btn btn-primary bg-primary fw-bold  mb-0" href="{{route('admin.getShippingOrder',['id'=>$order['id']])}}">Track</a>
                                     @endif

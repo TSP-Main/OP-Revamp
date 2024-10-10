@@ -25,7 +25,7 @@ class PdfGeneratorController extends Controller
         $order = Order::findOrFail($data['order']['id']);
         $order->print = 'Printed';
         $update = $order->save();
-        $file_name = $data['order']['id'] . '_order_details_' . $data['order']['shipingdetails']['firstName'] . '.pdf';
+        $file_name = $data['order']['id'] . '_order_details_' . $data['order']['shipping_details']['firstName'] . '.pdf';
         $view_name = 'pdf.' . $data['view_name'];
         unset($data['content']);
         unset($data['view_name']);
@@ -41,10 +41,10 @@ class PdfGeneratorController extends Controller
     {
         if ($request->id) {
             $id = $request->id;
-            $order = Order::with('user', 'shipingdetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+            $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
             if ($order) {
                 $data['order']  = $order->toArray() ?? [];
-                $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shipingdetails']['firstName'] . '.pdf';
+                $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shipping_details']['firstName'] . '.pdf';
                 $view_name = 'pdf.' . $request->view_name;
                 // dd($data);
                 // return view($view_name,$data);
@@ -66,10 +66,10 @@ class PdfGeneratorController extends Controller
             $id = $request->id;
             $email = $request->email ?? '';
             if ($email) {
-                $order = Order::with('user', 'shipingdetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+                $order = Order::with('user', 'shipingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
-                    $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shipingdetails']['firstName'] . '.pdf';
+                    $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shiping_details']['firstName'] . '.pdf';
                     $view_name = 'pdf.' . $request->view_name;
 
                     $pdf = PDF::loadView($view_name, $data);
@@ -104,7 +104,7 @@ class PdfGeneratorController extends Controller
         if ($request->order_ids) {
             $data['role'] = $request->role ?? '';
             $orderIds = explode(',', $request->order_ids);
-            $orders = Order::with('user', 'shipingdetails', 'orderdetails', 'orderdetails.product')
+            $orders = Order::with('user', 'shipingDetails', 'orderdetails', 'orderdetails.product')
                 ->whereIn('id', $orderIds)
                 ->where('payment_status', 'Paid')
                 ->get();
