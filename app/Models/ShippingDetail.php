@@ -26,6 +26,7 @@ class ShippingDetail extends Model
         'cost',
         'state',
         'status',
+        'shipping_status',
         'created_by',
         'updated_by'
     ];

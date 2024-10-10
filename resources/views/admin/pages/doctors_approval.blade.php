@@ -417,7 +417,7 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if(isset($order_history[$val['email']]))
+                                        @if(isset($val['email']) && isset($order_history[$val['email']]))
                                             <span class="px-5 fw-bold">{{ $order_history[$val['email']['total_orders']] ?? 0 }}</span>
                                         @endif
                                     </td>

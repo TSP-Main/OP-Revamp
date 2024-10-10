@@ -44,7 +44,7 @@
             @foreach($order['orderdetails'] as $key => $item)
             @if($item['consultation_type'] == 'premd')
             <p style="color:blue; font-weight: 600;">
-                {{++$key}}. {{$item['product_name']}}
+                {{++$key}}. {{$item['product']['title']}}
             </p>
             @endif
             @endforeach
