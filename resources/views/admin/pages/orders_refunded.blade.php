@@ -383,9 +383,8 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
+                                    <th>email</th>
                                     @if($user->hasRole('super_admin'))
-                                    <th>Email</th>
-                                    @if($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
@@ -408,7 +407,7 @@
                                     </td>
                                     <td>
                                         @foreach($order_history as $ind => $value)
-                                        @if($value['email'] == $val['email'])
+                                        @if($value['email'] == $val['shipping_details']['email'])
                                         <span class=" px-5 fw-bold">{{$value['total_orders'] ?? 0}} </span>
                                         @endif
                                         @endforeach
@@ -416,18 +415,17 @@
                                     <td>
                                     {{date_time_uk($val['created_at'])}}
                                     </td>
-                                    <td>{{ $val['shipingdetails']['firstName'] .' '. $val['shipingdetails']['lastName']  ?? $val['user']['name']  }}</td>
+                                    <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name']  }}</td>
                                     @if ($user->hasRole('super_admin'))
                                     <td>
-                                        @if (isset($val['shipingdetails']['email']))
-                                            {{ $val['shipingdetails']['email'] }}
+                                        @if (isset($val['shipping_details']['email']))
+                                            {{ $val['shipping_details']['email']}}
                                         @elseif (isset($val['user']['email']))
                                             {{ $val['user']['email'] }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
-                                    @if($user->role == user_roles('1'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
                                     <td><span class="btn  fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span> </td>

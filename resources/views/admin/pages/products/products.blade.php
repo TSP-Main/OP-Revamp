@@ -289,9 +289,9 @@
                 url: "{{ route('admin.products') }}",
                 data: function(d) {
                     d.title = $('#search_text').val();
-                    d.category_id = $('#category').val();
-                    d.sub_cat_id = $('#sub_cat').val();
-                    d.child_cat_id = $('#child_cat').val();
+               //   d.category_id = $('#category').val();
+               //   d.sub_cat_id = $('#sub_cat').val();
+               //   d.child_cat_id = $('#child_cat').val();
                 }
             },
             columns: [

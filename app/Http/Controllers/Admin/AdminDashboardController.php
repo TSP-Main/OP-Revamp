@@ -1586,7 +1586,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_refunded');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Refund'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Refund'])->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1600,9 +1600,9 @@ class AdminDashboardController extends Controller
         $data['user'] = $this->getAuthUser();
         $this->authorize('doctors_approval');
         if (isset($data['user']->role) && $data['user']->role == user_roles('2')) {
-            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
+            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
         } else {
-            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])
+            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])
                 ->whereIn('status', ['Received', 'Approved', 'Not_Approved'])
                 ->latest('created_at')->get()->toArray();
         }
@@ -1610,6 +1610,7 @@ class AdminDashboardController extends Controller
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
         }
+       // dd($data);
         return view('admin.pages.doctors_approval', $data);
     }
 
@@ -1617,7 +1618,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('dispensary_approval');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'shipingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'despensory'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
 
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);

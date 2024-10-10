@@ -387,17 +387,17 @@
                                     <th>Total Orders</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
                                     <th>Payment Status</th>
                                     <th>Order Status</th>
                                     <th>Marked By </th>
-                                    @if($user->role != user_roles('3'))
+                                    @if($user->hasRole('Dispensary'))
                                     <th> Shiped Order</th>
                                     @endif
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th> Duplicate Order</th>
                                     @endif
                                 </tr>
@@ -418,7 +418,7 @@
                                     </td>
                                     <td>
                                         @if(isset($order_history[$val['email']]))
-                                            <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }}</span>
+                                            <span class="px-5 fw-bold">{{ $order_history[$val['email']['total_orders']] ?? 0 }}</span>
                                         @endif
                                     </td>
                                     @php
@@ -435,9 +435,9 @@
                                         {{ date_time_uk($val['created_at'] ?? '') }}
                                     </td>
                                     <td>
-                                        {{ ($val['shipingdetails']['firstName'] ?? '') . ' ' . ($val['shipingdetails']['lastName'] ?? '') ?: ($val['user']['name'] ?? 'Unknown User') }}
+                                        {{ ($val['shipping_details']['firstName'] ?? '') . ' ' . ($val['shipping_details']['lastName'] ?? '') ?: ($val['user']['name'] ?? 'Unknown User') }}
                                     </td>
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                         <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount'] ?? 0), 2) }}</td>
                                     @endif
                                     <td>
@@ -458,7 +458,7 @@
                                             <span>{{ $val['approved_by']['name'] ?? 'Unknown' }} ({{ $val['approved_by']['email'] ?? 'N/A' }})</span>
                                         @endif
                                     </td>
-                                    @if($user->role != user_roles('3'))
+                                   @if($user->hasRole('Dispensary'))
                                         <td style="display: inline-block;">
                                             @if(in_array($val['status'], ['Approved', 'ShippingFail']))
                                                 <span data-order_id="{{$val['id']}}" class="btn ship_now fw-bold btn-primary no-wrap">Ship Now</span>
@@ -468,7 +468,7 @@
                                             @endif
                                         </td>
                                     @endif
-                                    @if($user->role == user_roles('1'))
+                                    @if($user->hasRole('super_admin'))
                                     <th style="vertical-align: middle; text-align: center;">
                                             <button type="button" data-order-id="{{ $val['id'] }}" class="btn btn-small bg-primary rounded-pill text-center duplicate-order">
                                             <i class="bi bi-arrow-repeat"></i>
