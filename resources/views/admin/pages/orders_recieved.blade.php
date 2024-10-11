@@ -418,12 +418,16 @@
                                         </a>
                                     </td>
                                     <td>
-
                                         @php
                                         $totalOrderDetails = count($val['orderdetails']);
                                         @endphp
                                         <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                     </td>
+{{--                                    <td>--}}
+{{--                                        @if(isset($order_history[$val['email']]))--}}
+{{--                                            <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }}</span>--}}
+{{--                                        @endif--}}
+{{--                                    </td>--}}
                                     @php
                                     $isNewOrder = null;
                                     if ($val['status'] == 'Received'):

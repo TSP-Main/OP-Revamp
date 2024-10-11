@@ -175,6 +175,24 @@
     </div>
     <!-- SLIDER AREA END -->
 
+    <!-- resources/views/import.blade.php -->
+    <form action="{{ route('import.users') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div>
+            <label for="csv_file">Choose CSV file</label>
+            <input type="file" name="csv" id="csv_file" required>
+        </div>
+        <button type="submit">Import Users</button>
+    </form>
+    <form action="{{ route('import.orders') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div>
+            <label for="csv_file">Choose CSV file</label>
+            <input type="file" name="csv" id="csv_file" required>
+        </div>
+        <button type="submit">Import Orders</button>
+    </form>
+
 
     <!-- Featured Offers area start  -->
     <div class="featured-offers-area pt-5 pb-5">

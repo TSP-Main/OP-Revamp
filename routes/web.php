@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\ConsultancyController;
 use App\Http\Controllers\Web\CategoriesController;
 use App\Http\Controllers\Web\PaymentController;
 use App\Http\Controllers\SiteMapController;
+use App\Http\Controllers\ImportsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,8 @@ use App\Http\Controllers\SiteMapController;
 |
 */
 
+Route::post('/import-users', [ImportsController::class, 'importUsersData'])->name('import.users');
+Route::post('/import-orders', [ImportsController::class, 'importOrdersData'])->name('import.orders');
 //Route::group(['middleware' => ['role:super_admin']], function () {
 //    Route::get('/admin/dashboard', 'AdminController@dashboard');
 //});
