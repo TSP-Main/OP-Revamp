@@ -133,7 +133,7 @@ class ProductController extends Controller
         $this->authorize('products');
 
         if ($user->hasRole('super_admin')) {
-            $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')->whereIn('status', $this->getUserStatus('Deactive'))->latest('id')->get()->toArray();
+                $products = Product::with('category:id,name', 'sub_cat:id,name', 'child_cat:id,name')->where('status', $this->getUserStatus('Deactive'))->latest('id')->get()->toArray();
             $data['filters'] = [];
             if ($products) {
                 $data['filters']['titles'] = array_unique(array_column($products, 'title'));
@@ -167,7 +167,7 @@ class ProductController extends Controller
         if ($user->hasRole('super_admin')) {
             $data['products'] = Product::with('category:id,name')->latest('id')->get()->toArray();
         }
-        // dd($data['products']);
+         dd($data['products']);
         return view('admin.pages.products.prodcuts_limits', $data);
     }
 

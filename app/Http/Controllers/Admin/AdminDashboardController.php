@@ -892,7 +892,7 @@ class AdminDashboardController extends Controller
         if ($request->q_type === 'pro_question') {
             $data['route'] = 'admin.questions';
             $data['categories'] = [];
-            if (isset($user->role) && $user->role == user_roles('1')) {
+            if ($user->hasRole('super_admin')) {
                 $data['questions'] = Question::where(['status' => 'Deactive'])
                     ->orderBy('category_title')
                     ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
@@ -2174,13 +2174,13 @@ class AdminDashboardController extends Controller
     {
         $order_ids = Arr::pluck($orders, 'id');
         $emails = Order::whereIn('id', $order_ids)
-            ->with('shippingdetails')
+            ->with('shippingDetails')
             ->get()
-            ->pluck('shippingdetails.email')
+            ->pluck('shippingDetails.email')
             ->unique()
             ->toArray();
 
-        $prev_orders = Order::with('shippingdetails')
+        $prev_orders = Order::with('shippingDetails')
             ->select('shipping_details.email', DB::raw('count(orders.id) as total_orders'))
             ->join('shipping_details', 'orders.id', '=', 'shipping_details.order_id')
             ->whereIn('shipping_details.email', $emails)
@@ -2193,6 +2193,7 @@ class AdminDashboardController extends Controller
             ->toArray();
         $prev_orders = array_values($prev_orders);
 
+//        dd($prev_orders);
         return $prev_orders;
     }
 

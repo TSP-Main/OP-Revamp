@@ -15,7 +15,9 @@ class Order extends Model
         'created_at',
     ];
 
+//    public $incrementing = false; // Disable auto-incrementing for the 'id' field
     protected $fillable = [
+        'id',
         'user_id',
         'order_for',
         'note',

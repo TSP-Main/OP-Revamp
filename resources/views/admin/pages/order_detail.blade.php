@@ -323,7 +323,6 @@
                                                         @empty
                                                             <p class="px-5">No Previous Orders Of that Customer.</p>
                                                         @endforelse
-
                                                     </div>
                                                 </div>
                                             </div>
