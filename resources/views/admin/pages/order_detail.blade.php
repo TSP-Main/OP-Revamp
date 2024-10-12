@@ -332,12 +332,11 @@
                                             <div class="row">
                                                 <div class="col-md-12 gy-1">
                                                     <h5 class="fw-bold underline">User Previous Orders History:</h5>
-                                                    <div class="button-container"
-                                                         style="display: flex; flex-wrap: wrap;">
-                                                        @forelse($userOrders as $index => $val)
-                                                            <a href="{{ route('admin.orderDetail',['id'=> base64_encode($val['id'])]) }}"
+                                                    <div class="button-container" style="display: flex; flex-wrap: wrap;">
+                                                        @forelse($userOrders as $index => $orderId)
+                                                            <a href="{{ route('admin.orderDetail', ['id' => base64_encode($orderId)]) }}"
                                                                class="btn btn-primary bg-primary m-1">
-                                                                <b>{{ $index + 1 }}.</b> #{{ $val['id'] }}
+                                                                <b>{{ $index + 1 }}.</b> #{{ $orderId }}
                                                             </a>
                                                         @empty
                                                             <p class="px-5">No Previous Orders Of that Customer.</p>
@@ -345,6 +344,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
                                         </div>
                                     </div>
                                     @if((!$user->hasRole('user')))

@@ -118,6 +118,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/orderDetail/{id}', [AdminDashboardController::class, 'order_detail'])->name('admin.orderDetail');
     Route::get('/consultationView/{odd_id}', [AdminDashboardController::class, 'consultation_view'])->name('admin.consultationView');
     Route::get('/consultationUserView/{odd_id}', [AdminDashboardController::class, 'consultation_user_view'])->name('admin.consultationUserView');
+    Route::match(['get', 'post'],'/consultationEdit/{odd_id}', [AdminDashboardController::class, 'consultation_form_edit'])->name('admin.consultationFormEdit');
     Route::match(['get', 'post'], '/changeStatus', [AdminDashboardController::class, 'change_status'])->name('admin.changeStatus');
     Route::post('/changeProductstatus', [AdminDashboardController::class, 'changeProductStatus'])->name('admin.changeProductStatus');
     Route::match(['get', 'post'], '/refundOrder', [AdminDashboardController::class, 'refund_order'])->name('admin.refundOrder');

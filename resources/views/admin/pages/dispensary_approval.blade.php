@@ -527,7 +527,7 @@
         var tableApi = $('#tbl_data').DataTable();
         $('#order_filter').on('change', function() {
         var filterValue = $(this).val();
-        tableApi.column(11).search(filterValue === 'all' ? '' : filterValue.charAt(0).toUpperCase() + filterValue.slice(1)).draw();
+        tableApi.column(10).search(filterValue === 'all' ? '' : filterValue.charAt(0).toUpperCase() + filterValue.slice(1)).draw();
       });
 
         $('#search').on('input', function() {

@@ -8,7 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Gloudemans\Shoppingcart\Facades\Cart;
+use Illuminate\Support\Facades\Http;
+use App\Models\ShippingDetail;
 use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\PaymentDetail;
 use App\Traits\MenuCategoriesTrait;
 
 class CartController extends Controller
@@ -226,77 +230,237 @@ class CartController extends Controller
     }
 
 
+    // public function reorder(Request $request)
+    // {
+    //     $orderId = $request->input('order_id');
+
+    //     // Fetch the order and its details
+    //     $order = Order::with('orderdetails')->find($orderId);
+
+    //     if (!$order) {
+    //         return response()->json(['status' => false, 'message' => 'Order not found']);
+    //     }
+
+    //     // Prepare to add items to cart
+    //     foreach ($order->orderdetails as $detail) {
+    //         // Find the product using the product ID from the order details
+    //         $product = Product::find($detail->product_id); // Assuming `product_id` is the column in `orderdetails`
+
+    //         if (!$product) {
+    //             continue; // Skip if product not found
+    //         }
+
+    //         $variant = null;
+    //         if ($detail->variant_id) {
+    //             // Find the variant if there is one
+    //             $variant = ProductVariant::find($detail->variant_id);
+    //         }
+
+    //         // Prepare data for cart
+    //         $cartData = [
+    //             'productImage' => $product->main_image ?? '',
+    //             'slug' => $product->slug,
+    //             'order_type' => 'pom/reorder' // Add the order type
+    //         ];
+
+    //         if ($variant) {
+    //             // Prepare variant information
+    //             $vart_type = explode(';', $variant->title);
+    //             $vart_value = explode(';', $variant->value);
+    //             $var_info = '<br>';
+    //             foreach ($vart_type as $key => $type) {
+    //                 $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+    //                 if ($key < count($vart_type) - 1) {
+    //                     $var_info .= ', ';
+    //                 }
+    //             }
+    //             $variant['new_var_info'] = $var_info;
+
+    //             // Add to cart with variant
+    //             Cart::add(
+    //                 $product->id . '_' . $variant->id,
+    //                 $product->title,
+    //                 $detail->product_qty,
+    //                 $variant->price,
+    //                 array_merge($cartData, ['variant_info' => $variant])
+    //             );
+    //         } else {
+    //             // Add to cart without variant
+    //             Cart::add(
+    //                 $product->id,
+    //                 $product->title,
+    //                 $detail->product_qty,
+    //                 $product->price,
+    //                 $cartData
+    //             );
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Order items added to cart',
+    //         'redirect' => route('web.view.cart')
+    //     ]);
+    // }
+
+    
+
     public function reorder(Request $request)
     {
+        // Validate input
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'quantities' => 'array',
+        ]);
+    
         $orderId = $request->input('order_id');
-
-        // Fetch the order and its details
-        $order = Order::with('orderdetails')->find($orderId);
-
-        if (!$order) {
+        $quantities = $request->input('quantities', []);
+    
+        // Fetch the existing order and its details
+        $existingOrder = Order::with(['orderdetails', 'shippingdetails'])->find($orderId);
+    
+        if (!$existingOrder) {
             return response()->json(['status' => false, 'message' => 'Order not found']);
         }
-
-        // Prepare to add items to cart
-        foreach ($order->orderdetails as $detail) {
-            // Find the product using the product ID from the order details
-            $product = Product::find($detail->product_id); // Assuming `product_id` is the column in `orderdetails`
-
-            if (!$product) {
-                continue; // Skip if product not found
-            }
-
-            $variant = null;
-            if ($detail->variant_id) {
-                // Find the variant if there is one
-                $variant = ProductVariant::find($detail->variant_id);
-            }
-
-            // Prepare data for cart
-            $cartData = [
-                'productImage' => $product->main_image ?? '',
-                'slug' => $product->slug,
-                'order_type' => 'pom/reorder' // Add the order type
-            ];
-
-            if ($variant) {
-                // Prepare variant information
-                $vart_type = explode(';', $variant->title);
-                $vart_value = explode(';', $variant->value);
-                $var_info = '<br>';
-                foreach ($vart_type as $key => $type) {
-                    $var_info .= "<b>$type:</b> {$vart_value[$key]}";
-                    if ($key < count($vart_type) - 1) {
-                        $var_info .= ', ';
-                    }
+    
+        try {
+            // Create a new order record
+            $newOrder = Order::create([
+                'user_id' => $existingOrder->user_id,
+                'note' => $existingOrder->note,
+                'payment_status' => 'Unpaid',
+                'total_ammount' => array_sum($quantities) * $existingOrder->total_ammount / count($existingOrder->orderdetails), // Calculate total
+                'status' => 'Received',
+                'order_for' => 'doctor',
+            ]);
+    
+            // Clone order details into the new order with updated quantities
+            foreach ($existingOrder->orderdetails as $detail) {
+                if (isset($quantities[$detail->id]) && $quantities[$detail->id] > 0) {
+                    OrderDetail::create([
+                        'order_id' => $newOrder->id,
+                        'product_id' => $detail->product_id,
+                        'variant_id' => $detail->variant_id ?? null,
+                        'weight' => $detail->weight,
+                        'product_qty' => $quantities[$detail->id], // Use the selected quantity
+                        'generic_consultation' => $detail->generic_consultation ?? null,
+                        'product_consultation' => $detail->product_consultation ?? null,
+                        'consultation_type' => 'premd/Reorder',
+                        'status' => '1',
+                        'created_by' => auth()->id(),
+                    ]);
                 }
-                $variant['new_var_info'] = $var_info;
-
-                // Add to cart with variant
-                Cart::add(
-                    $product->id . '_' . $variant->id,
-                    $product->title,
-                    $detail->product_qty,
-                    $variant->price,
-                    array_merge($cartData, ['variant_info' => $variant])
-                );
-            } else {
-                // Add to cart without variant
-                Cart::add(
-                    $product->id,
-                    $product->title,
-                    $detail->product_qty,
-                    $product->price,
-                    $cartData
-                );
             }
+             
+            if ($existingOrder->shippingdetails) {
+                $shippingDetail = $existingOrder->shippingdetails; // Get the single shipping detail
+                $shippingData = $shippingDetail->toArray();
+                $shippingData['order_id'] = $newOrder->id; 
+                ShippingDetail::create($shippingData);
+            }
+    
+            // Prepare for payment processing
+            session()->put('order_id', $newOrder->id);
+            $payable_amount = $newOrder->total_ammount * 100; // Convert to cents if needed
+            $productDescription = 'Reorder from Pharmacy 4U';
+            $full_name = $existingOrder->email; // Assuming email is used for full name
+    
+            // Obtain Access Token
+            $accessToken = $this->getAccessToken();
+    
+            // Prepare POST fields for creating a payment order
+            $postFields = [
+                'amount' => $payable_amount,
+                'customerTrns' => $productDescription,
+                'customer' => [
+                    'email' => $existingOrder->email,
+                    'fullName' => $full_name,
+                    'phone' => $request->phone,
+                    'countryCode' => 'GB',
+                    'requestLang' => 'en-GB',
+                ],
+                'paymentTimeout' => 1800,
+                'preauth' => false,
+                'allowRecurring' => false,
+                'maxInstallments' => 0,
+                'paymentNotification' => true,
+                'disableExactAmount' => false,
+                'disableCash' => false,
+                'disableWallet' => false,
+                'sourceCode' => '1503',
+                'merchantTrns' => "Reorder from Pharmacy 4U",
+            ];
+    
+            $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
+            $responseData = json_decode($response, true);
+    
+            if (isset($responseData['orderCode'])) {
+                $orderCode = $responseData['orderCode'];
+                $temp_code = random_int(00000, 99999);
+                $payment_details = [
+                    'order_id' => $newOrder->id,
+                    'orderCode' => ($this->ENV == 'Live') ? $orderCode : $temp_code,
+                    'amount' => $newOrder->total_ammount,
+                ];
+    
+                $payment_init = PaymentDetail::create($payment_details);
+                if ($payment_init) {
+                    $redirectUrl = ($this->ENV == 'Live') 
+                        ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" 
+                        : url("/Completed-order?t=$temp_code&s=$temp_code&lang=en-GB&eventId=0&eci=1");
+    
+                    return response()->json(['status' => true, 'message' => 'Order items cloned successfully.', 'redirect' => $redirectUrl]);
+                }
+            }
+    
+            return response()->json(['status' => false, 'message' => 'Failed to initiate payment.']);
+        } catch (\Exception $e) {
+            // Log the exception for debugging
+            \Log::error('Reorder Error: ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
         }
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Order items added to cart',
-            'redirect' => route('web.view.cart')
-        ]);
     }
 
+    private function getAccessToken()
+    {
+        try {
+            // Viva Wallet API credentials
+            $username = 'dkwrul3i0r4pwsgkko3nr8c4vs0h5yn5tunio398ik403.apps.vivapayments.com'; // Replace with your actual client ID
+            $password = 'BuLY8U1pEsXNPBgaqz98y54irE7OpL'; // Replace with your actual secret key
+            $credentials = base64_encode($username . ':' . $password);
+
+            // Make an HTTP request to obtain an access token
+            $response = Http::asForm()->withHeaders([
+                'Authorization' => 'Basic ' . $credentials,
+            ])->post('https://accounts.vivapayments.com/connect/token', [
+                'grant_type' => 'client_credentials',
+            ]);
+
+            // Check if the request was successful (status code 2xx)
+            if ($response->successful()) {
+                return $response->json('access_token');
+            } else {
+                // Log the error response for further investigation
+                \Log::error('Error response: ' . $response->body());
+                return null;
+            }
+        } catch (\Exception $e) {
+            // Log any exceptions that occurred during the request
+            \Log::error('Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+
+    private function sendHttpRequest($url, $postFields, $accessToken)
+    {
+        // Make an HTTP request with Laravel HTTP client
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $accessToken,
+            'Content-Type'  => 'application/json',
+        ])->post($url, $postFields);
+
+        // Return the response body
+        return $response->body();
+    }
 }
