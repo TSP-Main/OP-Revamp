@@ -11,17 +11,21 @@
                 margin-right: 10px;
                 margin-left: 10px;
             }
-
+    
             .delete i {
                 color: #E34724;
                 font-size: 20px;
                 margin-left: 10px;
             }
-
+    
             .card-body table tr {
                 background-color: #E34724 !important;
             }
-
+    
+                .modal-backdrop {
+        display: none !important; /* Force hide any backdrop */
+    }
+    
             /* Custom CSS for DataTables buttons */
             .btn-blue {
                 background-color: blue !important;
@@ -31,53 +35,53 @@
                 margin-right: 5px;
                 font-weight: bold;
             }
-
+    
             .btn-blue:hover {
                 background-color: darkblue !important;
             }
-
+    
             .table-stripe tbody tr:nth-child(odd) {
                 background-color: lightblue;
             }
-
+    
             .table-stripe tbody tr:nth-child(even) {
                 background-color: deepskyblue;
             }
-
-
+    
+    
+    
             .date {
                 font-size: 11px
             }
-
+    
             .comment-text {
                 font-size: 12px
             }
-
+    
             .fs-12 {
                 font-size: 12px
             }
-
+    
             .shadow-none {
                 box-shadow: none
             }
-
+    
             .name {
                 color: #007bff
             }
-
+    
             .cursor:hover {
                 color: blue
             }
-
+    
             .cursor {
                 cursor: pointer
             }
-
+    
             .textarea {
                 resize: none
             }
         </style>
-
         <div class="pagetitle ">
             <div class="">
                 <form id="create_pdf_from" action="{{route('pdf.creator')}}" method="post">
@@ -294,6 +298,21 @@
                                                             </p>
                                                         @endif
                                                     </div>
+                                                    <div class="col-md-1 text-center d-flex justify-content-center align-items-center">
+                                                        @if($val['product_status'] === '1')
+                                                            @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd')
+                                                                <span class="badge bg-secondary">Pending</span>
+                                                            @elseif($val['consultation_type'] == 'one_over')
+                                                                <span></span>
+                                                            @endif
+                                                        @elseif($val['product_status'] === '2')
+                                                            <span class="badge bg-danger">Rejected</span>
+                                                        @elseif($val['product_status'] === '3')
+                                                            <span class="badge bg-success">Approved</span>
+                                                        @else
+                                                            <span class="badge bg-secondary">Error</span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                                 <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
                                                 @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd')
@@ -328,22 +347,74 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @if((!$user->hasRole('user')))
+                                    <div class="card mt-4">
+                                        <div class="card-body d-flex justify-content-center align-items-center py-3">
+                                            <button class="btn btn-success rounded-pill px-5 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#doctor_remarks">
+                                                <i class="bi bi-arrow-right-circle"></i> Proceed Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                        
+                                    {{-- Modal Start --}}
+                                    <div class="modal fade" id="doctor_remarks" tabindex="-1" aria-labelledby="doctor_remarksLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header" style="background: #20B2AA;">
+                                                    <h5 class="modal-title fw-bold text-white" id="doctor_remarksLabel">HealthCare Professional Feedback</h5>
+                                                    <button type="button" class="btn-close fw-bold text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form id="form_hcp_remarks" class="row g-3 mt-1 needs-validation" novalidate action="{{ route('admin.changeStatus') }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="id" required value="{{ $order['id'] }}">
+                                                        <input type="hidden" name="approved_by" required value="{{ auth()->user()->id }}">
+                                                        <div class="col-12">
+                                                            <label for="status" class="form-label fw-bold">Order Status :</label>
+                                                            <select id="status" name="status" class="form-select" required>
+                                                                <option value="" selected>Choose...</option>
+                                                                <option value="Approved">Approved</option>
+                                                                <option value="Partially_Approved">Partially Approved</option>
+                                                                <option value="Not_Approved">Not_Approved</option>
+                                                            </select>
+                                                            <div class="invalid-feedback">Please select status!</div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label for="hcp_remarks" class="form-label fw-bold">Health Care Professional Notes: </label>
+                                                            <textarea name="hcp_remarks" class="form-control" id="hcp_remarks" rows="4" placeholder="write here..." required></textarea>
+                                                            <div class="invalid-feedback">Please write Notes!</div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary bg-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button form="form_hcp_remarks" type="submit" class="btn text-white fw-bold" style="background: #20B2AA;">Save changes</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{-- Modal End --}}
+                                  
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Order Status: </p>
                                         <p class="mb-0 fw-bold text-success">{{$order['status']}} </p>
                                     </div>
                                     @if($order['status'] == 'Shipped')
-                                        <div class="d-flex justify-content-between pt-2">
-                                            <p class="fw-bold mb-0 ">Tracking Number:</p>
-                                            @if($order['shipping_details']['tracking_no'])
-                                                <a class="fw-bold  mb-0"
-                                                   href="https://www.royalmail.com/track-your-item#/tracking-results/{{$order['shipping_details']['tracking_no']}}">{{$order['shipping_details']['tracking_no']}} </a>
-                                            @else
-                                                <a class=" btn btn-primary bg-primary fw-bold  mb-0"
-                                                   href="{{route('admin.getShippingOrder',['id'=>$order['id']])}}">Track</a>
-                                            @endif
-                                        </div>
-                                    @endif
+                                    <div class="d-flex justify-content-between pt-2">
+                                        <p class="fw-bold mb-0">Tracking Number:</p>
+                                        @php
+                                            $trackingNumber = $order['shipping_details']['tracking_no'] ?? null; 
+                                        @endphp
+                                        @if($trackingNumber)
+                                            <a class="fw-bold mb-0"
+                                               href="https://www.royalmail.com/track-your-item#/tracking-results/{{$trackingNumber}}">{{$trackingNumber}} </a>
+                                        @else
+                                            <a class="btn btn-primary bg-primary fw-bold mb-0"
+                                               href="{{route('admin.getShippingOrder',['id'=>$order['id']])}}">Track</a>
+                                        @endif
+                                    </div>
+                                @endif
 
                                     @if($order['status'] != 'Received')
                                         <div class="d-flex justify-content-arround pt-2">
@@ -361,31 +432,27 @@
                                         </div>
                                     @endif
 
-                                    @if($user->hasRole('super_admin') || $user->hasRole('dispensary'))
-                                        <div class="d-flex justify-content-between pt-2">
-                                            <p class="fw-bold mb-0">Subtotal: </p>
-                                            <p class="text-muted mb-0">
-                                                £{{ number_format(str_replace(',', '', $order['total_ammount']) - str_replace(',', '', $order['shipping_details']['cost']), 2) }}</p>
-                                        </div>
-                                        <div class="d-flex justify-content-between pt-2">
-                                            <p class="fw-bold  mb-0">Shipping Charges: </p>
-                                            <p class="text-muted mb-0">
-                                                £{{ number_format((float)str_replace(',', '', $order['shipping_details']['cost']), 2) }}</p>
-                                        </div>
-                                        <hr>
-                                        <div class="d-flex justify-content-between">
-                                            <p class="fw-bold  mb-0">Total: </p>
-                                            <p class="text-muted mb-0">
-                                                £{{ number_format((float)str_replace(',', '', $order['total_ammount']), 2) }}</p>
-                                        </div>
-                                        <div class="card-footer border-0 px-4 ">
-                                            <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">
-                                                Total
-                                                paid: <span
-                                                    class="h2 mb-0 ms-2">£{{ number_format((float)str_replace(',', '', $order['total_ammount']), 2) }}</span>
-                                            </h5>
-                                        </div>
-                                    @endif
+                                    
+                                    @if((($user->hasRole('super_admin') || $user->hasRole('dispensary'))))
+                                    <div class="d-flex justify-content-between pt-2">
+                                        <p class="fw-bold mb-0">Subtotal: </p>
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_amount'], 2) }}</p>
+                                    </div>
+                                    <div class="d-flex justify-content-between pt-2">
+                                        <p class="fw-bold mb-0">Shipping Charges: </p>
+                                        <p class="text-muted mb-0">£{{ number_format((float)$order['shipping_cost'], 2) }}</p>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <p class="fw-bold mb-0">Total: </p>
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_amount'] + (float)$order['shipping_cost'], 2) }}</p>
+                                    </div>
+                                    <div class="card-footer border-0 px-4">
+                                        <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">
+                                            Total paid: <span class="h2 mb-0 ms-2">£{{ number_format((float)$order['total_amount'], 2) }}</span>
+                                        </h5>
+                                    </div>
+                                @endif                                
                                     @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved')
                                         <form id="form_shiping_now" action="{{route('admin.createShippingOrder')}}"
                                               method="POST">

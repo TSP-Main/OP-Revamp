@@ -421,6 +421,11 @@
                                                 #{{ $val['id'] }}
                                             </a>
                                         </td>
+                                        {{-- <td>
+                                            @if(isset($order_history[$val['email']]))
+                                                <span class="px-5 fw-bold">{{ $order_history[$val['email']]['total_orders'] ?? 0 }}</span>
+                                            @endif
+                                        </td> --}}
                                         <td>
                                             @php
                                                 $totalOrderDetails = count($val['orderdetails']);
@@ -458,10 +463,15 @@
                                                 class="btn fw-bold rounded-pill btn-success">{{ $val['payment_status'] ?? 'N/A' }}</span>
                                         </td>
                                         <td>
-                                        <span
-                                            class="btn fw-bold {{ $val['status'] == 'Not_Approved' || $val['status'] == 'ShippingFail' ? 'btn-danger' : '' }} {{ $val['status'] == 'Approved' ? 'btn-success' : '' }} {{ $val['status'] == 'Received' ? 'btn-primary' : '' }}">
+                                            <span
+                                            class="btn fw-bold 
+                                                {{ $val['status'] == 'Not_Approved' || $val['status'] == 'ShippingFail' ? 'btn-danger' : '' }} 
+                                                {{ $val['status'] == 'Approved' ? 'btn-success' : '' }} 
+                                                {{ $val['status'] == 'Received' ? 'btn-primary' : '' }} 
+                                                {{ $val['status'] == 'Partially_Approved' ? 'btn-warning' : '' }}">
                                             {{ $val['status'] ?? 'Unknown' }}
                                         </span>
+                                        
                                         </td>
                                         <td style="display: inline-block;">
                                             @if($val['status'] != 'Received')
@@ -601,6 +611,42 @@
                 $('#shiping_order').val(order_id);
                 $('#form_shiping_now').submit();
             });
+
+               // Enable/disable the batch shipping button based on checkbox selection
+    $(document).on('change', '.custom-checkbox', function() {
+        let isChecked = $('.custom-checkbox:checked').length > 0;
+        $('#batch-shipping').prop('disabled', !isChecked);
+    });
+
+    // Handle batch shipping button click
+    $(document).on('click', '#batch-shipping', function() {
+        let selectedIds = [];
+        $('.custom-checkbox:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length > 0) {
+            // Make an AJAX request to the batch shipping endpoint
+            $.ajax({
+                url: "{{ route('admin.batchShipping') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    order_ids: selectedIds
+                },
+                success: function(response) {
+                    alert('Batch shipping request successful!');
+                    window.location.reload(); // Reload to reflect changes
+                },
+                error: function(xhr, status, error) {
+                    alert('Error processing batch shipping.');
+                    console.error(error);
+                }
+            });
+        } else {
+            alert('Please select at least one order.');
+        }
+    });
         });
     </script>
 @endPushOnce

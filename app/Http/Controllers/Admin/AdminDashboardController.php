@@ -21,6 +21,7 @@ use App\Models\ShippingDetail;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Mail\otpVerifcation;
+use App\Mail\RejectionEmail;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use GuzzleHttp\Client;

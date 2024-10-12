@@ -432,7 +432,17 @@
                                         <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                     </td>
                                     <td>{{date_time_uk($val['created_at'])}}</td>
-                                    <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name'] }}</td>
+                                    <td>
+                                        {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
+                                        @if (isset($val['shipping_details']) && $val['shipping_details'])
+                                        {{ $val['shipping_details']['firstName'] ?? '' }}
+                                        {{ $val['shipping_details']['lastName'] ?? '' }}
+                                        @elseif(isset($val['user']) && $val['user'])
+                                        {{ $val['user']['name'] ?? '' }}
+                                        @else
+                                        N/A
+                                        @endif
+                                    </td>
                                     <td>
                                         @if (isset($val['shipping_details']['email']))
                                             {{ $val['shipping_details']['email'] }}
