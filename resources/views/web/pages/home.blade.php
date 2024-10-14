@@ -192,6 +192,22 @@
         </div>
         <button type="submit">Import Orders</button>
     </form>
+    <form action="{{ route('import.ordersDetails') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div>
+            <label for="csv_file">Choose CSV file</label>
+            <input type="file" name="csv" id="csv_file" required>
+        </div>
+        <button type="submit">Import Orders Details</button>
+    </form>
+    <form action="{{ route('import.shippingDetails') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div>
+            <label for="csv_file">Choose CSV file</label>
+            <input type="file" name="csv" id="csv_file" required>
+        </div>
+        <button type="submit">Import Shipping Details</button>
+    </form>
 
 
     <!-- Featured Offers area start  -->

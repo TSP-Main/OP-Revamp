@@ -26,6 +26,8 @@ use App\Http\Controllers\ImportsController;
 
 Route::post('/import-users', [ImportsController::class, 'importUsersData'])->name('import.users');
 Route::post('/import-orders', [ImportsController::class, 'importOrdersData'])->name('import.orders');
+Route::post('/import-orders-details', [ImportsController::class, 'importOrderDetailsData'])->name('import.ordersDetails');
+Route::post('/import-shipping-details', [ImportsController::class, 'importShippingDetails'])->name('import.shippingDetails');
 //Route::group(['middleware' => ['role:super_admin']], function () {
 //    Route::get('/admin/dashboard', 'AdminController@dashboard');
 //});

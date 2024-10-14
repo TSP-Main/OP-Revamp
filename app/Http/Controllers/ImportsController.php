@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\ShippingDetail;
 use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\UserProfile;
@@ -134,6 +136,87 @@ class ImportsController extends Controller
 
                     // Insert the filtered data into the orders table
                     Order::create($filteredData);
+                }
+            });
+
+            fclose($handle);
+        }
+    }
+
+    public function importOrderDetailsData(Request $request)
+    {
+        if (($handle = fopen($request->file('csv'), 'r')) !== false) {
+            // Read the header row from the CSV file
+            $header = fgetcsv($handle, 5000, ',');
+
+            // Ensure the headers match the database table columns exactly
+            $validColumns = [
+                'id', 'order_id', 'product_id', 'variant_id', 'product_status',
+                'product_qty', 'generic_consultation', 'product_consultation',
+                'consultation_type', 'created_by', 'created_at', 'updated_at'
+            ];
+
+            DB::transaction(function () use ($handle, $header, $validColumns) {
+                while (($data = fgetcsv($handle, 5000, ',')) !== false) {
+                    // Skip rows with a different number of columns than the header
+                    if (count($header) !== count($data)) {
+                        continue; // Skip this row and move to the next
+                    }
+
+                    // Map the CSV header to the data row
+                    $row = array_combine($header, $data);
+
+                    // Replace "NULL" strings with actual null values
+                    $row = array_map(function ($value) {
+                        return $value === 'NULL' ? null : $value;
+                    }, $row);
+
+                    // Filter the row to keep only valid columns for insertion
+                    $filteredData = array_intersect_key($row, array_flip($validColumns));
+
+                    // Insert the filtered data into the order_details table
+                    OrderDetail::create($filteredData);
+                }
+            });
+
+            fclose($handle);
+        }
+    }
+
+    public function importShippingDetails(Request $request)
+    {
+        if (($handle = fopen($request->file('csv'), 'r')) !== false) {
+            // Read the header row from the CSV file
+            $header = fgetcsv($handle, 5000, ',');
+
+            // Ensure these columns match the ones in your shipping_details table
+            $validColumns = [
+                'id', 'order_id', 'user_id', 'method', 'cost', 'firstName', 'lastName',
+                'email', 'order_identifier', 'tracking_no', 'phone', 'city', 'state',
+                'zip_code', 'address', 'address2', 'status', 'shipping_status',
+                'created_by', 'updated_by', 'created_at', 'updated_at'
+            ];
+
+            DB::transaction(function () use ($handle, $header, $validColumns) {
+                while (($data = fgetcsv($handle, 5000, ',')) !== false) {
+                    // Check for consistent column counts
+                    if (count($header) !== count($data)) {
+                        continue; // Skip inconsistent rows
+                    }
+
+                    // Map header to data row
+                    $row = array_combine($header, $data);
+
+                    // Replace "NULL" strings with actual null values
+                    $row = array_map(function ($value) {
+                        return $value === 'NULL' ? null : $value;
+                    }, $row);
+
+                    // Filter the row to include only valid columns for shipping_details
+                    $filteredData = array_intersect_key($row, array_flip($validColumns));
+
+                    // Insert the filtered data into the shipping_details table
+                    ShippingDetail::create($filteredData);
                 }
             });
 
