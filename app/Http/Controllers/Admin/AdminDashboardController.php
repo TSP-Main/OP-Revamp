@@ -1285,33 +1285,126 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders');
-        if ($request->id) {
-            $id = base64_decode($request->id);
-            $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
-            if ($order) {
-//                $data['userOrders'] = Order::select('id')->where('email', $order->email)->where('payment_status', 'Paid')->where('id', '!=', $order->id)->get()->toArray() ?? [];
-                $data['userOrders'] = Order::whereHas('shippingDetails', function ($query) use ($order) {
-                    $query->where('email', $order->shippingDetails->email);
-                })
-                    ->where('payment_status', 'Paid')
-                    ->where('id', '!=', $order->id)
-                    ->select('id')
-                    ->get()
-                    ->toArray() ?? [];
-
-                $data['order'] = $order->toArray() ?? [];
-
-                if ($order->approved_by) {
-                    $data['marked_by'] = User::findOrFail($order->approved_by) ?? [];
-                }
-                return view('admin.pages.order_detail', $data);
-            } else {
-                return redirect()->back()->with('error', 'Order not found.');
-            }
-        } else {
+    
+        if (!$request->id) {
             return redirect()->back()->with('error', 'Order not found.');
         }
+    
+        $id = base64_decode($request->id);
+        $order = Order::with(['user', 'shippingDetail', 'orderdetails.product'])
+            ->where(['id' => $id, 'payment_status' => 'Paid'])
+            ->first();
+    
+        if (!$order) {
+            return redirect()->back()->with('error', 'Order not found.');
+        }
+    
+        // Fetch user orders
+        $data['userOrders'] = Order::whereHas('shippingDetail', function ($query) use ($order) {
+                $query->where('email', $order->shippingDetail->email);
+            })
+            ->where('payment_status', 'Paid')
+            ->where('id', '!=', $order->id)
+            ->pluck('id')
+            ->toArray();
+    
+        // Prepare order data
+        $data['order'] = $order->toArray();
+        $data['order']['shipping_cost'] = $order->shippingDetail->cost ?? 0;
+    
+        // Shipping details
+        $data['order']['shipping_details'] = $order->shippingDetail->only(['firstName', 'lastName', 'phone', 'email', 'city','product_status', 'zip_code', 'address']);
+    
+      // Calculate subtotal for approved products based on product table prices
+        $data['order']['total_amount'] = $order->orderdetails->sum(function ($detail) {
+            return in_array($detail->product_status, ['1', '3']) ? 
+                ($detail->product->price * $detail->product_qty) : 0;
+        });
+            
+        // Add product images to order details
+        $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
+            $detail->product_image = $detail->product->main_image ?? null;
+            return $detail;
+        });
+    
+        // Marked by user
+        if ($order->approved_by) {
+            $data['marked_by'] = User::find($order->approved_by);
+        }
+    
+        return view('admin.pages.order_detail', $data);
     }
+    
+    
+
+    // public function consultation_view(Request $request)
+    // {
+    //     $data['user'] = $this->getAuthUser();
+    //     $this->authorize('consultation_view');
+    //     if ($request->odd_id) {
+    //         $odd_id = base64_decode($request->odd_id);
+    //         $user_result = [];
+    //         $prod_result = [];
+    //         $consultaion = OrderDetail::where(['id' => $odd_id])->latest('created_at')->latest('id')->first();
+    //         if ($consultaion) {
+    //             $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
+    //             $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
+    //                 return $value !== null;
+    //             }));
+    //             if ($consultaion->consultation_type == 'pmd') {
+    //                 $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+    //             } elseif ($consultaion->consultation_type == 'premd') {
+    //                 $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+    //                 $pro_quest_ans = json_decode($consultaion->product_consultation, true);
+    //                 $pro_quest_ids = array_keys(array_filter($pro_quest_ans, function ($value) {
+    //                     return $value !== null;
+    //                 }));
+    //                 $product_consultation = Question::whereIn('id', $pro_quest_ids)->orderBy('id')->get()->toArray();
+    //                 $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
+    //                     return [$item['id'] => $item];
+    //                 });
+
+    //                 foreach ($pro_quest_ans as $q_id => $answer) {
+    //                     if (isset($product_consultation[$q_id])) {
+    //                         $prod_result[] = [
+    //                             'id' => $q_id,
+    //                             'title' => $product_consultation[$q_id]['title'],
+    //                             'desc' => $product_consultation[$q_id]['desc'],
+    //                             'answer' => $answer,
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+    //             $consult_questions = collect($consult_questions)->mapWithKeys(function ($item) {
+    //                 return [$item['id'] => $item];
+    //             });
+
+    //             foreach ($consutl_quest_ans as $quest_id => $ans) {
+    //                 if (isset($consult_questions[$quest_id])) {
+    //                     $user_result[] = [
+    //                         'id' => $quest_id,
+    //                         'title' => $consult_questions[$quest_id]['title'],
+    //                         'desc' => $consult_questions[$quest_id]['desc'],
+    //                         'answer' => $ans,
+    //                     ];
+    //                 }
+    //             }
+
+    //             $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
+    //             $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
+    //             $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+    //             $data['generic_consultation'] = $user_result;
+    //             $data['product_consultation'] = $prod_result ?? [];
+    //             return view('admin.pages.consultation_view', $data);
+    //         } else {
+    //             notify()->error('Consultaions Id Did not found. ⚡️');
+    //             return redirect()->back()->with('error', 'Transaction not found.');
+    //         }
+    //     } else {
+    //         notify()->error('Consultaions Id Did not found. ⚡️');
+    //         return redirect()->back();
+    //     }
+    // }
 
     public function consultation_view(Request $request)
     {
