@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('payment_details', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('order_id');
+            $table->foreignId('order_id')->constrained('orders')->nullable();
             $table->text('orderCode');
             $table->string('amount');
             $table->text('transactionId')->nullable();
