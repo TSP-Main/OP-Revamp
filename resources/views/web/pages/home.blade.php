@@ -511,7 +511,7 @@
                                             {{-- <a href="product-details.html">
                                                         <img src="{{ asset('storage/'.$val['main_image']) }}" alt="#">
                                             </a> --}}
-                                            <img src="{{ asset('storage/'.$val['main_image']) }}" alt="image">
+                                            <img src="{{ asset('storage/'.$val['main_image']) ?? '' }}" alt="image">
                                             <div class="product-badge">
                                                 <ul>
                                                     <li class="sale-badge">New</li>

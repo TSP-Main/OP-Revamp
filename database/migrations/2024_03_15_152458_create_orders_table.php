@@ -17,7 +17,8 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('payment_id')->constrained('payment_details')->nullable();
+            $table->unsignedBigInteger('payment_id');
+//            $table->foreignId('payment_id')->constrained('payment_details')->nullable();
 //            $table->string('email');
             $table->string('note')->nullable();
 //            $table->string('coupon_code')->nullable();

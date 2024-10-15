@@ -58,7 +58,7 @@ class RegisterUserRequest extends FormRequest
             'country' => ['required', 'string', 'max:255'],
 
             // Zip code (optional based on needs)
-            'zip_code' => ['required', 'string', 'max:20'],
+            'zip_code' => ['required', 'string', 'max:50'],
 
             // ID Document (if uploaded)
             'id_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'], // Max 5MB and should be a valid file type
