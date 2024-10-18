@@ -11,7 +11,6 @@ use App\Models\OrderDetail;
 use App\Models\PaymentDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\ShipingDetail;
 use App\Models\ShippingDetail;
 use App\Models\User;
 use App\Notifications\UserOrderNotification;

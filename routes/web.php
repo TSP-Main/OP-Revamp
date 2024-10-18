@@ -50,7 +50,7 @@ Route::match(['get', 'post'], '/changePassword', [AuthController::class, 'change
 //Dashboard
 Route::get('/dashboard/details', [DashboardController::class, 'dashboard_details'])->name('dashboard.details');
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('web.dashboard');
-
+// Route::post('/import-users', [DashboardController::class, 'importUsersData'])->name('import.users');
 //Product Details
 Route::get('/shop', [ProductDetailsController::class, 'shop'])->name('shop');
 Route::match(['get', 'post'], '/category/{main_category?}/{sub_category?}/{child_category?}', [ProductDetailsController::class, 'show_products'])->name('category.products');

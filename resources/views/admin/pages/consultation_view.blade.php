@@ -81,7 +81,6 @@
                     <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                     </div>
                     @if($user_profile_details)
-{{--                        @dd($user_profile_details->address->address)--}}
                     <div class="row px-4 mt-2 mb-3">
                         <div class="col-12">
                             <h4 class="fw-bold ">Customer Profile Details:</h4>
@@ -105,6 +104,17 @@
 
                         </div>
                     </div>
+                    @endif
+                    @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
                     @endif
                     <div class="card-body">
                         <table id="tbl_data" class="table table-striped">
@@ -214,68 +224,93 @@
                                 @endif
                             </tbody>
                         </table>
-                        @if(($user->hasRole('doctor') || $user->hasRole('super_admin')) && ($order->status == 'Received' || $order->status == 'Not_Approved' || $order->status == 'Approved'))
-                        <div class="card mt-4">
-                            <div class="card-body d-flex justify-content-center align-items-center py-3">
-                                <button class="btn btn-success rounded-pill px-5 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#doctor_remarks">
-                                    <i class="bi bi-arrow-right-circle"></i> Proceed Next
-                                </button>
-                            </div>
-                        </div>
-                        @endif
+                        <div id="ajax-alert" class="alert" style="display: none;"></div>
+                    @if(($user->hasRole('super_admin')))
+                    <div class="col-md-12 d-flex justify-content-start align-items-center mt-3" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <form id="approval-form" action="{{ route('admin.changeProductStatus') }}" method="POST" style="width: 100%; max-width: 600px;">
+                            @csrf
+                            <input type="hidden" name="order_id" value="{{ $order['id'] }}">
+                        
+                            @php
+                                $hasConsultations = false;
+                                $productId = null;
+                            @endphp
+                        
+                            @if($product_consultation && count($product_consultation) > 0)
+                                @php
+                                    $hasConsultations = true;
+                                    $productId = $product_consultation[0]['product_id'];
+                                @endphp
+                            @elseif($generic_consultation && count($generic_consultation) > 0)
+                                @php
+                                    $hasConsultations = true;
+                                    $productId = $generic_consultation[0]['product_id'];
+                                @endphp
+                            @endif
+                        
+                            @if($hasConsultations)
+                                <input type="hidden" name="approvals[0][product_id]" value="{{ $productId }}">
+                                <div class="form-group" style="margin-bottom: 15px;">
+                                    <button type="button" name="approvals[0][status]" value="Approved" class="btn btn-success approve-btn" style="margin-right: 10px; background-color:#176d11; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer;">
+                                        Approve
+                                    </button>
+                                    <button type="button" name="approvals[0][status]" value="Not Approved" class="btn btn-danger reject-btn" style="padding: 10px 20px; background-color: #c91d12; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer;">
+                                        Reject
+                                    </button>
+                                </div>
+                            @else
+                                <p style="text-align: center; color: #dc3545; font-weight: bold;">No product consultations available for approval.</p>
+                            @endif
+                        </form>
+                        
+                    </div>
+                    @endif                   
                     </div>
                     <!-- /.card-body -->
                 </div>
             </div>
         </div>
     </section>
-
 </main>
-<!-- End #main -->
-<!-- modal for doctors approval -->
-@if((!$user->hasRole('user')))
-<div class="modal fade" id="doctor_remarks" tabindex="-1" data-bs-backdrop="false">
-    <div class="modal-dialog  modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background: #20B2AA;">
-                <h5 class="modal-title fw-bold text-white">HealthCare Professional Feedback</h5>
-                <button type="button" class="btn-close fw-bold text-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="form_hcp_remarks" class="row g-3 mt-1 needs-validation" novalidate action="{{route('admin.changeStatus')}}" method="POST">
-                    @csrf
-                    <input type="hidden" name="id" required value="{{$order_user_detail->order_id}}">
-                    <input type="hidden" name="approved_by" required value="{{$user->id}}">
-                    <div class="col-12">
-                        <label for="status" class="form-label fw-bold">Order Status :</label>
-                        <select id="status" name="status" class="form-select" required>
-                            <option value="" selected>Choose...</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Not_Approved">Not Approved</option>
-                        </select>
-                        <div class="invalid-feedback">Please select status!</div>
-                    </div>
-
-                    <div class="col-12">
-                        <label for="hcp_remarks" class="form-label fw-bold">Health Care Professional Notes: </label>
-                        <textarea name="hcp_remarks" class="form-control" id="hcp_remarks" rows="4" placeholder="write here..." required></textarea>
-                        <div class="invalid-feedback">Please write Notes!</div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary bg-secondary" data-bs-dismiss="modal">Close</button>
-                <button form="form_hcp_remarks" type="submit" class="btn text-white fw-bold" style="background: #20B2AA;">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
 @stop
 
 @pushOnce('scripts')
 <script>
     $(document).ready(function() {
+        $('.approve-btn, .reject-btn').click(function() {
+            var status = $(this).val();
+            var form = $('#approval-form');
+            var formData = form.serialize(); // Serialize the form data
+            
+            // Add the status to the serialized data
+            formData += '&approvals[0][status]=' + status;
+
+            $.ajax({
+                url: form.attr('action'), // Use the form's action URL
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    // Show success alert
+                    $('#ajax-alert')
+                        .removeClass('alert-danger')
+                        .addClass('alert-success')
+                        .text('Status updated successfully!')
+                        .fadeIn()
+                        .delay(3000) // Keep it visible for 3 seconds
+                        .fadeOut();
+                },
+                error: function(xhr, status, error) {
+                    // Show error alert
+                    $('#ajax-alert')
+                        .removeClass('alert-success')
+                        .addClass('alert-danger')
+                        .text('Error updating status.')
+                        .fadeIn()
+                        .delay(3000) // Keep it visible for 3 seconds
+                        .fadeOut();
+                }
+            });
+        });
         $('.read-more-btn').click(function() {
             var $descriptionPreview = $(this).siblings('.description-preview');
             var $descriptionFull = $(this).siblings('.description-full');
@@ -310,7 +345,7 @@
                 // {
                 //     extend: 'excel',
                 //     text: 'Donwload Excel ',
-                //     className: 'btn-blue',
+                //     className: 'btn-blue', 
                 // },
 
                 {
