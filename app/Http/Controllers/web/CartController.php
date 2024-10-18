@@ -312,37 +312,52 @@ class CartController extends Controller
             'order_id' => 'required|exists:orders,id',
             'quantities' => 'array',
         ]);
-    
+        
         $orderId = $request->input('order_id');
         $quantities = $request->input('quantities', []);
-    
+        
         // Fetch the existing order and its details
         $existingOrder = Order::with(['orderdetails', 'shippingdetails'])->find($orderId);
-    
+        
         if (!$existingOrder) {
             return response()->json(['status' => false, 'message' => 'Order not found']);
         }
-    
+        
         try {
             // Create a new order record
             $newOrder = Order::create([
                 'user_id' => $existingOrder->user_id,
                 'note' => $existingOrder->note,
                 'payment_status' => 'Unpaid',
-                'total_ammount' => array_sum($quantities) * $existingOrder->total_ammount / count($existingOrder->orderdetails), // Calculate total
+                'total_ammount' => 0, // Initialize as 0, will calculate later
                 'status' => 'Received',
                 'order_for' => 'doctor',
             ]);
     
+            $totalAmount = 0; // Initialize total amount for calculation
+    
             // Clone order details into the new order with updated quantities
             foreach ($existingOrder->orderdetails as $detail) {
-                if (isset($quantities[$detail->id]) && $quantities[$detail->id] > 0) {
+                if (isset($quantities[$detail->id]) && $quantities[$detail->id]['qty'] > 0) {
+                    $variantId = $quantities[$detail->id]['variant_id'] ?? null; // Get selected variant ID
+                    
+                    // Fetch variant price if it exists
+                    $variantPrice = null;
+                    if ($variantId) {
+                        $variant = ProductVariant::find($variantId);
+                        $variantPrice = $variant ? $variant->price : null;
+                    }
+    
+                    // Calculate total amount using the variant price or the product's price
+                    $priceToUse = $variantPrice ?? $detail->product->price;
+                    $totalAmount += $priceToUse * $quantities[$detail->id]['qty'];
+    
                     OrderDetail::create([
                         'order_id' => $newOrder->id,
                         'product_id' => $detail->product_id,
-                        'variant_id' => $detail->variant_id ?? null,
+                        'variant_id' => $variantId, // Store the selected variant ID
                         'weight' => $detail->weight,
-                        'product_qty' => $quantities[$detail->id], // Use the selected quantity
+                        'product_qty' => $quantities[$detail->id]['qty'], // Use the selected quantity
                         'generic_consultation' => $detail->generic_consultation ?? null,
                         'product_consultation' => $detail->product_consultation ?? null,
                         'consultation_type' => 'premd/Reorder',
@@ -351,7 +366,11 @@ class CartController extends Controller
                     ]);
                 }
             }
-             
+            
+            // Update the total amount of the new order
+            $newOrder->total_ammount = $totalAmount;
+            $newOrder->save();
+    
             if ($existingOrder->shippingdetails) {
                 $shippingDetail = $existingOrder->shippingdetails; // Get the single shipping detail
                 $shippingData = $shippingDetail->toArray();
@@ -420,7 +439,7 @@ class CartController extends Controller
             return response()->json(['status' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-
+    
     private function getAccessToken()
     {
         try {
