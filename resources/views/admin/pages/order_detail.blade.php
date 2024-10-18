@@ -300,7 +300,7 @@
                                                     </div>
                                                     <div class="col-md-1 text-center d-flex justify-content-center align-items-center">
                                                         @if($val['product_status'] === '1')
-                                                            @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd')
+                                                            @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd'  || $val['consultation_type'] == 'premd/Reorder')
                                                                 <span class="badge bg-secondary">Pending</span>
                                                             @elseif($val['consultation_type'] == 'one_over')
                                                                 <span></span>
@@ -315,7 +315,7 @@
                                                     </div>
                                                 </div>
                                                 <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
-                                                @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd')
+                                                @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd' || $val['consultation_type'] == 'premd/Reorder')
                                                     <div class="row d-flex ">
                                                         <div class="col-lg-12 text-center ">
                                                             <a href="{{ route('admin.consultationView', ['odd_id' => base64_encode($val['id'])]) }}"
