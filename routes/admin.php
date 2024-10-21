@@ -102,6 +102,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
 
     Route::get('/ordersReceived', [AdminDashboardController::class, 'ordersReceived'])->name('admin.ordersRecieved');
     Route::get('/ordersAll', [AdminDashboardController::class, 'all_orders'])->name('admin.allOrders');
+    Route::get('/orderOtc', [AdminDashboardController::class,'otc_orders'])->name('admin.otcorders');
     Route::get('/ordersUnpaid', [AdminDashboardController::class, 'unpaid_orders'])->name('admin.unpaidOrders');
     Route::get('/ordersCreated', [AdminDashboardController::class, 'orders_created'])->name('admin.ordersCreated');
     Route::post('/duplicate-order', [AdminDashboardController::class, 'duplicate_Order'])->name('admin.duplicateOrder');

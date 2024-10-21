@@ -1672,6 +1672,29 @@ class AdminDashboardController extends Controller
         return view('admin.pages.order_all', $data);
     }
 
+    public function otc_orders()
+    {
+        $data['user'] = $this->getAuthUser();
+        $this->authorize('dispensary_approval');
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])
+        ->where('payment_status', 'Paid')  // Filter for orders with 'Paid' status
+        ->get()  
+        ->filter(function ($order) {
+            // Check if all order details have consultation type 'one_over'
+            return $order->orderdetails->every(function ($orderDetail) {
+                return $orderDetail->consultation_type === 'one_over';
+            });
+        })
+        ->toArray();
+
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders);
+            $data['orders'] = $this->assign_order_types($orders);
+        }
+
+        return view('admin.pages.order_otc', $data);
+    }
+
     public function unpaid_orders()
     {
         $data['user'] = $this->getAuthUser();

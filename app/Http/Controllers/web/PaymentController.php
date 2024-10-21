@@ -123,7 +123,7 @@ class PaymentController extends Controller
 
                 // $inserted =  OrderDetail::insert($order_details);
                 if ($inserted) {
-                    dd($request);
+                   // dd($request);
                     $shipping_details[] = [
                         'order_id' => $order->id,
                         'user_id' => $user->id ?? '',
