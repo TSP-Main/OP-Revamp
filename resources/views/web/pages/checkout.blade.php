@@ -168,13 +168,12 @@
                                 </div>
                             </div>
                           <!-- International Shipping Option -->
-                        <div class="col-md-6" id="internationalShipping" style="display: none;">
+                        <div class="col-md-6">
                             <div class="form-check">
                                 <div class="custom-control" style="display: flex; align-items:center;">
                                     <input class="form-check-input" type="radio" name="shipping_method" id="international_shipping" value="international" data-ship="15.00">
                                     <label class="form-check-label" for="international_shipping" style="margin-left:10px;">International Shipping (£15.00)</label>
                                 </div>
-                                <span class="float-right"> (£15.00)</span>
                                 <div class="ml-4 mb-2 small">(Delivery times vary by location)</div>
                             </div>
                         </div>
@@ -290,19 +289,23 @@ $(document).ready(function() {
             }
         });
 
-    // Show/hide international shipping option
-    $('#countryDropdown').change(function() {
-        var selectedCountry = $(this).val();
-        if (selectedCountry === 'GB') { // GB for United Kingdom
-            $('#internationalShipping').hide();
-            $('#shippingMethods').find('input[type="radio"]').prop('disabled', false);
-        } else {
-            $('#internationalShipping').show();
-            $('#shippingMethods').find('input[type="radio"]').prop('disabled', true).not('#international_shipping').prop('disabled', false);
-            $('#international_shipping').prop('checked', true).trigger('change');
-        }
-        updateShippingAndTotal();
-    });
+  // Show/hide international shipping option
+        $('#countryDropdown').change(function() {
+            var selectedCountry = $(this).val();
+            
+            if (selectedCountry === 'GB') { // GB for United Kingdom
+                $('#internationalShipping').hide(); // Hide international shipping
+                $('#shippingMethods').find('input[type="radio"]').prop('disabled', false); // Enable domestic shipping options
+            } else {
+                $('#internationalShipping').show(); // Show international shipping
+                $('#shippingMethods').find('input[type="radio"]').prop('disabled', true) // Disable all radio buttons
+                    .not('#international_shipping').prop('disabled', false); // Enable only the international shipping option
+                $('#international_shipping').prop('checked', true).trigger('change'); // Check the international option and trigger change
+            }
+            
+            updateShippingAndTotal(); // Update shipping and total cost
+        });
+
 
 
     
