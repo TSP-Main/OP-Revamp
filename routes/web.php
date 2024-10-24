@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\CategoriesController;
 use App\Http\Controllers\Web\PaymentController;
 use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\ImportsController;
+use App\Http\Controllers\web\ProductFeedController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,8 @@ Route::post('/import-shipping-details', [ImportsController::class, 'importShippi
 //Route::group(['middleware' => ['role:super_admin']], function () {
 //    Route::get('/admin/dashboard', 'AdminController@dashboard');
 //});
+
+Route::get('/product-feed', [ProductFeedController::class, 'generateFeed']);
 
 Route::get('/', [HomeController::class, 'index'])->name('web.index');
 //Auth
@@ -142,7 +145,6 @@ Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])-
 Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/search', [CategoriesController::class, 'search'])->name('web.search');
 Route::get('/conditions', [CategoriesController::class, 'conditions'])->name('web.conditions');
-Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
 Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
 Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
