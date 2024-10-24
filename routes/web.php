@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\web\HomeController;
-use App\Http\Controllers\web\WebController;
-use App\Http\Controllers\web\CartController;
+use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\WebController;
+use App\Http\Controllers\Web\CartController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Web\ProductDetailsController;
@@ -142,7 +142,6 @@ Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])-
 Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/search', [CategoriesController::class, 'search'])->name('web.search');
 Route::get('/conditions', [CategoriesController::class, 'conditions'])->name('web.conditions');
-Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
 Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
 Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');
