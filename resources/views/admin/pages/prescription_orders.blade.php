@@ -115,51 +115,65 @@
 
 @pushOnce('scripts')
 <script>
-    function openReorderModal(orderId, orderDetails) {
-        $('#orderId').val(orderId);
-        $('#quantityFields').empty();
+        function openReorderModal(orderId, orderDetails) {
+            $('#orderId').val(orderId);
+            $('#quantityFields').empty();
 
-        orderDetails.forEach(function(detail) {
-            const consultationLink = (detail.consultation_type === 'premd' || detail.consultation_type === 'pmd' || detail.consultation_type === 'premd/Reorder') ? 
-                `{{ route('admin.consultationFormEdit', ['odd_id' => '__id__']) }}`.replace('__id__', btoa(detail.id)) : '';
+            orderDetails.forEach(function(detail) {
+                const consultationLink = (detail.consultation_type === 'premd' || detail.consultation_type === 'pmd' || detail.consultation_type === 'premd/Reorder') ? 
+                    `{{ route('admin.consultationFormEdit', ['odd_id' => '__id__']) }}`.replace('__id__', btoa(detail.id)) : '';
 
-            $('#quantityFields').append(`
-                <div class="mb-3">
-                    <input type="checkbox" id="product-${detail.id}" checked>
-                    <label for="product-${detail.id}">${detail.product.title}:</label>
-                    <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
-                    ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
-                </div>
-            `);
-        });
-
-        // Show the modal
-        $('#reorderModal').modal('show');
-    }
-
-
-    function confirmReorder() {
-        const orderId = $('#orderId').val();
-        const formData = $('#reorderForm').serializeArray();
-        const quantities = {};
-        const selectedProducts = [];
-
-        formData.forEach(field => {
-            if (field.name.startsWith('qty')) {
-                const productId = field.name.split('[')[1].slice(0, -1);
-                const isChecked = $(`#product-${productId}`).is(':checked');
-                if (isChecked) {
-                    quantities[productId] = field.value; // Only add quantity if checked
-                    selectedProducts.push(productId);
+                // Check if there are variants for the product
+                let variantSelect = '';
+                if (detail.product.variants.length > 0) {
+                    variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
+                    detail.product.variants.forEach(function(variant) {
+                        variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.title} - £${variant.price}</option>`;
+                    });
+                    variantSelect += `</select>`;
                 }
-            }
-        });
 
-        if (selectedProducts.length === 0) {
-            alert('Please select at least one product to reorder.');
-            return;
+                $('#quantityFields').append(`
+                    <div class="mb-3">
+                        <input type="checkbox" id="product-${detail.id}" checked>
+                        <label for="product-${detail.id}">${detail.product.title}:</label>
+                        ${variantSelect}
+                        <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
+                        ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
+                    </div>
+                `);
+            });
+
+            // Show the modal
+            $('#reorderModal').modal('show');
         }
 
+
+
+        function confirmReorder() {
+            const orderId = $('#orderId').val();
+            const formData = $('#reorderForm').serializeArray();
+            const quantities = {};
+            const selectedProducts = [];
+
+            formData.forEach(field => {
+                if (field.name.startsWith('qty')) {
+                    const productId = field.name.split('[')[1].slice(0, -1);
+                    const isChecked = $(`#product-${productId}`).is(':checked');
+                    if (isChecked) {
+                        quantities[productId] = {
+                            qty: field.value,
+                            variant_id: $(`#variant-${productId}`).val() // Get the selected variant ID
+                        };
+                        selectedProducts.push(productId);
+                    }
+                }
+            });
+
+            if (selectedProducts.length === 0) {
+                alert('Please select at least one product to reorder.');
+                return;
+            }
         // Disable the button to prevent duplicate submissions
         const reorderButton = $('.modal-footer button:last-child'); // Assuming this is the reorder button
         reorderButton.prop('disabled', true).text('Processing...');

@@ -1294,7 +1294,7 @@ class AdminDashboardController extends Controller
         }
     
         $id = base64_decode($request->id);
-        $order = Order::with(['user', 'shippingDetail', 'orderdetails.product'])
+        $order = Order::with(['user', 'shippingDetail', 'orderdetails.product', 'orderdetails.variant'])
             ->where(['id' => $id, 'payment_status' => 'Paid'])
             ->first();
     
@@ -1324,11 +1324,33 @@ class AdminDashboardController extends Controller
                 ($detail->product->price * $detail->product_qty) : 0;
         });
             
-        // Add product images to order details
-        $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
-            $detail->product_image = $detail->product->main_image ?? null;
-            return $detail;
-        });
+         // Add product images and variant details to order details
+         $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
+        $detail->product_image = $detail->product->main_image ?? null;
+          // Process variant information if variant_id exists
+    if ($detail->variant_id) {
+        $variant = ProductVariant::find($detail->variant_id);
+        if ($variant) {
+            $vart_type = explode(';', $variant->title);
+            $vart_value = explode(';', $variant->value);
+            $var_info = '';
+
+            foreach ($vart_type as $key => $type) {
+                $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                if ($key < count($vart_type) - 1) {
+                    $var_info .= ', ';
+                }
+            }
+            $detail->variant_details = $var_info; // Store formatted variant info
+        } else {
+            $detail->variant_details = 'N/A'; 
+        }
+    } else {
+        $detail->variant_details = 'N/A';
+    }
+
+    return $detail;
+});
     
         // Marked by user
         if ($order->approved_by) {
@@ -1648,6 +1670,29 @@ class AdminDashboardController extends Controller
         }
 
         return view('admin.pages.order_all', $data);
+    }
+
+    public function otc_orders()
+    {
+        $data['user'] = $this->getAuthUser();
+        $this->authorize('dispensary_approval');
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])
+        ->where('payment_status', 'Paid')  // Filter for orders with 'Paid' status
+        ->get()  
+        ->filter(function ($order) {
+            // Check if all order details have consultation type 'one_over'
+            return $order->orderdetails->every(function ($orderDetail) {
+                return $orderDetail->consultation_type === 'one_over';
+            });
+        })
+        ->toArray();
+
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders);
+            $data['orders'] = $this->assign_order_types($orders);
+        }
+
+        return view('admin.pages.order_otc', $data);
     }
 
     public function unpaid_orders()

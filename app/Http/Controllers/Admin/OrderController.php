@@ -19,7 +19,9 @@ class OrderController extends Controller
         $user->hasPermissionTo('prescription_orders');
 
         $data['user'] = $user;
-        $orders = Order::with(['user', 'orderdetails', 'orderdetails.product'])->where(['payment_status' => 'Paid', 'user_id' => $user->id, 'order_for' => 'doctor'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user', 'orderdetails.product.variants']) 
+        ->where(['payment_status' => 'Paid', 'user_id' => $user->id, 'order_for' => 'doctor'])
+        ->latest('created_at')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $orders;

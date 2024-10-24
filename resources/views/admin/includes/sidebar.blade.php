@@ -187,12 +187,12 @@
 
         @if(auth()->user()->hasPermissionTo('orders'))
             <li class="nav-item">
-                <a class="nav-link {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval','admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval', 'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated','admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail'])) ? '' : 'collapsed'}} "
+                <a class="nav-link {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval','admin.ordersConfrimed','admin.ordersShiped' , 'admin.otcorders','admin.dispensaryApproval', 'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated','admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail'])) ? '' : 'collapsed'}} "
                    data-bs-target="#charts-nav" data-bs-toggle="collapse">
                     <i class="bi bi-bar-chart"></i><span>Orders</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
                 <ul id="charts-nav"
-                    class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  "
+                    class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved', 'admin.otcorders', 'admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  "
                     data-bs-parent="#sidebar-nav">
                     @if(auth()->user()->hasRole('super_admin'))
                         <li>
@@ -249,6 +249,14 @@
                                 <i class="bi bi-circle"></i><span>Dispensary Orders</span>
                             </a>
                         </li>
+                    @endif
+                    @if(auth()->user()->hasPermissionTo('dispensary_approval'))
+                    <li>
+                        <a class="{{(request()->routeIs(['admin.otcorders'])) ? 'nav-link ' : ''}}"
+                           href="{{route('admin.otcorders')}}">
+                            <i class="bi bi-circle"></i><span>OTC Orders</span>
+                        </a>
+                    </li>
                     @endif
                     @if(auth()->user()->hasPermissionTo('orders_shipped'))
                         <li>

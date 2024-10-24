@@ -108,6 +108,15 @@
                                             <div class="invalid-feedback">Please enter your postal code.</div>
                                         </div>
                                     </div>
+                                        <div class="col-lg-6 col-md-6">
+                                            <h6>Country</h6>
+                                            <div class="input-item">
+                                                <select name="country" id="countryDropdown" style="margin-top: 20px !important; margin-bottom:0px !important;" required>
+                                                    <option value="">Select Country</option>
+                                                </select>
+                                                <div class="invalid-feedback">Please select your country.</div>
+                                            </div>
+                                    </div>
                                 </div>
                                 <h6 style="margin-top: 30px;">Order Notes (optional)</h6>
                                 <div class="input-item input-item-textarea ltn__custom-icon">
@@ -158,6 +167,17 @@
                                     <div class="ml-4 mb-2 small">(For orders over £45)</div>
                                 </div>
                             </div>
+                          <!-- International Shipping Option -->
+                        <div class="col-md-6" id="internationalShipping" style="display: none;">
+                            <div class="form-check">
+                                <div class="custom-control" style="display: flex; align-items:center;">
+                                    <input class="form-check-input" type="radio" name="shipping_method" id="international_shipping" value="international" data-ship="15.00">
+                                    <label class="form-check-label" for="international_shipping" style="margin-left:10px;">International Shipping (£15.00)</label>
+                                </div>
+                                <span class="float-right"> (£15.00)</span>
+                                <div class="ml-4 mb-2 small">(Delivery times vary by location)</div>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -233,32 +253,72 @@
         });
 
     });
-</script>
-<script>
+
 $(document).ready(function() {
     // Set initial shipping method
     $('#fast_delivery').prop('checked', true);
 
-    // Function to update the shipping cost and order total
+        // Populate country dropdown
+        $.ajax({
+            url: 'https://restcountries.com/v3.1/all',
+            method: 'GET',
+            success: function(data) {
+                // Create an array to hold country options
+                var countryOptions = ['<option value="">Select Country</option>'];
+
+                // Separate UK and other countries
+                var ukOption = '<option value="GB">United Kingdom</option>';
+                var otherCountries = [];
+
+                data.forEach(function(country) {
+                    if (country.name.common !== 'United Kingdom') {
+                        otherCountries.push('<option value="' + country.cca2 + '">' + country.name.common + '</option>');
+                    }
+                });
+
+                // Sort other countries alphabetically
+                otherCountries.sort(function(a, b) {
+                    return a.localeCompare(b);
+                });
+
+                // Combine options
+                countryOptions.push(ukOption);
+                countryOptions = countryOptions.concat(otherCountries);
+
+                // Update the dropdown
+                $('#countryDropdown').html(countryOptions.join(''));
+            }
+        });
+
+    // Show/hide international shipping option
+    $('#countryDropdown').change(function() {
+        var selectedCountry = $(this).val();
+        if (selectedCountry === 'GB') { // GB for United Kingdom
+            $('#internationalShipping').hide();
+            $('#shippingMethods').find('input[type="radio"]').prop('disabled', false);
+        } else {
+            $('#internationalShipping').show();
+            $('#shippingMethods').find('input[type="radio"]').prop('disabled', true).not('#international_shipping').prop('disabled', false);
+            $('#international_shipping').prop('checked', true).trigger('change');
+        }
+        updateShippingAndTotal();
+    });
+
+
+    
+    // Update shipping and total calculations
     function updateShippingAndTotal() {
         var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
-        var granTotal = parseFloat((shippingCost + subTotal).toFixed(2));
+        var grandTotal = (shippingCost + subTotal).toFixed(2);
         $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-        $('.order_total').text('£' + granTotal.toFixed(2));
-        $('#total_ammount').val(granTotal);
-        $('#shiping_cost').val(shippingCost);
+        $('.order_total').text('£' + grandTotal);
     }
 
-    // Initialize shipping options
-    updateShippingAndTotal();
-
-    // Event listener for shipping method change
     $('input[name="shipping_method"]').change(function() {
         updateShippingAndTotal();
     });
-
     // Function to validate form
     function validateForm() {
         var isValid = true;
@@ -316,6 +376,7 @@ $(document).ready(function() {
         }
     });
 
+    
     // Update shipping methods based on cart total
     function updateShippingOptions() {
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
