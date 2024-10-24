@@ -7,10 +7,14 @@ use App\Http\Requests\Dashboard\StoreQueryRequest;
 use App\Models\ClientQuery;
 use App\Models\CompanyDetail;
 use App\Models\Order;
+use App\Models\UserAddress;
+use App\Models\User;
+use App\Models\UserProfile;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Exceptions\InvalidFormatException;
 
 class DashboardController extends Controller
 {
@@ -46,6 +50,7 @@ class DashboardController extends Controller
             return redirect('/login');
         }
     }
+    
     public function admin_dashboard_detail()
     {
 

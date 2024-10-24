@@ -11,7 +11,6 @@ use App\Models\OrderDetail;
 use App\Models\PaymentDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\ShipingDetail;
 use App\Models\ShippingDetail;
 use App\Models\User;
 use App\Notifications\UserOrderNotification;
@@ -124,7 +123,7 @@ class PaymentController extends Controller
 
                 // $inserted =  OrderDetail::insert($order_details);
                 if ($inserted) {
-                    dd($request);
+                   // dd($request);
                     $shipping_details[] = [
                         'order_id' => $order->id,
                         'user_id' => $user->id ?? '',

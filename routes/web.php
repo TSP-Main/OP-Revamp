@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\CategoriesController;
 use App\Http\Controllers\Web\PaymentController;
 use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\ImportsController;
+use App\Http\Controllers\web\ProductFeedController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,8 @@ Route::post('/import-shipping-details', [ImportsController::class, 'importShippi
 //    Route::get('/admin/dashboard', 'AdminController@dashboard');
 //});
 
+Route::get('/product-feed', [ProductFeedController::class, 'generateFeed']);
+
 Route::get('/', [HomeController::class, 'index'])->name('web.index');
 //Auth
 Route::get('/sign-in', [AuthController::class, 'loginForm'])->name('sign_in_form');
@@ -50,7 +53,7 @@ Route::match(['get', 'post'], '/changePassword', [AuthController::class, 'change
 //Dashboard
 Route::get('/dashboard/details', [DashboardController::class, 'dashboard_details'])->name('dashboard.details');
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('web.dashboard');
-
+// Route::post('/import-users', [DashboardController::class, 'importUsersData'])->name('import.users');
 //Product Details
 Route::get('/shop', [ProductDetailsController::class, 'shop'])->name('shop');
 Route::match(['get', 'post'], '/category/{main_category?}/{sub_category?}/{child_category?}', [ProductDetailsController::class, 'show_products'])->name('category.products');
@@ -142,7 +145,6 @@ Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])-
 Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/search', [CategoriesController::class, 'search'])->name('web.search');
 Route::get('/conditions', [CategoriesController::class, 'conditions'])->name('web.conditions');
-Route::match(['get', 'post'], '/categories', [CategoriesController::class, 'categories'])->name('web.categories');
 Route::match(['get', 'post'], '/sleep', [CategoriesController::class, 'sleep'])->name('web.sleep');
 Route::match(['get', 'post'], '/diabetes', [CategoriesController::class, 'diabetes'])->name('web.diabetes');
 Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');

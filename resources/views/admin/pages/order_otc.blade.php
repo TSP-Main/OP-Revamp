@@ -1,5 +1,5 @@
 @extends('admin.layouts.default')
-@section('title', 'All Orders')
+@section('title', 'OTC Orders')
 @section('content')
 <!-- main stated -->
 <main id="main" class="main">
@@ -341,7 +341,7 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
                     <li class="breadcrumb-item">Pages</li>
-                    <li class="breadcrumb-item active">All Orders</li>
+                    <li class="breadcrumb-item active">OTC Orders</li>
                 </ol>
             </nav>
         </div>
@@ -468,14 +468,10 @@
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
                                     <td>
-                                        <?php if ($val['order_type'] == 'premd'): ?>
-                                            <span class="btn fw-bold rounded-pill btn-primary">POM</span>
-                                        <?php elseif ($val['order_type'] == 'pmd'): ?>
-                                            <span class="btn fw-bold rounded-pill btn-warning">P.Med</span>
-                                        <?php elseif ($val['order_type'] == 'premd/Reorder' || $val['order_type'] == 'one_over'): ?>
-                                            <span class="btn fw-bold rounded-pill btn-info">POM/Reorder</span>
+                                        <?php if ($val['order_type'] == 'one_over'): ?>
+                                        <span class="btn fw-bold rounded-pill btn-success">O.T.C</span>
                                         <?php else: ?>
-                                            <span class="btn fw-bold rounded-pill btn-success">O.T.C</span>
+                                            <span class="btn fw-bold rounded-pill btn-warning">N/A</span>
                                         <?php endif; ?>
                                     </td>
                                     </td>

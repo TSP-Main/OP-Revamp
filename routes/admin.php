@@ -102,6 +102,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
 
     Route::get('/ordersReceived', [AdminDashboardController::class, 'ordersReceived'])->name('admin.ordersRecieved');
     Route::get('/ordersAll', [AdminDashboardController::class, 'all_orders'])->name('admin.allOrders');
+    Route::get('/orderOtc', [AdminDashboardController::class,'otc_orders'])->name('admin.otcorders');
     Route::get('/ordersUnpaid', [AdminDashboardController::class, 'unpaid_orders'])->name('admin.unpaidOrders');
     Route::get('/ordersCreated', [AdminDashboardController::class, 'orders_created'])->name('admin.ordersCreated');
     Route::post('/duplicate-order', [AdminDashboardController::class, 'duplicate_Order'])->name('admin.duplicateOrder');
@@ -118,9 +119,12 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/orderDetail/{id}', [AdminDashboardController::class, 'order_detail'])->name('admin.orderDetail');
     Route::get('/consultationView/{odd_id}', [AdminDashboardController::class, 'consultation_view'])->name('admin.consultationView');
     Route::get('/consultationUserView/{odd_id}', [AdminDashboardController::class, 'consultation_user_view'])->name('admin.consultationUserView');
+    Route::match(['get', 'post'],'/consultationEdit/{odd_id}', [AdminDashboardController::class, 'consultation_form_edit'])->name('admin.consultationFormEdit');
     Route::match(['get', 'post'], '/changeStatus', [AdminDashboardController::class, 'change_status'])->name('admin.changeStatus');
+    Route::post('/changeProductstatus', [AdminDashboardController::class, 'changeProductStatus'])->name('admin.changeProductStatus');
     Route::match(['get', 'post'], '/refundOrder', [AdminDashboardController::class, 'refund_order'])->name('admin.refundOrder');
     Route::match(['get', 'post'], '/createShippingOrder', [AdminDashboardController::class, 'create_shipping_order'])->name('admin.createShippingOrder');
+    Route::match(['get', 'post'], '/createBatchShipping', [AdminDashboardController::class, 'batchShipping'])->name('admin.batchShipping');
     Route::match(['get', 'post'], '/getShippingOrder/{id}', [AdminDashboardController::class, 'get_shipping_order'])->name('admin.getShippingOrder');
 
     Route::match(['get', 'post'], '/updateAdditionalNote', [AdminDashboardController::class, 'update_additional_note'])->name('admin.updateAdditionalNote');

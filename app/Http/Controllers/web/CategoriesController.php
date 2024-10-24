@@ -86,6 +86,7 @@ class CategoriesController extends Controller
 
     public function categories()
     {
+        $this->shareMenuCategories();
         $data['user'] = auth()->user() ?? [];
         return view('web.pages.categories', $data);
     }

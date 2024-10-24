@@ -12,12 +12,14 @@ use App\Http\Requests\AdminDashboard\StoreAdminRequest;
 use App\Http\Requests\AdminDashboard\StoreAssignQuestRequest;
 use App\Http\Requests\AdminDashboard\StoreFaqQuestionRequest;
 use App\Http\Requests\AdminDashboard\StoreOrderRequest;
+use App\Http\Requests\AdminDashboard\ChangeProductStatusRequest;
 use App\Http\Requests\AdminDashboard\StorePmedQuestionRequest;
 use App\Http\Requests\AdminDashboard\StoreQuestionCategoryRequest;
 use App\Http\Requests\AdminDashboard\StoreQuestionRequest;
 use App\Http\Requests\AdminDashboard\StoreSopRequest;
 use App\Http\Requests\AdminDashboard\UpdateAdditionalNoteRequest;
 use App\Models\ShippingDetail;
+use App\Mail\RejectionEmail;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Mail\otpVerifcation;
@@ -35,6 +37,7 @@ use App\Models\Comment;
 use App\Models\Pharmacy4uGpLocation;
 use App\Models\shippedOrder;
 use App\Models\QuestionCategory;
+use App\Models\EmailLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -892,7 +895,7 @@ class AdminDashboardController extends Controller
         if ($request->q_type === 'pro_question') {
             $data['route'] = 'admin.questions';
             $data['categories'] = [];
-            if ($user->hasRole('super_admin')) {
+            if (isset($user->role) && $user->role == user_roles('1')) {
                 $data['questions'] = Question::where(['status' => 'Deactive'])
                     ->orderBy('category_title')
                     ->orderByRaw('IF(`order` IS NULL, 1, 0), CAST(`order` AS UNSIGNED), `order`')
@@ -1291,7 +1294,7 @@ class AdminDashboardController extends Controller
         }
     
         $id = base64_decode($request->id);
-        $order = Order::with(['user', 'shippingDetail', 'orderdetails.product'])
+        $order = Order::with(['user', 'shippingDetail', 'orderdetails.product', 'orderdetails.variant'])
             ->where(['id' => $id, 'payment_status' => 'Paid'])
             ->first();
     
@@ -1321,11 +1324,33 @@ class AdminDashboardController extends Controller
                 ($detail->product->price * $detail->product_qty) : 0;
         });
             
-        // Add product images to order details
-        $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
-            $detail->product_image = $detail->product->main_image ?? null;
-            return $detail;
-        });
+         // Add product images and variant details to order details
+         $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
+        $detail->product_image = $detail->product->main_image ?? null;
+          // Process variant information if variant_id exists
+    if ($detail->variant_id) {
+        $variant = ProductVariant::find($detail->variant_id);
+        if ($variant) {
+            $vart_type = explode(';', $variant->title);
+            $vart_value = explode(';', $variant->value);
+            $var_info = '';
+
+            foreach ($vart_type as $key => $type) {
+                $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                if ($key < count($vart_type) - 1) {
+                    $var_info .= ', ';
+                }
+            }
+            $detail->variant_details = $var_info; // Store formatted variant info
+        } else {
+            $detail->variant_details = 'N/A'; 
+        }
+    } else {
+        $detail->variant_details = 'N/A';
+    }
+
+    return $detail;
+});
     
         // Marked by user
         if ($order->approved_by) {
@@ -1410,29 +1435,47 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('consultation_view');
+    
         if ($request->odd_id) {
             $odd_id = base64_decode($request->odd_id);
             $user_result = [];
             $prod_result = [];
-            $consultaion = OrderDetail::where(['id' => $odd_id])->latest('created_at')->latest('id')->first();
+            $consultaion = OrderDetail::where(['id' => $odd_id])
+                ->latest('created_at')
+                ->latest('id')
+                ->first();
+    
             if ($consultaion) {
                 $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
                 $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
                     return $value !== null;
                 }));
+    
                 if ($consultaion->consultation_type == 'pmd') {
-                    $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
-                } elseif ($consultaion->consultation_type == 'premd') {
-                    $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+                    $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)
+                        ->select('id', 'title', 'desc')
+                        ->get()
+                        ->toArray();
+                } elseif ($consultaion->consultation_type == 'premd' || $consultaion->consultation_type == 'premd/Reorder') {
+                    $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)
+                        ->select('id', 'title', 'desc')
+                        ->get()
+                        ->toArray();
+    
                     $pro_quest_ans = json_decode($consultaion->product_consultation, true);
                     $pro_quest_ids = array_keys(array_filter($pro_quest_ans, function ($value) {
                         return $value !== null;
                     }));
-                    $product_consultation = Question::whereIn('id', $pro_quest_ids)->orderBy('id')->get()->toArray();
+    
+                    $product_consultation = Question::whereIn('id', $pro_quest_ids)
+                        ->orderBy('id')
+                        ->get(['id', 'title', 'desc'])
+                        ->toArray();
+    
                     $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
                         return [$item['id'] => $item];
                     });
-
+    
                     foreach ($pro_quest_ans as $q_id => $answer) {
                         if (isset($product_consultation[$q_id])) {
                             $prod_result[] = [
@@ -1440,14 +1483,16 @@ class AdminDashboardController extends Controller
                                 'title' => $product_consultation[$q_id]['title'],
                                 'desc' => $product_consultation[$q_id]['desc'],
                                 'answer' => $answer,
+                                'product_id' => $consultaion->product_id ?? null, // Include product_id from OrderDetail
                             ];
                         }
                     }
                 }
+    
                 $consult_questions = collect($consult_questions)->mapWithKeys(function ($item) {
                     return [$item['id'] => $item];
                 });
-
+    
                 foreach ($consutl_quest_ans as $quest_id => $ans) {
                     if (isset($consult_questions[$quest_id])) {
                         $user_result[] = [
@@ -1455,53 +1500,64 @@ class AdminDashboardController extends Controller
                             'title' => $consult_questions[$quest_id]['title'],
                             'desc' => $consult_questions[$quest_id]['desc'],
                             'answer' => $ans,
+                            'product_id' => $consultaion->product_id ?? null,
                         ];
                     }
                 }
-
+    
                 $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
-                $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
-                $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+                $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])
+                    ->latest('created_at')
+                    ->latest('id')
+                    ->first();
+                $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ?
+                    User::findOrFail($data['order_user_detail']['user_id']) : [];
                 $data['generic_consultation'] = $user_result;
                 $data['product_consultation'] = $prod_result ?? [];
+    
                 return view('admin.pages.consultation_view', $data);
             } else {
-                notify()->error('Consultaions Id Did not found. ⚡️');
+                notify()->error('Consultations Id Did not found. ⚡️');
                 return redirect()->back()->with('error', 'Transaction not found.');
             }
         } else {
-            notify()->error('Consultaions Id Did not found. ⚡️');
+            notify()->error('Consultations Id Did not found. ⚡️');
             return redirect()->back();
         }
-    }
+    } 
 
-    public function consultation_user_view(Request $request)
-    {
+
+    public function consultation_form_edit(Request $request)
+    {  
+        
         $data['user'] = $this->getAuthUser();
         $this->authorize('consultation_view');
+    
         if ($request->odd_id) {
             $odd_id = base64_decode($request->odd_id);
-            $user_result = [];
-            $prod_result = [];
-            $consultaion = OrderDetail::where(['id' => $odd_id, 'status' => '1'])->latest('created_at')->latest('id')->first();
+            $consultaion = OrderDetail::where(['id' => $odd_id])->latest()->first();
+    
             if ($consultaion) {
+                // Fetching consultation questions and answers
                 $consutl_quest_ans = json_decode($consultaion->generic_consultation, true);
-                $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, function ($value) {
-                    return $value !== null;
-                }));
+                $consult_quest_keys = array_keys(array_filter($consutl_quest_ans, fn($value) => $value !== null));
+    
                 if ($consultaion->consultation_type == 'pmd') {
-                    $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
-                } elseif ($consultaion->consultation_type == 'premd') {
-                    $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->select('id', 'title', 'desc')->get()->toArray();
+                    $consult_questions = PMedGeneralQuestion::whereIn('id', $consult_quest_keys)->get(['id', 'title', 'desc'])->toArray();
+                } else {
+                    $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->get(['id', 'title', 'desc'])->toArray();
+    
                     $pro_quest_ans = json_decode($consultaion->product_consultation, true);
-                    $pro_quest_ids = array_keys(array_filter($pro_quest_ans, function ($value) {
-                        return $value !== null;
-                    }));
-                    $product_consultation = Question::whereIn('id', $pro_quest_ids)->orderBy('id')->get()->toArray();
+                    $pro_quest_ids = array_keys(array_filter($pro_quest_ans, fn($value) => $value !== null));
+                    $product_consultation = Question::whereIn('id', $pro_quest_ids)
+                        ->orderBy('id')
+                        ->get(['id', 'title', 'desc'])
+                        ->toArray();
+    
                     $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
                         return [$item['id'] => $item];
                     });
-
+    
                     foreach ($pro_quest_ans as $q_id => $answer) {
                         if (isset($product_consultation[$q_id])) {
                             $prod_result[] = [
@@ -1509,14 +1565,14 @@ class AdminDashboardController extends Controller
                                 'title' => $product_consultation[$q_id]['title'],
                                 'desc' => $product_consultation[$q_id]['desc'],
                                 'answer' => $answer,
+                                'product_id' => $consultaion->product_id ?? null,
                             ];
                         }
                     }
                 }
-                $consult_questions = collect($consult_questions)->mapWithKeys(function ($item) {
-                    return [$item['id'] => $item];
-                });
-
+    
+                // Prepare user results
+                $user_result = [];
                 foreach ($consutl_quest_ans as $quest_id => $ans) {
                     if (isset($consult_questions[$quest_id])) {
                         $user_result[] = [
@@ -1527,19 +1583,63 @@ class AdminDashboardController extends Controller
                         ];
                     }
                 }
-
-                $data['order'] = Order::where(['id' => $consultaion->order_id])->first();
-                $data['order_user_detail'] = ShipingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest('created_at')->latest('id')->first();
-                $data['user_profile_details'] = (isset($data['order_user_detail']['user_id']) && $consultaion->consultation_type != 'pmd') ? User::findOrFail($data['order_user_detail']['user_id']) : [];
+    
                 $data['generic_consultation'] = $user_result;
                 $data['product_consultation'] = $prod_result ?? [];
-                return view('admin.pages.consultation_view', $data);
-            } else {
-                notify()->error('Consultaions Id Did not found. ⚡️');
+                $data['order'] = Order::find($consultaion->order_id);
+                $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest()->first();
+                $data['user_profile_details'] = $data['order_user_detail'] ? User::find($data['order_user_detail']->user_id) : [];
+    
+                $data['order_detail_id'] = $consultaion->id; // Add this line
+                    // Initialize the variable
+                $requires_image_upload = false; 
+    
+                // Check if question #607 exists in product consultation
+                $requires_image_upload = false;
+                if (collect($prod_result)->contains('id', 607)) {
+                    $requires_image_upload = true;
+                }
+                    // Pass the variable to the view
+            $data['requires_image_upload'] = $requires_image_upload;
+    
+            if ($request->isMethod('post')) {
+                $request->validate([
+                    'answers.generic' => 'required|array',
+                    'answers.product' => 'array',
+                    'image' => 'nullable|image|max:2048', // Validate image if provided
+                ]);
+        
+                \Log::info('Request Method: ' . $request->method());
+                \Log::info($request->all());
+        
+                // Extract answers into a local variable
+                $answers = $request->input('answers');
+        
+                // Handle image upload if provided
+                if ($request->hasFile('image')) {
+                    $image = $request->file('image');
+                    $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
+        
+                    // Replace the answer for question #607 with the image path
+                    $answers['product'][607] = $imagePath;
+                }
+        
+                // Save updated answers back to the consultation
+                $consultaion->generic_consultation = json_encode($answers['generic']);
+                $consultaion->product_consultation = json_encode($answers['product'] ?? []);
+                $consultaion->save();
+        
+                notify()->success('Consultation updated successfully.');
+                return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
+            }
+        
+            return view('admin.pages.consultation_formedit', $data);
+        } else {
+                notify()->error('Consultation Id not found. ⚡️');
                 return redirect()->back()->with('error', 'Transaction not found.');
             }
         } else {
-            notify()->error('Consultaions Id Did not found. ⚡️');
+            notify()->error('Consultation Id not found. ⚡️');
             return redirect()->back();
         }
     }
@@ -1570,6 +1670,29 @@ class AdminDashboardController extends Controller
         }
 
         return view('admin.pages.order_all', $data);
+    }
+
+    public function otc_orders()
+    {
+        $data['user'] = $this->getAuthUser();
+        $this->authorize('dispensary_approval');
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])
+        ->where('payment_status', 'Paid')  // Filter for orders with 'Paid' status
+        ->get()  
+        ->filter(function ($order) {
+            // Check if all order details have consultation type 'one_over'
+            return $order->orderdetails->every(function ($orderDetail) {
+                return $orderDetail->consultation_type === 'one_over';
+            });
+        })
+        ->toArray();
+
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders);
+            $data['orders'] = $this->assign_order_types($orders);
+        }
+
+        return view('admin.pages.order_otc', $data);
     }
 
     public function unpaid_orders()
@@ -1613,13 +1736,13 @@ class AdminDashboardController extends Controller
             // Create a new order record
             $newOrder = Order::create([
                 'user_id' => $existingOrder->user_id,
-                'email' => $existingOrder->email,
-                'note' => $existingOrder->note,
+                // 'email' => $existingOrder->shippingDetails->email,
+                'note'           => $existingOrder->note,
                 'payment_status' => 'Unpaid',
-                'shiping_cost' => $existingOrder->shiping_cost,
-                'coupon_code' => $existingOrder->coupon_code,
-                'coupon_value' => $existingOrder->coupon_value,
-                'total_ammount' => $existingOrder->total_ammount,
+                'shiping_cost'   => $existingOrder->shiping_cost,
+                'coupon_code'    => $existingOrder->coupon_code,
+                'coupon_value'   => $existingOrder->coupon_value,
+                'total_ammount'  => $existingOrder->total_ammount,
                 'status' => 'Duplicate', // Update status as needed
             ]);
 
@@ -1629,22 +1752,22 @@ class AdminDashboardController extends Controller
 
             // Create new shipping details for the duplicated order
             $newShippingDetail = ShippingDetail::create([
-                'order_id' => $newOrder->id,
-                'user_id' => $existingOrder->user_id,
-                'firstName' => $existingOrder->shippingDetails->firstName,
-                'lastName' => $existingOrder->shippingDetails->lastName,
-                'email' => $existingOrder->email,
-                'phone' => $existingOrder->shippingDetails->phone,
-                'address' => $existingOrder->shippingDetails->address,
-                'address2' => $existingOrder->shippingDetails->address2,
-                'city' => $existingOrder->shippingDetails->city,
-                'zip_code' => $existingOrder->shippingDetails->zip_code,
-                'method' => $existingOrder->shippingDetails->method,
-                'cost' => $existingOrder->shippingDetails->cost,
-                'state' => $existingOrder->shippingDetails->state,
-                'status' => 'Created', // Assuming status should be reset to Created
-                'created_by' => auth()->id(),
-                'updated_by' => auth()->id(),
+                'order_id'    =>  $newOrder->id,
+                'user_id'     => $existingOrder->user_id,
+                'firstName'   => $existingOrder->shippingDetails->firstName,
+                'lastName'    => $existingOrder->shippingDetails->lastName,
+                'email'       => $existingOrder->shippingDetails->email,
+                'phone'       => $existingOrder->shippingDetails->phone,
+                'address'     => $existingOrder->shippingDetails->address,
+                'address2'    => $existingOrder->shippingDetails->address2,
+                'city'        => $existingOrder->shippingDetails->city,
+                'zip_code'    => $existingOrder->shippingDetails->zip_code,
+                'method'      => $existingOrder->shippingDetails->method,
+                'cost'        => $existingOrder->shippingDetails->cost,
+                'state'       => $existingOrder->shippingDetails->state,
+                'status'      => 'Created', // Assuming status should be reset to Created
+                'created_by'  => auth()->id(),
+                'updated_by'  => auth()->id(),
             ]);
 
             if (!$newShippingDetail) {
@@ -1655,19 +1778,19 @@ class AdminDashboardController extends Controller
 
             foreach ($existingOrder->orderdetails as $orderDetail) {
                 $newOrderDetail = OrderDetail::create([
-                    'order_id' => $newOrder->id,
-                    'product_id' => $orderDetail->product_id,
-                    'variant_id' => $orderDetail->variant_id,
+                    'order_id'     => $newOrder->id,
+                    'product_id'   => $orderDetail->product_id,
+                    'variant_id'   => $orderDetail->variant_id,
+                    'product_qty'  => $orderDetail->product_qty,
+                    'generic_consultation' => $orderDetail->generic_consultation,
+                    'product_consultation' => $orderDetail->product_consultation,
+                    'consultation_type'    => $orderDetail->consultation_type,
+                    'status'               => 'Duplicate', // Update status as needed/
+                    'created_by'           => auth()->id(),
 //                    'weight' => $orderDetail->weight,
 //                    'product_name' => $orderDetail->product_name,
 //                    'variant_details' => $orderDetail->variant_details,
-                    'product_qty' => $orderDetail->product_qty,
 //                    'product_price' => $orderDetail->product_price,
-                    'generic_consultation' => $orderDetail->generic_consultation,
-                    'product_consultation' => $orderDetail->product_consultation,
-                    'consultation_type' => $orderDetail->consultation_type,
-                    'status' => 'Duplicate', // Update status as needed/
-                    'created_by' => auth()->id(),
                 ]);
 
 
@@ -1703,10 +1826,10 @@ class AdminDashboardController extends Controller
         $data['user'] = $this->getAuthUser();
         $this->authorize('doctors_approval');
         if (isset($data['user']->role) && $data['user']->role == user_roles('2')) {
-            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved'])->latest('created_at')->get()->toArray();
+            $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'status' => 'Approved', 'order_for' => 'doctor'])->whereIn('status', ['Received', 'Approved', 'Not_Approved', 'Partially_Approved'])->latest('created_at')->get()->toArray();
         } else {
             $orders = Order::with(['user', 'approved_by:id,name,email', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])
-                ->whereIn('status', ['Received', 'Approved', 'Not_Approved'])
+                ->whereIn('status', ['Received', 'Approved', 'Not_Approved', 'Partially_Approved'])
                 ->latest('created_at')->get()->toArray();
         }
         if ($orders) {
@@ -1993,37 +2116,120 @@ class AdminDashboardController extends Controller
         return redirect()->back()->with(['error' => 'Failed to save order and shipping details']);
     }
 
+    public function changeProductStatus(ChangeProductStatusRequest $request)
+    {
+        // The request is validated at this point
+    
+        $orderId = $request->order_id;
+        $approvals = $request->approvals;
+    
+        // Map status to numerical values
+        $statusMap = [
+            'Not Approved' => '2',
+            'Approved' => '3',
+        ];
+    
+        // Process each approval
+        foreach ($approvals as $approval) {
+            // Log each approval before updating
+            \Log::info('Updating product status:', [
+                'order_id' => $orderId,
+                'product_id' => $approval['product_id'],
+                'status' => $approval['status'],
+            ]);
+    
+            // Update the product status in the order_details table
+            DB::table('order_details')
+                ->where('order_id', $orderId)
+                ->where('product_id', $approval['product_id'])
+                ->update(['product_status' => $statusMap[$approval['status']]]);
+        }
+    
+        // Redirect with success message
+        return redirect()->back()->with('success', 'Product status updated successfully.');
+    }
+    
+
     public function change_status(Request $request)
     {
+        // Authorize the action
         $this->authorize('orders');
-
+    
+        // Validate incoming request data
         $validatedData = $request->validate([
             'id' => 'required|exists:orders,id',
             'status' => 'required',
         ]);
-
+    
+        // Find and update the order
         $order = Order::findOrFail($validatedData['id']);
         $order->status = $validatedData['status'];
         $order->hcp_remarks = $request->hcp_remarks ?? null;
+    
         if ($request->approved_by) {
             $order->approved_by = $request->approved_by;
             $order->approved_at = now();
         }
+    
+        // Save the updated order
         $update = $order->save();
+    
         if ($update) {
+            // Prepare success message
             $msg = 'Order is ' . $validatedData['status'];
             $status = 'success';
-            return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])->with('status', $status)->with('msg', $msg);
+    
+            // Send email if the order is rejected
+            if ($validatedData['status'] === 'Not_Approved') {
+                // Retrieve the email from the shippingDetail table
+                $shippingDetail = $order->shippingDetail; // Adjust based on your relationship
+                $recipientEmail = $shippingDetail ? $shippingDetail->email : null;
+    
+                // Check if the email is valid
+                if (!empty($recipientEmail) && filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+                    $email = new RejectionEmail($order, $order->hcp_remarks);
+                    \Mail::to($recipientEmail)->send($email);
+    
+                    // Log the email
+                    EmailLog::create([
+                        'order_id' => $order->id,
+                        'email_to' => $recipientEmail,
+                        'subject' => 'Order Rejection Notification',
+                        'body' => 'Your order has been rejected. Remarks: ' . $order->hcp_remarks,
+                    ]);
+                } else {
+                    \Log::error('Invalid email address for order ID ' . $order->id);
+                    // Optionally, set a session message for the admin about the invalid email
+                }
+            }
+    
+            // Redirect to the order details page with success status
+            return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
+                             ->with('status', $status)
+                             ->with('msg', $msg);
         }
+    
+        // Redirect back if the update was not successful
         return redirect()->back();
     }
+    
+    
+    public function EmailLog()
+    {
+        // Fetch all email logs from the database
+        $emailLogs = EmailLog::orderBy('created_at', 'desc')->paginate(10); // Paginate results
+
+        // Return the view with the email logs
+        return view('admin.pages.order_reject_log', compact('emailLogs'));
+    }
+
 
     public function get_shipping_order(Request $request)
     {
         $order_id = $request->id;
         $order = Order::findOrFail($order_id);
         $tracking_nos = Null;
-        $apiKey = env('ROYAL_MAIL_API_KEY');
+        $apiKey = '74b1b61e-efd0-4932-be7d-7a27276f26e3';
 
         $client = new Client();
         $response = $client->get('https://api.parcel.royalmail.com/api/v1/orders/' . $order->order_identifier, [
@@ -2122,6 +2328,115 @@ class AdminDashboardController extends Controller
         return redirect()->back();
     }
 
+    public function  batchShipping(Request $request)
+    {
+        $user = $this->getAuthUser();
+        $this->authorize('orders');
+    
+        $validatedData = $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'exists:orders,id'
+        ]);
+    
+        $shippedOrders = [];
+        $failedOrders = [];
+    
+        foreach ($validatedData['order_ids'] as $orderId) {
+            $order = Order::with('user', 'shippingDetails', 'orderdetails.product')
+                          ->where(['id' => $orderId, 'payment_status' => 'Paid'])
+                          ->first();
+    
+            if ($order) {
+                try {
+                    $order = $order->toArray();
+                    
+                    // Calculate weight and quantity
+                    $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
+                    $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
+                    $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
+    
+                    // Prepare the payload for shipping
+                    $payload = $this->make_shiping_payload($order);
+                    $apiKey = env('ROYAL_MAIL_API_KEY');
+                    $client = new Client();
+                    
+                    $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $apiKey,
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => $payload,
+                    ]);
+    
+                    $statusCode = $response->getStatusCode();
+                    $body = $response->getBody()->getContents();
+    
+                    if ($statusCode == 200) {
+                        $response = json_decode($body, true);
+                        
+                        if (!empty($response['createdOrders'])) {
+                            foreach ($response['createdOrders'] as $val) {
+                                $shippedOrders[] = ShippingDetail::updateOrCreate(
+                                    ['order_id' => $order['id']],
+                                    [
+                                        'order_identifier' => $val['orderIdentifier'],
+                                        'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
+                                        'shipping_status' => 'Shipped',
+                                        'created_by' => $user->id,
+                                    ]
+                                );
+                            }
+    
+                            // Update the order status to shipped
+                            $orderToUpdate = Order::findOrFail($order['id']);
+                            $orderToUpdate->status = 'Shipped';
+                            $orderToUpdate->save();
+                        }
+    
+                        if (!empty($response['failedOrders'])) {
+                            foreach ($response['failedOrders'] as $val) {
+                                $failedOrders[] = [
+                                    'order_id' => $order['id'],
+                                    'order_identifier' => $val['orderIdentifier'],
+                                    'errors' => json_encode($val['errors'] ?? []),
+                                    'status' => 'ShippingFail',
+                                ];
+                            }
+                        }
+                    } else {
+                        // Log and handle errors if the API response is not 200
+                        Log::error('Batch Shipping Error: ' . $body);
+                        $failedOrders[] = [
+                            'order_id' => $order['id'],
+                            'errors' => 'API response was not 200.',
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Batch Shipping Exception: ' . $e->getMessage());
+                    $failedOrders[] = [
+                        'order_id' => $orderId,
+                        'errors' => $e->getMessage(),
+                    ];
+                }
+            } else {
+                Log::warning("Order ID {$orderId} not found or not paid.");
+                $failedOrders[] = [
+                    'order_id' => $orderId,
+                    'errors' => 'Order not found or not paid.',
+                ];
+            }
+        }
+    
+        // Return response with summary of shipped and failed orders
+        return response()->json([
+            'shippedOrders' => $shippedOrders,
+            'failedOrders' => $failedOrders,
+        ]);
+    }
+    
+    
+    
+
     private function get_tracking_number($orderId)
     {
         $order_id = $orderId;
@@ -2138,7 +2453,7 @@ class AdminDashboardController extends Controller
         $body = json_decode($response->getBody()->getContents(), true);
         if ($statusCode == '200') {
             $tracking_nos = array_column($body, 'trackingNumber');
-            dd($response, $statusCode,$body, $tracking_nos);
+            //dd($response, $statusCode,$body, $tracking_nos);
         }
         return $tracking_nos[0] ?? Null;
     }
@@ -2267,13 +2582,13 @@ class AdminDashboardController extends Controller
     {
         $order_ids = Arr::pluck($orders, 'id');
         $emails = Order::whereIn('id', $order_ids)
-            ->with('shippingDetails')
+            ->with('shippingdetails')
             ->get()
-            ->pluck('shippingDetails.email')
+            ->pluck('shippingdetails.email')
             ->unique()
             ->toArray();
 
-        $prev_orders = Order::with('shippingDetails')
+        $prev_orders = Order::with('shippingdetails')
             ->select('shipping_details.email', DB::raw('count(orders.id) as total_orders'))
             ->join('shipping_details', 'orders.id', '=', 'shipping_details.order_id')
             ->whereIn('shipping_details.email', $emails)
@@ -2286,7 +2601,6 @@ class AdminDashboardController extends Controller
             ->toArray();
         $prev_orders = array_values($prev_orders);
 
-//        dd($prev_orders);
         return $prev_orders;
     }
 
