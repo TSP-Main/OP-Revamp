@@ -65,7 +65,7 @@ class ImportsController extends Controller
                                 'image' => $data[23],
                                 'profile_status' => $data[25],
                                 'consult_status' => $data[26],
-                                'updated_at' => $data[30],  // Use timestamp from CSV
+                                'updated_at' => $data[32],  // Use timestamp from CSV
                             ]
                         );
 
@@ -78,7 +78,7 @@ class ImportsController extends Controller
                                 'state' => $data[18],
                                 'country' => $data[15],
                                 'zip_code' => $data[16],
-                                'updated_at' => $data[30],  // Use timestamp from CSV
+                                'updated_at' => $data[32],  // Use timestamp from CSV
                             ]
                         );
                     } else {
@@ -93,7 +93,7 @@ class ImportsController extends Controller
                                 'created_by' => $data[28],
                                 'updated_by' => $data[29],
                                 'created_at' => $data[31], // CSV timestamp
-                                'updated_at' => $data[30], // CSV timestamp
+                                'updated_at' => $data[32], // CSV timestamp
                             ]);
                         });
 
@@ -109,7 +109,7 @@ class ImportsController extends Controller
                                 'profile_status' => 'pending',
                                 'consult_status' => 'pending',
                                 'created_at' => $data[31], // CSV timestamp
-                                'updated_at' => $data[30], // CSV timestamp
+                                'updated_at' => $data[32], // CSV timestamp
                             ]);
                         });
 
@@ -123,7 +123,7 @@ class ImportsController extends Controller
                                 'country' => $data[15],
                                 'zip_code' => $data[16],
                                 'created_at' => $data[31], // CSV timestamp
-                                'updated_at' => $data[30], // CSV timestamp
+                                'updated_at' => $data[32], // CSV timestamp
                             ]);
                         });
                     }
