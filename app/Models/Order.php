@@ -15,7 +15,7 @@ class Order extends Model
         'created_at',
     ];
 
-//    public $incrementing = false; // Disable auto-incrementing for the 'id' field
+    //    public $incrementing = false; // Disable auto-incrementing for the 'id' field
     protected $fillable = [
         'id',
         'user_id',
@@ -28,7 +28,9 @@ class Order extends Model
         'approved_at',
         'approved_by',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'created_at',
+        'updated_at'
     ];
 
     public function scopeWeekly(Builder $builder, ?string $status = null, ?string $payment_status = null): void
@@ -75,7 +77,6 @@ class Order extends Model
                 $q->where('payment_status', $payment_status);
             });
         }
-
     }
 
 
@@ -114,9 +115,8 @@ class Order extends Model
         return strtolower($value);
     }
 
-   public function shippingDetail()
-   {
-       return $this->hasOne(ShippingDetail::class, 'order_id');
-   }
-
+    public function shippingDetail()
+    {
+        return $this->hasOne(ShippingDetail::class, 'order_id');
+    }
 }
