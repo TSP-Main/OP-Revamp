@@ -457,7 +457,7 @@
                                                 <span class="btn fw-bold rounded-pill btn-primary">POM</span>
                                             <?php elseif ($val['order_type'] == 'pmd'): ?>
                                                 <span class="btn fw-bold rounded-pill btn-warning">P.Med</span>
-                                            <?php elseif ($val['order_type'] == 'premd/Reorder' || $val['order_type'] == 'one_over'): ?>
+                                            <?php elseif ($val['order_type'] == 'premd/Reorder'): ?>
                                                 <span class="btn fw-bold rounded-pill btn-info">POM/Reorder</span>
                                             <?php else: ?>
                                                 <span class="btn fw-bold rounded-pill btn-success">O.T.C</span>

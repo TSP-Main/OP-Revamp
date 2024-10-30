@@ -48,12 +48,9 @@
                                     <div class="col-12 mx-auto">
                                         <!-- Display Validation Errors -->
                                         @if(session('status') === 'error')
-                                            <div class="alert alert-danger">
-                                                <strong>Error:</strong>
-                                                @foreach(session('message')->all() as $error)
-                                                    <p>{{ $error }}</p>
-                                                @endforeach
-                                            </div>
+                                        <div class="alert alert-danger">
+                                            <strong>Error:</strong> {{ session('message') }}
+                                        </div>
                                         @endif
 
                                         <!-- Display Success Message -->
