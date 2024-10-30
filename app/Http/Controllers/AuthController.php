@@ -138,18 +138,20 @@ class AuthController extends Controller
     {
         try {
             if (!Auth::attempt($request->only(['email', 'password']))) {
-                return response()->json('User login failed', 406);
+                // Instead of a JSON response, use a session flash message
+                return redirect()->back()->with('status', 'error')->with('message', 'Invalid credentials. Please try again.');
             }
-
+    
             $user = Auth::user();
             $token = $user->createToken('MyApp')->plainTextToken;
-
+    
             return $this->redirectBasedOnRole($user);
-
+            
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error', 'Something went wrong, error in processing email'], 406);
+            return redirect()->back()->with('status', 'error')->with('message', 'Something went wrong, please try again.');
         }
     }
+    
 
     protected function redirectBasedOnRole($user)
     {
