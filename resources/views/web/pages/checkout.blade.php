@@ -231,36 +231,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
 <script>
-    $(document).ready(function() {
-        // Array of cities in the United Kingdom
-        var ukCities = @json($ukCities);
+$(document).ready(function() {
+    // Array of cities in the United Kingdom
+    var ukCities = @json($ukCities);
+    $("#cityInput").autocomplete({
+        source: ukCities
+    });
 
-        $("#cityInput").autocomplete({
-            source: ukCities
-        });
+    // Autocomplete for UK postal codes and addresses
+    var ukPostalcode = @json($ukPostalcode);
+    $("#zip_code_input").autocomplete({
+        source: ukPostalcode
+    });
 
-        var ukPostalcode = @json($ukPostalcode);
+    var ukAddress = @json($ukAddress);
+    $("#addressInput").autocomplete({
+        source: ukAddress
+    });
 
-        $("#zip_code_input").autocomplete({
-            source: ukPostalcode
-        });
-
-        var ukAddress = @json($ukAddress);
-
-        $("#addressInput").autocomplete({
-            source: ukAddress
-        });
-
-//     });
-
-// $(document).ready(function() {
-    // Set initial shipping method
-    // $(document).ready(function() {
-    // Set initial shipping method
-    $(document).ready(function() {
-    // Initialize country dropdown
-       // Initialize country dropdown
-       $.ajax({
+    // Initialize country dropdown with countries
+    $.ajax({
         url: 'https://restcountries.com/v3.1/all',
         method: 'GET',
         success: function(data) {
@@ -280,29 +270,32 @@
 
             countryOptions.push(ukOption);
             countryOptions = countryOptions.concat(otherCountries);
-
             $('#countryDropdown').html(countryOptions.join(''));
         }
     });
 
+    // Initialize shipping cost variables
+    var initialShippingCost = 3.95; // Default shipping cost for UK
+    var freeShippingThreshold = 45; // Free shipping threshold
+    var internationalShippingCost = 15.00; // International shipping cost
     // Function to update shipping and total calculations
     function updateShippingAndTotal() {
-        var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
+        var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || initialShippingCost;
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
 
-        // Add shipping cost based on country selection
+        // Set shipping cost based on country selection
         if ($('#countryDropdown').val() !== 'GB') {
-            shippingCost = 15.00; // Set shipping cost to £15 for non-UK countries
-            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-            $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
-        } else {
-            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-            $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
+            shippingCost = internationalShippingCost; // Set shipping cost for international
+        } else if (subTotal > freeShippingThreshold) {
+            shippingCost = 0; // Free shipping for orders over £45
         }
+        // Update the displayed shipping cost and order total
+        $('.shipping_cost').text('£' + shippingCost.toFixed(2));
+        $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
     }
 
-    // Function to toggle shipping options
+    // Function to toggle shipping options based on the selected country
     function toggleShippingOptions() {
         var selectedCountry = $('#countryDropdown').val();
         if (selectedCountry === 'GB') {
@@ -315,22 +308,24 @@
             $('#international_shipping').show();
             $('#international_shipping').prop('checked', true);
             $('#shippingMethods .form-check').hide(); // Hide all domestic options
-
-            // Disable domestic shipping options
-            $('#shippingMethods .form-check input[type="radio"]').prop('disabled', true);
+            $('#shippingMethods .form-check input[type="radio"]').prop('disabled', true); // Disable domestic shipping options
         }
     }
 
+    // Event listener for shipping method changes
+    $('input[name="shipping_method"]').change(function() {
+        updateShippingAndTotal(); // Update shipping and total when shipping method changes
+    });
     // Event listener for country dropdown change
     $('#countryDropdown').change(function() {
-        toggleShippingOptions();
+        toggleShippingOptions(); // Toggle shipping options based on country selection
         updateShippingAndTotal(); // Ensure totals are updated on country change
     });
 
     // Initialize shipping options on page load
     toggleShippingOptions();
 });
-    // Function to validate form
+    // Function to validate the form
     function validateForm() {
         var isValid = true;
         var fields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip_code'];
@@ -387,13 +382,12 @@
         }
     });
 
-    
-    // Update shipping methods based on cart total
+    // Update shipping options based on cart total
     function updateShippingOptions() {
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
 
-        if (subTotal > 45) {
+        if (subTotal > freeShippingThreshold) {
             $('#free_shipping').closest('.col-md-6').show();
         } else {
             $('#free_shipping').closest('.col-md-6').hide();
@@ -403,6 +397,7 @@
         }
     }
 
+    // Initialize shipping options based on cart total
     updateShippingOptions();
 });
 

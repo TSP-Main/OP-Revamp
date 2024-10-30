@@ -1835,6 +1835,7 @@ class AdminDashboardController extends Controller
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
+            //dd( $data['orders']);
         }
         return view('admin.pages.doctors_approval', $data);
     }
@@ -2614,6 +2615,9 @@ class AdminDashboardController extends Controller
                 $order['order_type'] = 'premd';
             } elseif (in_array('pmd', $consultationTypes)) {
                 $order['order_type'] = 'pmd';
+            } 
+            elseif (in_array('premd/Reorder', $consultationTypes)) {
+                $order['order_type'] = 'premd/Reorder';
             } else {
                 $order['order_type'] = 'one_over';
             }
