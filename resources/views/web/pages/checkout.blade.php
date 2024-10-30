@@ -251,77 +251,85 @@
             source: ukAddress
         });
 
+//     });
+
+// $(document).ready(function() {
+    // Set initial shipping method
+    // $(document).ready(function() {
+    // Set initial shipping method
+    $(document).ready(function() {
+    // Initialize country dropdown
+       // Initialize country dropdown
+       $.ajax({
+        url: 'https://restcountries.com/v3.1/all',
+        method: 'GET',
+        success: function(data) {
+            var countryOptions = ['<option value="">Select Country</option>'];
+            var ukOption = '<option value="GB">United Kingdom</option>';
+            var otherCountries = [];
+
+            data.forEach(function(country) {
+                if (country.name.common !== 'United Kingdom') {
+                    otherCountries.push('<option value="' + country.cca2 + '">' + country.name.common + '</option>');
+                }
+            });
+
+            otherCountries.sort(function(a, b) {
+                return a.localeCompare(b);
+            });
+
+            countryOptions.push(ukOption);
+            countryOptions = countryOptions.concat(otherCountries);
+
+            $('#countryDropdown').html(countryOptions.join(''));
+        }
     });
 
-$(document).ready(function() {
-    // Set initial shipping method
-    $('#fast_delivery').prop('checked', true);
-
-        // Populate country dropdown
-        $.ajax({
-            url: 'https://restcountries.com/v3.1/all',
-            method: 'GET',
-            success: function(data) {
-                // Create an array to hold country options
-                var countryOptions = ['<option value="">Select Country</option>'];
-
-                // Separate UK and other countries
-                var ukOption = '<option value="GB">United Kingdom</option>';
-                var otherCountries = [];
-
-                data.forEach(function(country) {
-                    if (country.name.common !== 'United Kingdom') {
-                        otherCountries.push('<option value="' + country.cca2 + '">' + country.name.common + '</option>');
-                    }
-                });
-
-                // Sort other countries alphabetically
-                otherCountries.sort(function(a, b) {
-                    return a.localeCompare(b);
-                });
-
-                // Combine options
-                countryOptions.push(ukOption);
-                countryOptions = countryOptions.concat(otherCountries);
-
-                // Update the dropdown
-                $('#countryDropdown').html(countryOptions.join(''));
-            }
-        });
-
-  // Show/hide international shipping option
-        $('#countryDropdown').change(function() {
-            var selectedCountry = $(this).val();
-            
-            if (selectedCountry === 'GB') { // GB for United Kingdom
-                $('#internationalShipping').hide(); // Hide international shipping
-                $('#shippingMethods').find('input[type="radio"]').prop('disabled', false); // Enable domestic shipping options
-            } else {
-                $('#internationalShipping').show(); // Show international shipping
-                $('#shippingMethods').find('input[type="radio"]').prop('disabled', true) // Disable all radio buttons
-                    .not('#international_shipping').prop('disabled', false); // Enable only the international shipping option
-                $('#international_shipping').prop('checked', true).trigger('change'); // Check the international option and trigger change
-            }
-            
-            updateShippingAndTotal(); // Update shipping and total cost
-        });
-
-
-
-    
-    // Update shipping and total calculations
+    // Function to update shipping and total calculations
     function updateShippingAndTotal() {
         var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
-        var grandTotal = (shippingCost + subTotal).toFixed(2);
-        $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-        $('.order_total').text('£' + grandTotal);
+
+        // Add shipping cost based on country selection
+        if ($('#countryDropdown').val() !== 'GB') {
+            shippingCost = 15.00; // Set shipping cost to £15 for non-UK countries
+            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
+            $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
+        } else {
+            $('.shipping_cost').text('£' + shippingCost.toFixed(2));
+            $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
+        }
     }
 
-    $('input[name="shipping_method"]').change(function() {
-        updateShippingAndTotal();
+    // Function to toggle shipping options
+    function toggleShippingOptions() {
+        var selectedCountry = $('#countryDropdown').val();
+        if (selectedCountry === 'GB') {
+            // Show UK shipping options
+            $('#international_shipping').hide();
+            $('#shippingMethods .form-check').show(); // Show all domestic options
+            $('#shippingMethods .form-check input[type="radio"]').prop('disabled', false);
+        } else {
+            // Show only international shipping option
+            $('#international_shipping').show();
+            $('#international_shipping').prop('checked', true);
+            $('#shippingMethods .form-check').hide(); // Hide all domestic options
+
+            // Disable domestic shipping options
+            $('#shippingMethods .form-check input[type="radio"]').prop('disabled', true);
+        }
+    }
+
+    // Event listener for country dropdown change
+    $('#countryDropdown').change(function() {
+        toggleShippingOptions();
+        updateShippingAndTotal(); // Ensure totals are updated on country change
     });
+
+    // Initialize shipping options on page load
+    toggleShippingOptions();
+});
     // Function to validate form
     function validateForm() {
         var isValid = true;
