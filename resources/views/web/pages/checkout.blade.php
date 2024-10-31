@@ -46,7 +46,7 @@
                                 @endforeach
                                 @endif
                                 <input type="hidden" id="total_ammount" name="total_ammount" value="{{ str_replace(',', '', Cart::subTotal()) + 4.95 }}">
-                                <input type="hidden" id="shiping_cost" name="shiping_cost" value="4.95">
+                                <input type="hidden" id="shipping" name="shipping" value="4.95">
                                 <h6>Personal Information</h6>
                                 <div class="row">
                                     <div class="col-md-6">
@@ -128,8 +128,6 @@
                         </div>
                     </div>
                 </div>
-
-
                 <div class="col-lg-6">
                     <div class="ltn__checkout-payment-method mt-50">
                         <h4 class="title-2">Shipping Method</h4>
@@ -288,8 +286,12 @@ $(document).ready(function() {
         if ($('#countryDropdown').val() !== 'GB') {
             shippingCost = internationalShippingCost; // Set shipping cost for international
         } else if (subTotal > freeShippingThreshold) {
-            shippingCost = 0; // Free shipping for orders over £45
+            shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0; // Free shipping for orders over £45
         }
+
+        // Update the hidden shipping input
+        $('#shipping').val(shippingCost.toFixed(2)); // Update the hidden input
+
         // Update the displayed shipping cost and order total
         $('.shipping_cost').text('£' + shippingCost.toFixed(2));
         $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
@@ -324,7 +326,7 @@ $(document).ready(function() {
 
     // Initialize shipping options on page load
     toggleShippingOptions();
-});
+
     // Function to validate the form
     function validateForm() {
         var isValid = true;
@@ -400,6 +402,5 @@ $(document).ready(function() {
     // Initialize shipping options based on cart total
     updateShippingOptions();
 });
-
 </script>
 @endPushOnce
