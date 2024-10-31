@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Facade;
 
 return [
 
+    'storage_path' => env('APP_STORAGE_PATH', base_path() . '/storage'),
+
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
