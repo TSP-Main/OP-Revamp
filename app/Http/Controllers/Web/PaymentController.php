@@ -127,7 +127,7 @@ class PaymentController extends Controller
                     $shipping_details[] = [
                         'order_id' => $order->id,
                         'user_id' => $user->id ?? '',
-                        'cost' => $request->shiping_cost,
+                        'cost' => $request->shipping,
                         'method' => $request->shipping_method,
                         'old_address' => $request->old_address ?? 'no',
                         'firstName' => $request->firstName,
@@ -294,7 +294,7 @@ class PaymentController extends Controller
                     $shipping_details = [
                         'order_id' => $order->id,
                         'user_id' => $user->id ?? '',
-                        'cost' => $request->shiping_cost,
+                        'cost' => $request->shipping,
                         'method' => $request->shipping_method,
                         'old_address' => $request->old_address ?? 'no',
                         'firstName' => $request->firstName,

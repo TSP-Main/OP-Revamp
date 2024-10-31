@@ -294,7 +294,7 @@
                                                         {{--                                                @if((isset($user->role) && $user->role == user_roles('1') || $user->role == user_roles('2')))--}}
                                                         @if($user->hasRole('super_admin') || $user->hasRole('dispensary'))
                                                             <p class="text-muted mb-0 small">
-                                                                <b>Price: </b>£{{number_format((float)str_replace(',', '', $val['product_price'] ?? $val['product']['price']), 2)}}
+                                                                <b>Price: </b>£{{number_format((float)str_replace(',', '', $val['variant']['price'] ?? $val['product']['price']), 2)}}
                                                             </p>
                                                         @endif
                                                     </div>
@@ -436,7 +436,7 @@
                                     @if((($user->hasRole('super_admin') || $user->hasRole('dispensary'))))
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Subtotal: </p>
-                                        <p class="text-muted mb-0">£{{ number_format($order['total_amount'], 2) }}</p>
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'], 2) }}</p>
                                     </div>
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Shipping Charges: </p>
@@ -444,8 +444,8 @@
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between">
-                                        <p class="fw-bold mb-0">Total: </p>
-                                        <p class="text-muted mb-0">£{{ number_format($order['total_amount'] + (float)$order['shipping_cost'], 2) }}</p>
+                                        <p class="fw-bold mb-0">Total: </p> 
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'] + (float)$order['shipping_cost'], 2) }}</p>
                                     </div>
                                     <div class="card-footer border-0 px-4">
                                         <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">
