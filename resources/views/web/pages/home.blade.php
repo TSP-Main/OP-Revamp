@@ -176,7 +176,7 @@
     <!-- SLIDER AREA END -->
 
     <!-- resources/views/import.blade.php -->
-    <form action="{{ route('import.users') }}" method="POST" enctype="multipart/form-data">
+    {{-- <form action="{{ route('import.users') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div>
             <label for="csv_file">Choose CSV file</label>
@@ -208,6 +208,14 @@
         </div>
         <button type="submit">Import Shipping Details</button>
     </form>
+    <form action="{{ route('import.importPaymentDetails') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div>
+            <label for="csv_file">Choose CSV file</label>
+            <input type="file" name="csv" id="csv_file" required>
+        </div>
+        <button type="submit">Import Payment Details</button>
+    </form> --}}
 
 
     <!-- Featured Offers area start  -->
