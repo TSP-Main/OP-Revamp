@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->app->useStoragePath(config('app.storage_path'));
         Paginator::useBootstrap();
     }
 }
