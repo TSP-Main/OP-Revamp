@@ -453,14 +453,17 @@
                                                 £{{ number_format((float)str_replace(',', '', $val['total_ammount'] ?? 0), 2) }}</td>
                                         @endif
                                         <td>
+                                            {{-- @dd($val['order_type'] ); --}}
                                             <?php if ($val['order_type'] == 'premd'): ?>
                                                 <span class="btn fw-bold rounded-pill btn-primary">POM</span>
                                             <?php elseif ($val['order_type'] == 'pmd'): ?>
                                                 <span class="btn fw-bold rounded-pill btn-warning">P.Med</span>
                                             <?php elseif ($val['order_type'] == 'premd/Reorder'): ?>
                                                 <span class="btn fw-bold rounded-pill btn-info">POM/Reorder</span>
-                                            <?php else: ?>
+                                            <?php elseif ($val['order_type'] == 'one_over'): ?>
                                                 <span class="btn fw-bold rounded-pill btn-success">O.T.C</span>
+                                            <?php else: ?>
+                                                <span class="btn fw-bold rounded-pill btn-success">Undefined</span>
                                             <?php endif; ?>
                                         </td>
                                         <td>
