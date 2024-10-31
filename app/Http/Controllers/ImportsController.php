@@ -18,22 +18,21 @@ class ImportsController extends Controller
     public function importUsersData(Request $request)
     {
         set_time_limit(360);
-        
+
         // Validate the incoming request for a CSV file
         $request->validate([
             'csv' => 'required|file|mimes:csv,txt',
         ]);
-    
+
         if (($handle = fopen($request->file('csv'), 'r')) !== false) {
             fgetcsv($handle); // Skip the header row
-    
+
             DB::transaction(function () use ($handle) {
                 while (($data = fgetcsv($handle, 5000, ',')) !== false) {
-                    // Replace "NULL" strings with actual null values
-                    $data = array_map(function($value) {
+                    $data = array_map(function ($value) {
                         return $value === 'NULL' ? null : $value;
                     }, $data);
-    
+
                     // Validate and convert date format for DOB
                     $dateOfBirth = null;
                     if (!empty($data[5])) {
@@ -43,22 +42,19 @@ class ImportsController extends Controller
                             \Log::error("Invalid date format for DOB: {$data[5]} - Error: " . $e->getMessage());
                         }
                     }
-    
-                    // Check if the user with the same email already exists
+
                     $existingUser = User::where('email', $data[2])->first();
-    
+
                     if ($existingUser) {
-                        // Update existing user
+                        // Update existing user without automatic timestamps
                         $existingUser->update([
                             'name' => $data[1],
                             'email_verified_at' => $data[3],
-                            'password' => bcrypt($data[6]), // Optionally update the password
+                            'password' => bcrypt($data[6]),
                             'updated_by' => $data[29],
-                            'updated_at' => now(),
                         ]);
-                        \Log::info("Updated existing user with email: {$data[2]}");
-    
-                        // Update or create user profile
+
+                        // Update or create user profile and address
                         $existingUser->profile()->updateOrCreate(
                             ['user_id' => $existingUser->id],
                             [
@@ -69,11 +65,10 @@ class ImportsController extends Controller
                                 'image' => $data[23],
                                 'profile_status' => $data[25],
                                 'consult_status' => $data[26],
-                                'updated_at' => now(),
+                                'updated_at' => $data[32],  // Use timestamp from CSV
                             ]
                         );
-    
-                        // Update or create user address
+
                         $existingUser->address()->updateOrCreate(
                             ['user_id' => $existingUser->id],
                             [
@@ -83,92 +78,106 @@ class ImportsController extends Controller
                                 'state' => $data[18],
                                 'country' => $data[15],
                                 'zip_code' => $data[16],
-                                'updated_at' => now(),
+                                'updated_at' => $data[32],  // Use timestamp from CSV
                             ]
                         );
                     } else {
-                        // Create a new user
-                        $user = User::create([
-                            'name' => $data[1],
-                            'email' => $data[2],
-                            'email_verified_at' => $data[3],
-                            'password' => bcrypt($data[6]),
-                            'status' => 2, 
-                            'created_by' => $data[28],
-                            'updated_by' => $data[29],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                        \Log::info("Created new user with email: {$data[2]}");
-    
-                        // Create user profile
-                        UserProfile::create([
-                            'user_id' => $user->id,
-                            'speciality' => $data[22],
-                            'phone' => $data[9],
-                            'gender' => $data[4],
-                            'date_of_birth' => $dateOfBirth,
-                            'image' => $data[23],
-                            'profile_status' => 'pending', // Default status
-                            'consult_status' => 'pending', // Default status
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-    
-                        // Create user address
-                        UserAddress::create([
-                            'user_id' => $user->id,
-                            'address' => $data[10],
-                            'apartment' => $data[12],
-                            'city' => $data[17],
-                            'state' => $data[18],
-                            'country' => $data[15],
-                            'zip_code' => $data[16],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                        // Create a new user using withoutTimestamps() to prevent overrides
+                        $user = User::withoutTimestamps(function () use ($data) {
+                            return User::create([
+                                'name' => $data[1],
+                                'email' => $data[2],
+                                'email_verified_at' => $data[3],
+                                'password' => bcrypt($data[6]),
+                                'status' => 2,
+                                'created_by' => $data[28],
+                                'updated_by' => $data[29],
+                                'created_at' => $data[31], // CSV timestamp
+                                'updated_at' => $data[32], // CSV timestamp
+                            ]);
+                        });
+
+                        // Create user profile and address without automatic timestamps
+                        UserProfile::withoutTimestamps(function () use ($user, $data, $dateOfBirth) {
+                            UserProfile::create([
+                                'user_id' => $user->id,
+                                'speciality' => $data[22],
+                                'phone' => $data[9],
+                                'gender' => $data[4],
+                                'date_of_birth' => $dateOfBirth,
+                                'image' => $data[23],
+                                'profile_status' => 'pending',
+                                'consult_status' => 'pending',
+                                'created_at' => $data[31], // CSV timestamp
+                                'updated_at' => $data[32], // CSV timestamp
+                            ]);
+                        });
+
+                        UserAddress::withoutTimestamps(function () use ($user, $data) {
+                            UserAddress::create([
+                                'user_id' => $user->id,
+                                'address' => $data[10],
+                                'apartment' => $data[12],
+                                'city' => $data[17],
+                                'state' => $data[18],
+                                'country' => $data[15],
+                                'zip_code' => $data[16],
+                                'created_at' => $data[31], // CSV timestamp
+                                'updated_at' => $data[32], // CSV timestamp
+                            ]);
+                        });
                     }
                 }
             });
-    
+
             fclose($handle);
         }
-    
+
         return redirect()->back()->with('success', 'User data imported successfully!');
     }
-    
+
+
 
     public function importOrdersData(Request $request)
     {
-
-        set_time_limit(360); 
+        set_time_limit(360);
 
         if (($handle = fopen($request->file('csv'), 'r')) !== false) {
-            // Skip the header
             $header = fgetcsv($handle, 5000, ',');
 
-            // Define the correct columns that exist in your orders table
             $existingColumns = [
-                'id', 'user_id', 'note', 'print', 'total_ammount', 'payment_id',
-                'payment_status', 'hcp_remarks', 'order_for', 'status', 'created_by',
-                'approved_by', 'approved_at', 'updated_by', 'created_at', 'updated_at'
+                'id',
+                'user_id',
+                'note',
+                'print',
+                'total_ammount',
+                'payment_id',
+                'payment_status',
+                'hcp_remarks',
+                'order_for',
+                'status',
+                'created_by',
+                'approved_by',
+                'approved_at',
+                'updated_by',
+                'created_at',
+                'updated_at'
             ];
 
             DB::transaction(function () use ($handle, $header, $existingColumns) {
                 while (($data = fgetcsv($handle, 5000, ',')) !== false) {
-                    // Map the header to the data so you can refer to columns by name
                     $row = array_combine($header, $data);
 
-                    // Replace "NULL" strings with actual null
-                    $row = array_map(function($value) {
+                    $row = array_map(function ($value) {
                         return $value === 'NULL' ? null : $value;
                     }, $row);
 
-                    // Filter the data to include only columns that exist in the orders table
                     $filteredData = array_intersect_key($row, array_flip($existingColumns));
 
-                    // Insert the filtered data into the orders table
-                    Order::create($filteredData);
+                    // Use withoutTimestamps() to ensure the provided timestamps are used
+                    Order::withoutTimestamps(function () use ($filteredData) {
+                        Order::create($filteredData);
+                    });
                 }
             });
 
@@ -184,9 +193,18 @@ class ImportsController extends Controller
 
             // Ensure the headers match the database table columns exactly
             $validColumns = [
-                'id', 'order_id', 'product_id', 'variant_id', 'product_status',
-                'product_qty', 'generic_consultation', 'product_consultation',
-                'consultation_type', 'created_by', 'created_at', 'updated_at'
+                'id',
+                'order_id',
+                'product_id',
+                'variant_id',
+                'product_status',
+                'product_qty',
+                'generic_consultation',
+                'product_consultation',
+                'consultation_type',
+                'created_by',
+                'created_at',
+                'updated_at'
             ];
 
             DB::transaction(function () use ($handle, $header, $validColumns) {
@@ -207,8 +225,10 @@ class ImportsController extends Controller
                     // Filter the row to keep only valid columns for insertion
                     $filteredData = array_intersect_key($row, array_flip($validColumns));
 
-                    // Insert the filtered data into the order_details table
-                    OrderDetail::create($filteredData);
+                    // Use withoutTimestamps() to ensure the provided timestamps are used
+                    OrderDetail::withoutTimestamps(function () use ($filteredData) {
+                        OrderDetail::create($filteredData);
+                    });
                 }
             });
 
@@ -224,10 +244,28 @@ class ImportsController extends Controller
 
             // Ensure these columns match the ones in your shipping_details table
             $validColumns = [
-                'id', 'order_id', 'user_id', 'method', 'cost', 'firstName', 'lastName',
-                'email', 'order_identifier', 'tracking_no', 'phone', 'city', 'state',
-                'zip_code', 'address', 'address2', 'status', 'shipping_status',
-                'created_by', 'updated_by', 'created_at', 'updated_at'
+                'id',
+                'order_id',
+                'user_id',
+                'method',
+                'cost',
+                'firstName',
+                'lastName',
+                'email',
+                'order_identifier',
+                'tracking_no',
+                'phone',
+                'city',
+                'state',
+                'zip_code',
+                'address',
+                'address2',
+                'status',
+                'shipping_status',
+                'created_by',
+                'updated_by',
+                'created_at',
+                'updated_at'
             ];
 
             DB::transaction(function () use ($handle, $header, $validColumns) {
@@ -248,15 +286,14 @@ class ImportsController extends Controller
                     // Filter the row to include only valid columns for shipping_details
                     $filteredData = array_intersect_key($row, array_flip($validColumns));
 
-                    // Insert the filtered data into the shipping_details table
-                    ShippingDetail::create($filteredData);
+                    // Use withoutTimestamps() to ensure the provided timestamps are used
+                    ShippingDetail::withoutTimestamps(function () use ($filteredData) {
+                        ShippingDetail::create($filteredData);
+                    });
                 }
             });
 
             fclose($handle);
         }
     }
-
-
-
 }
