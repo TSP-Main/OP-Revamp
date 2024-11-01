@@ -19,22 +19,26 @@ class PdfGeneratorController extends Controller
 
     public function index(Request $request)
     {
-
         $data = $request->all();
         $data['order'] = json_decode($data['content'], true);
+
+        // Retrieve and update the order record
         $order = Order::findOrFail($data['order']['id']);
         $order->print = 'Printed';
-        $update = $order->save();
+        $order->save();
+
         $file_name = $data['order']['id'] . '_order_details_' . $data['order']['shipping_details']['firstName'] . '.pdf';
         $view_name = 'pdf.' . $data['view_name'];
+
+        // Clean up the data array
         unset($data['content']);
         unset($data['view_name']);
 
-        // return view($view_name,$data);
+        // Load the view and render it as a PDF
         $pdf = PDF::loadView($view_name, $data);
         $pdf->setPaper('a4', 'portrait');
+
         return $pdf->stream($file_name);
-        // return $pdf->download($file_name);
     }
 
     public function gpa_letter(Request $request)
