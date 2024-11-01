@@ -66,7 +66,7 @@ class PdfGeneratorController extends Controller
             $id = $request->id;
             $email = $request->email ?? '';
             if ($email) {
-                $order = Order::with('user', 'shipingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+                $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
                     $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shiping_details']['firstName'] . '.pdf';
@@ -104,7 +104,7 @@ class PdfGeneratorController extends Controller
         if ($request->order_ids) {
             $data['role'] = $request->role ?? '';
             $orderIds = explode(',', $request->order_ids);
-            $orders = Order::with('user', 'shipingDetails', 'orderdetails', 'orderdetails.product')
+            $orders = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')
                 ->whereIn('id', $orderIds)
                 ->where('payment_status', 'Paid')
                 ->get();
