@@ -1662,15 +1662,34 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid'])->latest('created_at')->get()->toArray();
-
-        if ($orders) {
-            $data['order_history'] = $this->get_prev_orders($orders);
-            $data['orders'] = $this->assign_order_types($orders);
+    
+        // Apply pagination with 20 orders per page
+        $orders = Order::with([
+            'user',
+            'shippingDetails:id,order_id,firstName,lastName,email',
+            'orderdetails:id,order_id,consultation_type'
+        ])
+        ->where(['payment_status' => 'Paid'])
+        ->latest('created_at')
+        ->paginate(50);
+    
+        if ($orders->isNotEmpty()) {
+            // Convert orderdetails to arrays for each order item
+            $ordersArray = $orders->map(function ($order) {
+                $order['orderdetails'] = $order['orderdetails']->toArray();
+                return $order;
+            })->toArray();
+    
+            $data['order_history'] = $this->get_prev_orders($ordersArray);
+            $data['orders'] = $this->assign_order_types($ordersArray);
         }
-
+    
+        // Pass the paginated orders for links
+        $data['paginated_orders'] = $orders;
+    
         return view('admin.pages.order_all', $data);
     }
+    
 
     public function otc_orders()
     {
@@ -2255,20 +2274,32 @@ class AdminDashboardController extends Controller
     {
         $user = $this->getAuthUser();
         $this->authorize('orders');
-
+    
         $validatedData = $request->validate([
             'id' => 'required|exists:orders,id'
         ]);
-
-        $order = Order::with('user', 'shippingDetails', 'orderdetails.product')->where(['id' => $request->id, 'payment_status' => 'Paid'])->first();
+    
+        // Fetch the order with the related models
+        $order = Order::with(['user', 'shippingDetails', 'orderdetails.product'])->where([
+            'id' => $request->id,
+            'payment_status' => 'Paid'
+        ])->first();
+    
         if ($order) {
-
             try {
                 $order = $order->toArray() ?? [];
-
-                $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
+                $weightSum = 0;
+    
+                // Calculate total weight using the product weight from the product table
+                foreach ($order['orderdetails'] as $orderDetail) {
+                    $product = $orderDetail['product']; // Assuming 'product' relation is eager-loaded
+                    $weightSum += ($product['weight'] ?? 0) * $orderDetail['product_qty']; // Multiply by quantity
+                }
+    
                 $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
+                // dd($order['weight']);
                 $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
+    
                 $payload = $this->make_shiping_payload($order);
                 $apiKey = env('ROYAL_MAIL_API_KEY');
                 $client = new Client();
@@ -2279,46 +2310,45 @@ class AdminDashboardController extends Controller
                     ],
                     'json' => $payload,
                 ]);
-
+    
                 $statusCode = $response->getStatusCode();
                 $body = $response->getBody()->getContents();
                 if ($statusCode == 200) {
                     $response = json_decode($body, true);
                     $shipped = [];
                     if ($response['createdOrders']) {
-                        foreach ($response['createdOrders'] as $key => $val) {
+                        foreach ($response['createdOrders'] as $val) {
                             $shipped[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
                                     'order_identifier' => $val['orderIdentifier'],
-                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
+                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
                                     'shipping_status' => 'Shipped',
                                     'created_by' => $user->id,
-                                ],
+                                ]
                             );
                         }
                     }
                     if ($response['failedOrders']) {
-                        foreach ($response['failedOrders'] as $key => $val) {
+                        foreach ($response['failedOrders'] as $val) {
                             $shipped[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
                                     'order_identifier' => $val['orderIdentifier'],
-                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? Null,
+                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
                                     'shipping_status' => 'ShippingFail',
                                     'created_by' => $user->id,
                                 ]
                             );
                         }
                     }
-                    $order = Order::findOrFail($order['id']);
-                    $order->status = $shipped[0]->shipping_status;
-                    $update = $order->save();
+                    $orderModel = Order::findOrFail($order['id']);
+                    $orderModel->status = $shipped[0]->shipping_status;
+                    $update = $orderModel->save();
                     $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
                     $status = ($shipped[0]->shipping_status == 'Shipped') ? 'success' : 'fail';
-                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])->with('status', $status)->with('msg', $msg);
-
-                    // return redirect()->route('admin.getShippingOrder', ['id' => $shipped[0]->order_identifier])->with(['msg' =>$msg ,'status'=>$shipped[0]->status]);
+                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
+                        ->with('status', $status)->with('msg', $msg);
                 } else {
                     echo "contact to developer";
                 }
@@ -2328,6 +2358,7 @@ class AdminDashboardController extends Controller
         }
         return redirect()->back();
     }
+    
 
     public function  batchShipping(Request $request)
     {
