@@ -489,6 +489,11 @@
                             </tbody>
                         </table>
                     </div>
+                     <!-- Pagination links -->
+                    <div class="pagination">
+                        {{ $paginated_orders->links() }}
+                    </div>
+   
                     <!-- /.card-body -->
                 </div>
             </div>

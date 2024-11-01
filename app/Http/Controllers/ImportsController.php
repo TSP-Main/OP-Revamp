@@ -51,6 +51,7 @@ class ImportsController extends Controller
                             'name' => $data[1],
                             'email_verified_at' => $data[3],
                             'password' => bcrypt($data[6]),
+                            'id_document' => $data[11],
                             'updated_by' => $data[29],
                         ]);
 
@@ -89,6 +90,7 @@ class ImportsController extends Controller
                                 'email' => $data[2],
                                 'email_verified_at' => $data[3],
                                 'password' => bcrypt($data[6]),
+                                'id_document' => $data[11],
                                 'status' => 2,
                                 'created_by' => $data[28],
                                 'updated_by' => $data[29],
