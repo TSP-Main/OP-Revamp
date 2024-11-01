@@ -49,7 +49,7 @@ class ConsultancyController extends Controller
                 session()->put('intended_url', 'fromConsultation');
                 session()->put('template', $data['template']);
                 session()->put('product_id', $data['product_id']);
-                return redirect()->route('login');
+                return redirect()->route('sign_in_form');
             }
         } else {
             return redirect()->back();
