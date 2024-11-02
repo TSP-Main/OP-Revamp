@@ -167,7 +167,7 @@ class ProductController extends Controller
         if ($user->hasRole('super_admin')) {
             $data['products'] = Product::with('category:id,name')->latest('id')->get()->toArray();
         }
-         dd($data['products']);
+        //  dd($data['products']);
         return view('admin.pages.products.prodcuts_limits', $data);
     }
 

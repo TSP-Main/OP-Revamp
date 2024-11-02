@@ -45,7 +45,7 @@
                                 <input type="hidden" name="order_details[product_price][]" value="{{ $item->price }}">
                                 @endforeach
                                 @endif
-                                <input type="hidden" id="total_ammount" name="total_ammount" value="{{ str_replace(',', '', Cart::subTotal()) + 4.95 }}">
+                                <input type="hidden" id="total_ammount" name="total_ammount" value="">
                                 <input type="hidden" id="shipping" name="shipping" value="4.95">
                                 <h6>Personal Information</h6>
                                 <div class="row">
@@ -131,7 +131,7 @@
                 <div class="col-lg-6">
                     <div class="ltn__checkout-payment-method mt-50">
                         <h4 class="title-2">Shipping Method</h4>
-                        <div class="row">
+                        <div class="row shipping-method">
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <div class="custom-control" style="display: flex; align-items:center;">
@@ -169,10 +169,10 @@
                         <div class="col-md-6">
                             <div class="form-check">
                                 <div class="custom-control" style="display: flex; align-items:center;">
-                                    <input class="form-check-input" type="radio" name="shipping_method" id="international_shipping" value="international" data-ship="15.00">
-                                    <label class="form-check-label" for="international_shipping" style="margin-left:10px;">International Shipping (£15.00)</label>
+                                    <input class="form-check-input" type="radio" name="shipping_method" id="international_shipping" value="international" data-ship="15.00" required>
+                                    <label class="form-check-label" for="international_shipping" style="margin-left:10px;"></label>
                                 </div>
-                                <div class="ml-4 mb-2 small">(Delivery times vary by location)</div>
+                                <div class="ml-4 mb-2 small"></div>
                             </div>
                         </div>
                         </div>
@@ -221,13 +221,8 @@
 @stop
 
 @pushOnce('scripts')
-<!-- jQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-<!-- jQuery UI for autocomplete -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-
 <script>
 $(document).ready(function() {
     // Array of cities in the United Kingdom
@@ -272,22 +267,11 @@ $(document).ready(function() {
         }
     });
 
-    // Initialize shipping cost variables
-    var initialShippingCost = 3.95; // Default shipping cost for UK
-    var freeShippingThreshold = 45; // Free shipping threshold
-    var internationalShippingCost = 15.00; // International shipping cost
     // Function to update shipping and total calculations
     function updateShippingAndTotal() {
-        var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || initialShippingCost;
+        var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
-
-        // Set shipping cost based on country selection
-        if ($('#countryDropdown').val() !== 'GB') {
-            shippingCost = internationalShippingCost; // Set shipping cost for international
-        } else if (subTotal > freeShippingThreshold) {
-            shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0; // Free shipping for orders over £45
-        }
 
         // Update the hidden shipping input
         $('#shipping').val(shippingCost.toFixed(2)); // Update the hidden input
@@ -295,29 +279,53 @@ $(document).ready(function() {
         // Update the displayed shipping cost and order total
         $('.shipping_cost').text('£' + shippingCost.toFixed(2));
         $('.order_total').text('£' + (subTotal + shippingCost).toFixed(2));
-    }
 
-    // Function to toggle shipping options based on the selected country
-    function toggleShippingOptions() {
-        var selectedCountry = $('#countryDropdown').val();
-        if (selectedCountry === 'GB') {
-            // Show UK shipping options
-            $('#international_shipping').hide();
-            $('#shippingMethods .form-check').show(); // Show all domestic options
-            $('#shippingMethods .form-check input[type="radio"]').prop('disabled', false);
-        } else {
-            // Show only international shipping option
-            $('#international_shipping').show();
-            $('#international_shipping').prop('checked', true);
-            $('#shippingMethods .form-check').hide(); // Hide all domestic options
-            $('#shippingMethods .form-check input[type="radio"]').prop('disabled', true); // Disable domestic shipping options
-        }
+        // Update the total amount hidden input
+        $('#total_ammount').val((subTotal + shippingCost).toFixed(2)); // Update the hidden total amount
     }
 
     // Event listener for shipping method changes
     $('input[name="shipping_method"]').change(function() {
         updateShippingAndTotal(); // Update shipping and total when shipping method changes
     });
+
+    // Initialize total amount calculation
+    updateTotalAmount();
+
+    // Call this function to set the initial total amount
+    function updateTotalAmount() {
+        var initialShippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
+        var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
+        var subTotal = parseFloat(subTotalString) || 0;
+        $('#total_ammount').val((subTotal + initialShippingCost).toFixed(2)); // Set the initial total amount
+    }
+
+   // Function to toggle shipping options based on the selected country
+   function toggleShippingOptions() {
+        var selectedCountry = $('#countryDropdown').val();
+        if (selectedCountry === 'GB') {
+            // Show UK shipping options
+            $('#international_shipping').hide();
+            $('.shipping-method').show(); // Show all domestic options
+            $('input[name="shipping_method"]').prop('disabled', false);
+        } else {
+            // Hide all domestic options
+            $('.shipping-method').hide(); // Hide all domestic options
+            $('#international_shipping').show(); // Show only international shipping option
+            $('#international_shipping').prop('checked', true); // Automatically select international shipping
+            $('#shipping').val('15.00'); // Set fixed international shipping cost
+            $('.shipping_cost').text('£15.00'); // Display fixed cost
+
+              // Add red text message about the international shipping cost
+              if (!$('.international-shipping-message').length) {
+                $('.shipping-method').after('<p class="international-shipping-message" style="color: red;">International shipping cost is fixed at £15.00.</p>');
+            } else {
+                $('.international-shipping-message').show(); // Show the message if it already exists
+            }
+        }
+        updateShippingAndTotal(); // Update totals based on the selected shipping option
+    }
+
     // Event listener for country dropdown change
     $('#countryDropdown').change(function() {
         toggleShippingOptions(); // Toggle shipping options based on country selection
@@ -325,7 +333,7 @@ $(document).ready(function() {
     });
 
     // Initialize shipping options on page load
-    toggleShippingOptions();
+    toggleShippingOptions(); // Call this to set the initial shipping options based on default selection
 
     // Function to validate the form
     function validateForm() {
@@ -389,7 +397,7 @@ $(document).ready(function() {
         var subTotalString = @json(strval(Cart::subTotal())).replace(',', '');
         var subTotal = parseFloat(subTotalString) || 0;
 
-        if (subTotal > freeShippingThreshold) {
+        if (subTotal > 45) { // Assuming £45 is the free shipping threshold
             $('#free_shipping').closest('.col-md-6').show();
         } else {
             $('#free_shipping').closest('.col-md-6').hide();
