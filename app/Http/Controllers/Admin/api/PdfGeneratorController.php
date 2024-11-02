@@ -21,6 +21,7 @@ class PdfGeneratorController extends Controller
     {
         $data = $request->all();
         $data['order'] = json_decode($data['content'], true);
+       // dd($data);
 
         // Retrieve and update the order record
         $order = Order::findOrFail($data['order']['id']);
@@ -73,6 +74,7 @@ class PdfGeneratorController extends Controller
                 $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
+                   // dd($data);
                     $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shiping_details']['firstName'] . '.pdf';
                     $view_name = 'pdf.' . $request->view_name;
 
@@ -108,7 +110,7 @@ class PdfGeneratorController extends Controller
         if ($request->order_ids) {
             $data['role'] = $request->role ?? '';
             $orderIds = explode(',', $request->order_ids);
-            $orders = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')
+            $orders = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product' ,'orderdetails.variant')
                 ->whereIn('id', $orderIds)
                 ->where('payment_status', 'Paid')
                 ->get();
@@ -116,6 +118,7 @@ class PdfGeneratorController extends Controller
                 $data['orders']  = $orders->toArray() ?? [];
                 $file_name = 'bulk_orders_print_' . time() . '.pdf';
                 $view_name = 'pdf.' . $request->view_name;
+                // dd($data);
                 // return view($view_name,$data);
                 $pdf = PDF::loadView($view_name, $data);
                 $pdf->setPaper('a4', 'portrait');

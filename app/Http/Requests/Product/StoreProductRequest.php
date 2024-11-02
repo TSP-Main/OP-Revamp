@@ -41,7 +41,6 @@ class StoreProductRequest extends FormRequest
         if ($this->isMethod('post') || !$this->id) {
             $rules['main_image'] = [
                 'required',
-                'image',
                 'mimes:jpeg,png,jpg,gif,webm,svg,webp',
                 'max:1024',
             ];
