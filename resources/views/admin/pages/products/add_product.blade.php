@@ -264,16 +264,18 @@
                         $path = asset('storage/'.$product['main_image']);
                         }
                         @endphp
-                        <div class="col-12 mt-2 produt-main-image">
-                            <label for="product_main_image" class="form-label">Upload Main Image</label>
-                            <div class="d-flex align-items-center" style="gap: 20px; justify-content: space-between;">
-                                <input type="file" class="form-control w-100" id="product_main_image" name="main_image" value="{{ ($product['main_image'] ?? NULL) ? 'required' : '' }}" onchange="previewMainImage(this)">
-                                <label for="product_main_image" class=" d-block ">
-                                    <img id="mainImage_preview" src="{{  $path ?? '' }}" class="rounded-circle" alt="no image" style="width: 45px; height: 45px;  cursor:pointer;   object-fit: cover;">
-                                </label>
-                            </div>
-                            <div class="invalid-feedback">* Upload product main Image!</div>
+                      <div class="col-12 mt-2 produt-main-image">
+                        <label for="product_main_image" class="form-label">Upload Main Image</label>
+                        <div class="d-flex align-items-center" style="gap: 20px; justify-content: space-between;">
+                            <input type="file" class="form-control w-100" id="product_main_image" name="main_image" 
+                                   onchange="previewMainImage(this)">
+                            <label for="product_main_image" class="d-block">
+                                <img id="mainImage_preview" src="{{  $path ?? '' }}" class="rounded-circle" alt="no image" 
+                                     style="width: 45px; height: 45px; cursor:pointer; object-fit: cover;">
+                            </label>
                         </div>
+                        <div id="imageError" class="invalid-feedback" style="display: none;">* Please upload a valid image file (JPEG, PNG, GIF, webm, svg, webp).</div>
+                    </div>
                         <div class="col-12 select-product-category">
                             <label for="category_id" class="form-label">Select Product Category</label>
                             <select id="category_id" name="category_id" class="form-select" required>
@@ -344,7 +346,7 @@
                 </div>
                 <div class="col-md-6">
                     <label for="cut_price" class="col-form-label"> Cut Price <span class="cut-price"></span></label>
-                    <input type="number" name="cut_price" id="cut_price" value="{{  $product['cut_price'] ?? old('cut_price') }}" class="form-control">
+                    <input type="number" name="cut_price" id="cut_price" value="{{  $product['cut_price'] ?? old('cut_price') }}" class="form-control" step="0.01">
                     <div class="invalid-feedback">Enter Cut Price!</div>
                     @error('cut_price')
                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -353,7 +355,7 @@
 
                 <div class="col-md-6">
                     <label for="price" class="col-form-label"> Price <span class="extra-text">(Price in UK Pound)</span></label>
-                    <input type="number" name="price" id="price" value="{{  $product['price'] ?? old('price') }}" class="form-control" required>
+                    <input type="number" name="price" id="price" value="{{  $product['price'] ?? old('price') }}" class="form-control" step="0.01" required>
                     <div class="invalid-feedback">Enter product price!</div>
                     @error('price')
                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -920,4 +922,32 @@
         });
     });
 </script>
+<script>
+    function previewMainImage(input) {
+        const file = input.files[0];
+        const preview = document.getElementById('mainImage_preview');
+        const imageError = document.getElementById('imageError');
+        
+        // Reset the error message and preview
+        imageError.style.display = 'none';
+        preview.src = '{{ $path ?? '' }}';  // reset to default path if available
+    
+        if (file) {
+            // Check if the file type is an image
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webm', 'image/svg', 'image/webp'];
+            if (!validImageTypes.includes(file.type)) {
+                imageError.style.display = 'block';
+                input.value = ''; // Clear the input if it's not a valid image
+                return;
+            }
+            
+            // Preview the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    </script>
 @endPushOnce

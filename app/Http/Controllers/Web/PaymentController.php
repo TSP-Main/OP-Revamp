@@ -41,7 +41,7 @@ class PaymentController extends Controller
                     'user_id'       => $user->id ?? 'guest',
                     'email'         => $request->email,
                     'note'          => $request->note,
-                    'shiping_cost'  => $request->shiping_cost,
+                    'shiping_cost'  => $request->shipping,
                     'coupon_code'   => $request->coupon_code ?? null,
                     'coupon_value'  => $request->coupon_value ?? null,
                     'total_ammount' => $request->total_ammount ?? null,
@@ -50,7 +50,6 @@ class PaymentController extends Controller
 
                 ]);
             }
-
             if ($order) {
                 $order_details = [];
                 $index = 0;
