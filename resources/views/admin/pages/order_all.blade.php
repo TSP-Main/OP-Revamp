@@ -377,17 +377,19 @@
                             </div>
                         </div> --}}
                     </div>
-                    <div class="row mb-3 px-4">
+                    <div class="row mb-3 px-4 align-items-center">
                         <!-- Search Input Column -->
                         <div class="col-md-8 text-start">
                             <label for="search" class="form-label fw-bold">Search From Table</label>
-                            <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
-                        </div>
+                            <form action="{{ route('admin.allOrders') }}" method="GET" class="d-flex">
+                                <input type="text" id="search" name="search" placeholder="Search here..." class="form-control me-2" value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary" style="padding: 10px 20px; background-color: #4959e4; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer;">Search</button>
+                            </form>
+                        </div>                        
                         <div class="col-md-4 text-end mt-auto">
-                            <div id="tbl_buttons" class="d-inline-block">
+                            <div id="tbl_buttons" class="d-inline-block"></div>
                         </div>
                     </div>
-                    
                     <div class="card-body">
                         <table id="tbl_data" class="table table-striped">
                             <thead class="thead-dark">
