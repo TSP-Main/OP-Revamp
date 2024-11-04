@@ -163,7 +163,7 @@
                                 <strong>SKU:</strong> {{ $val['product']['SKU'] ?? '' }}
                             </td>
                             <td>{{ $val['product_qty'] }}</td>
-                            <td>£{{ number_format((float)$val['product']['price'] ?? 0, 2) }}</td>
+                            <td>£{{ number_format((float)str_replace(',', '', $val['variant']['price'] ?? $val['product']['price']['product_price'] ?? $val['product']['price']), 2) }}</td>
                         </tr>
                         @endforeach
                         <tr>
