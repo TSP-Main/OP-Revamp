@@ -264,18 +264,18 @@
                         $path = asset('storage/'.$product['main_image']);
                         }
                         @endphp
-                      <div class="col-12 mt-2 produt-main-image">
-                        <label for="product_main_image" class="form-label">Upload Main Image</label>
-                        <div class="d-flex align-items-center" style="gap: 20px; justify-content: space-between;">
-                            <input type="file" class="form-control w-100" id="product_main_image" name="main_image" 
-                                   onchange="previewMainImage(this)">
-                            <label for="product_main_image" class="d-block">
-                                <img id="mainImage_preview" src="{{  $path ?? '' }}" class="rounded-circle" alt="no image" 
-                                     style="width: 45px; height: 45px; cursor:pointer; object-fit: cover;">
-                            </label>
+                        <div class="col-12 mt-2 produt-main-image">
+                            <label for="product_main_image" class="form-label">Upload Main Image</label>
+                            <div class="d-flex align-items-center" style="gap: 20px; justify-content: space-between;">
+                                <input type="file" class="form-control w-100" id="product_main_image" name="main_image" 
+                                       onchange="previewMainImage(this)">
+                                <label for="product_main_image" class="d-block">
+                                    <img id="mainImage_preview" src="{{  $path ?? '' }}" class="rounded-circle" alt="no image" 
+                                         style="width: 45px; height: 45px; cursor:pointer; object-fit: cover;">
+                                </label>
+                            </div>
+                            <div id="imageError" class="invalid-feedback" style="display: none;">* Please upload a valid image file (JPEG, PNG, GIF, webm, svg, webp).</div>
                         </div>
-                        <div id="imageError" class="invalid-feedback" style="display: none;">* Please upload a valid image file (JPEG, PNG, GIF, webm, svg, webp).</div>
-                    </div>
                         <div class="col-12 select-product-category">
                             <label for="category_id" class="form-label">Select Product Category</label>
                             <select id="category_id" name="category_id" class="form-select" required>
@@ -714,7 +714,12 @@
             // Create FormData object
             var formData = new FormData();
             // Append main image
-            formData.append('main_image', $('#product_main_image')[0].files[0]);
+            if (!$('#product_main_image')[0].files[0]) {
+                formData.append('main_image', '{{ $path ?? "" }}'); // Use the existing image path if no new file is chosen
+            }
+            else {
+                formData.append('main_image', $('#product_main_image')[0].files[0]);
+            }
             // Append variant images
             $('.variant-image').each(function(index, element) {
                 formData.append('vari_attr_images[]', element.files[0]);
@@ -788,10 +793,10 @@
             preview.attr('src', e.target.result);
         };
 
-        if (file) {
-            reader.readAsDataURL(file);
-        }
+    if (file) {
+        reader.readAsDataURL(file);
     }
+}
     function toggleLeafletLink() {
         const highRiskSelect = document.getElementById('high_risk');
         const leafletLinkContainer = document.getElementById('leaflet_link_container');
@@ -922,32 +927,4 @@
         });
     });
 </script>
-<script>
-    function previewMainImage(input) {
-        const file = input.files[0];
-        const preview = document.getElementById('mainImage_preview');
-        const imageError = document.getElementById('imageError');
-        
-        // Reset the error message and preview
-        imageError.style.display = 'none';
-        preview.src = '{{ $path ?? '' }}';  // reset to default path if available
-    
-        if (file) {
-            // Check if the file type is an image
-            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webm', 'image/svg', 'image/webp'];
-            if (!validImageTypes.includes(file.type)) {
-                imageError.style.display = 'block';
-                input.value = ''; // Clear the input if it's not a valid image
-                return;
-            }
-            
-            // Preview the image
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-    </script>
 @endPushOnce
