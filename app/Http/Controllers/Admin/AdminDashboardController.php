@@ -1658,20 +1658,37 @@ class AdminDashboardController extends Controller
         return view('admin.pages.orders_recieved', $data);
     }
 
-    public function all_orders()
+    public function all_orders(Request $request)
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
     
-        // Apply pagination with 20 orders per page
-        $orders = Order::with([
+        // Start building the query
+        $query = Order::with([
             'user',
             'shippingDetails:id,order_id,firstName,lastName,email',
             'orderdetails:id,order_id,consultation_type'
         ])
-        ->where(['payment_status' => 'Paid'])
-        ->latest('created_at')
-        ->paginate(50);
+        ->where('payment_status', 'Paid');
+    
+        // Apply searching if there's a search term
+        if ($request->has('search') && $request->search != '') {
+            $searchTerm = $request->search;
+            $query->where(function($subQuery) use ($searchTerm) {
+                $subQuery->where('id', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('user', function($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('shippingDetails', function($q) use ($searchTerm) {
+                        $q->where('firstName', 'like', "%{$searchTerm}%")
+                          ->orWhere('lastName', 'like', "%{$searchTerm}%")
+                          ->orWhere('email', 'like', "%{$searchTerm}%");
+                    });
+            });
+        }
+    
+        // Apply pagination with 50 orders per page
+        $orders = $query->latest('created_at')->paginate(50);
     
         if ($orders->isNotEmpty()) {
             // Convert orderdetails to arrays for each order item
