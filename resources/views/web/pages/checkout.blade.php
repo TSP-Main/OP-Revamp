@@ -135,7 +135,7 @@
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <div class="custom-control" style="display: flex; align-items:center;">
-                                        <input class="form-check-input" type="radio" name="shipping_method" id="fast_delivery" value="fast" data-ship="3.95" required checked>
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="fast_delivery" value="fast" data-ship="3.95" required >
                                         <label class="form-check-label" for="fast_delivery"><img src="{{ url('img/48-hours.jpg') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
                                     </div>
                                     <span class="float-right">Royal Mail Tracked 48</span>
@@ -303,26 +303,27 @@ $(document).ready(function() {
    // Function to toggle shipping options based on the selected country
    function toggleShippingOptions() {
         var selectedCountry = $('#countryDropdown').val();
-        if (selectedCountry === 'GB') {
-            // Show UK shipping options
-            $('#international_shipping').hide();
-            $('.shipping-method').show(); // Show all domestic options
-            $('input[name="shipping_method"]').prop('disabled', false);
-        } else {
-            // Hide all domestic options
-            $('.shipping-method').hide(); // Hide all domestic options
-            $('#international_shipping').show(); // Show only international shipping option
-            $('#international_shipping').prop('checked', true); // Automatically select international shipping
-            $('#shipping').val('15.00'); // Set fixed international shipping cost
-            $('.shipping_cost').text('£15.00'); // Display fixed cost
-
-              // Add red text message about the international shipping cost
-              if (!$('.international-shipping-message').length) {
-                $('.shipping-method').after('<p class="international-shipping-message" style="color: red;">International shipping cost is fixed at £15.00.</p>');
-            } else {
-                $('.international-shipping-message').show(); // Show the message if it already exists
-            }
-        }
+        if (selectedCountry === " ") {
+        // No country selected, set shipping to £0.00
+        $('#international_shipping').hide(); // Hide all options
+        $('#shipping').val('0'); // Set shipping cost to £0.00
+        $('.shipping_cost').text('£0.00'); // Display £0.00
+    } else if (selectedCountry === 'GB') {
+        // Show UK shipping options
+        $('#international_shipping').hide();
+        $('.shipping-method').show(); // Show all domestic options
+        $('input[name="shipping_method"]').prop('disabled', false);
+    } else {
+        // Hide all domestic options
+        $('.shipping-method').hide(); // Hide all domestic options
+        $('#international_shipping').show(); // Show only international shipping option
+        $('#international_shipping').prop('checked', true); // Automatically select international shipping
+        $('#shipping').val('15.00'); // Set fixed international shipping cost
+        $('.shipping_cost').text('£15.00'); // Display fixed cost
+        
+        // Add red text message about the international shipping cost
+        $('.shipping-method').after('<p class="international-shipping-message" style="color: red;">International shipping cost is fixed at £15.00.</p>');
+    }
         updateShippingAndTotal(); // Update totals based on the selected shipping option
     }
 
@@ -333,7 +334,7 @@ $(document).ready(function() {
     });
 
     // Initialize shipping options on page load
-    toggleShippingOptions(); // Call this to set the initial shipping options based on default selection
+   // toggleShippingOptions(); // Call this to set the initial shipping options based on default selection
 
     // Function to validate the form
     function validateForm() {
