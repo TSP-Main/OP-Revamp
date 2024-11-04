@@ -131,7 +131,7 @@
                         <td>
                             <strong>Bill to</strong><br>
                             <small>Customer Name: {{ $order['shipping_details']['firstName'] ?? '' }} {{ $order['shipping_details']['lastName'] ?? '' }}</small><br>
-                            <small>Home Name/No: {{ $order['shipping_details']['address2'] ?? '' }}</small><br>
+                            <small>Home Name No: {{ $order['shipping_details']['address2'] ?? '' }}</small><br>
                             <small>Address: {{ $order['shipping_details']['address'] ?? '' }}, {{ $order['shipping_details']['city'] ?? '' }}</small><br>
                             <small>Postal Code: {{ $order['shipping_details']['zip_code'] ?? '' }}, Phone: {{ $order['shipping_details']['phone'] ?? '' }}</small>
                         </td>
