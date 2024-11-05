@@ -217,6 +217,7 @@ class CartController extends Controller
     public function checkout_id($order_id)
     {
 
+        $this->shareMenuCategories();
         $decoded_order_id = base64_decode($order_id);
 
         // Fetch the order details with related models
