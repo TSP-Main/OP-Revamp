@@ -194,7 +194,7 @@
                 <ul id="charts-nav"
                     class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved', 'admin.otcorders', 'admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  "
                     data-bs-parent="#sidebar-nav">
-                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('dispensary'))
+                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('dispensary') || auth()->user()->hasRole('doctor'))
                         <li>
                             <a class="{{(request()->routeIs(['admin.allOrders'])) ? 'nav-link ' : ''}}"
                                href="{{route('admin.allOrders')}}">
