@@ -21,7 +21,7 @@
         @can('dashboard')
             <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs('admin.index')) ? '' : 'collapsed'}} "
-                   href="{{route('web.index')}}">
+                   href="/dashboard">
                     <i class="bi bi-grid"></i>
                     <span>Dashboard</span>
                 </a>

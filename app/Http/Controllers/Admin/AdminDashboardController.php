@@ -2023,16 +2023,25 @@ class AdminDashboardController extends Controller
             }
         }
         // Fetch active users who have the 'user' role
+        // Fetch active users with their addresses and profiles (including phone)
         $data['users'] = User::where('status', $this->getUserStatus('Active'))
-            ->get()
-            ->filter(function ($user) {
-                return $user->hasRole('user');
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'user'); // Ensure the user has the 'user' role
             })
-            ->sortBy('name')
-            ->keyBy('id')
+            ->with(['address', 'profile']) // Eager load both 'address' and 'user_profile' relations
+            ->orderBy('name')
+            ->get()
+            ->keyBy('id') // Key by user ID
             ->toArray();
+    
+        // If you want to add the phone number to the user profile data in the view
+        foreach ($data['users'] as &$user) {
+            $user['phone'] = $user['profile']['phone'] ?? null; // Fetch phone from the user profile, if available
+        }
+    
         return view('admin.pages.add_order', $data);
     }
+    
 
     public function store_order(StoreOrderRequest $request)
     {
@@ -2046,6 +2055,10 @@ class AdminDashboardController extends Controller
             $shippingMethod = 'fast';
         } elseif ($shippingCost == 4.95) {
             $shippingMethod = 'express';
+        } elseif ($shippingCost == 0.00) {
+            $shippingMethod = 'free';
+        } elseif ($shippingCost == 15.00) {
+            $shippingMethod = ' International';
         } else {
             $shippingMethod = 'Default Method'; // Example fallback
         }
@@ -2066,7 +2079,7 @@ class AdminDashboardController extends Controller
                 'order_id' => $order->id,
                 'user_id' => $request->user_id ?? 'guest',
                 'firstName' => $request->firstName,
-                'lastName' => $request->lastName,
+                'lastName' => $request->lastName ?? null,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'address' => $request->address,
@@ -2143,6 +2156,7 @@ class AdminDashboardController extends Controller
                     ]);
                 }
             }
+            // dd($shippingDetail);
 
             if ($shippingDetail) {
                 $message = "Order and Shipping Details Saved Successfully";

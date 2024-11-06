@@ -213,31 +213,50 @@ class CartController extends Controller
     {
         Cart::destroy();
     }
-
     public function checkout_id($order_id)
     {
-
         $this->shareMenuCategories();
+    
+        // Decode the order ID
         $decoded_order_id = base64_decode($order_id);
-
-        // Fetch the order details with related models
-        $order = Order::with('orderDetails', 'shippingDetail')->find($decoded_order_id);
-
+    
+        // Fetch the order details with related models (orderDetails and shippingDetail)
+        $order = Order::with('orderDetails.product', 'orderDetails.variant', 'shippingDetail')
+            ->find($decoded_order_id);
+    
         if (!$order) {
             return redirect()->back()->withErrors(['error' => 'Order not found']);
         }
-
-        if ($order->payment_status == 'Paid') { // Replace 'desired_status' with the actual status you want to check for
+    
+        // Check if the order payment status is 'Paid'
+        if ($order->payment_status == 'Paid') {
             return redirect()->back()->withErrors(['error' => 'Order status is not valid']);
         }
-
+    
+        // Fetch the UK cities and postal codes from the config file
         $ukCities = config('constants.ukCities');
         $ukPostalcode = config('constants.ukPostalcode');
+    
+        // Loop through order details and load product and variant details
+        foreach ($order->orderDetails as $orderDetail) {
+            // Fetch the product details using the 'product' relationship
+            $product = $orderDetail->product;  // Assuming you have the 'product' relationship defined in OrderDetail model
+    
+            // If the order detail has a variant_id, fetch the variant details using the 'productVariant' relationship
+            if ($orderDetail->variant_id) {
+                $variant = $orderDetail->productVariant;  
+            } else {
+                $variant = null;  // No variant, set it to null
+            }
 
+        }
+        
+        // dd($order);
+    
+        // Return the view with all necessary data
         return view('web.pages.checkoutid', compact('ukCities', 'ukPostalcode', 'order'));
     }
-
-
+    
     // public function reorder(Request $request)
     // {
     //     $orderId = $request->input('order_id');
