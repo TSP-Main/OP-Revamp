@@ -2,6 +2,29 @@
 @section('title', 'Create Order')
 @section('content')
 <style>
+    
+    .form-check-input:checked + .form-check-label {
+        border: 2px solid #007bff;  /* Blue border when selected */
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Light blue glow */
+    }
+
+    .form-check-label {
+        display: inline-block;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .form-check-input:checked + .form-check-label {
+        background-color: #e7f1ff;  /* Light blue background when selected */
+        font-weight: bold;  /* Make the label bold when selected */
+    }
+
+    .form-check-input {
+        margin-top: 10px;
+    }
+
     .select2-selection__rendered {
         line-height: 35px !important;
     }
@@ -258,8 +281,8 @@
                                                     <div class="form-check">
                                                         <div class="custom-control">
                                                             <input class="form-check-input" type="radio" name="shiping_cost" id="fast_delivery" value="3.95" data-ship="3.95" required="">
-                                                            <label class="form-check-label" for="fast_delivery">Royal
-                                                                Mail Tracked 48
+                                                            <label class="form-check-label" for="fast_delivery">
+                                                                Royal Mail Tracked 48
                                                                 <span class="float-right">£3.95</span>
                                                                 <div class="ml-4 mb-2 small">(3-5 working days)</div>
                                                             </label>
@@ -268,7 +291,8 @@
                                                     <div class="form-check">
                                                         <div class="custom-control">
                                                             <input class="form-check-input" type="radio" name="shiping_cost" id="express_delivery" value="4.95" data-ship="4.95" required="">
-                                                            <label class="form-check-label" for="express_delivery">Royal Mail Tracked 24
+                                                            <label class="form-check-label" for="express_delivery">
+                                                                Royal Mail Tracked 24
                                                                 <span class="float-right">£4.95</span>
                                                                 <div class="ml-4 mb-2 small">(1-2 working days)</div>
                                                             </label>
@@ -276,10 +300,28 @@
                                                     </div>
                                                     <div class="form-check">
                                                         <div class="custom-control">
-                                                            <input class="form-check-input" type="radio" name="shiping_cost" id="express_delivery" value="0.00" data-ship="4.95" checked="" required="">
-                                                            <label class="form-check-label" for="express_delivery">Free Shipping
+                                                            <input class="form-check-input" type="radio" name="shiping_cost" id="free_delivery" value="0.00" data-ship="0.00" checked="" required="">
+                                                            <label class="form-check-label" for="free_delivery">
+                                                                Free Shipping
                                                                 <span class="float-right">£0.00</span>
                                                                 <div class="ml-4 mb-2 small">(3-5 working days)</div>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <div class="custom-control">
+                                                            <input class="form-check-input" type="radio" name="shiping_cost" id="international_delivery" value="15.00" data-ship="15.00" required="">
+                                                            <label class="form-check-label" for="international_delivery">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <strong>International Shipping</strong><br>
+                                                                        <small class="text-muted">(Shipping to countries outside the UK)</small>
+                                                                    </div>
+                                                                    <span class="float-right">£15.00</span>
+                                                                </div>
+                                                                <div class="ml-4 mb-2 small text-muted">
+                                                                    <strong>Estimated Delivery Time:</strong> Based on your location.
+                                                                </div>
                                                             </label>
                                                         </div>
                                                     </div>
@@ -434,20 +476,34 @@
         });
 
         $(document).on('change', '#user_id', function() {
-            var userId = $(this).val();
-            if ($users[userId]) {
-                let user = $users[userId];
-                $('#firstName').val(user.name);
-                $('#email').val(user.email);
-                $('#phone').val(user.phone);
-                $('#address').val(user.address);
-                $('#address2').val(user.apartment);
-                $('#city').val(user.city);
-                $('#zip_code').val(user.zip_code);
-            } else {
-                alert('technical error');
-            }
-        });
+    var userId = $(this).val();
+    if ($users[userId]) {
+        let user = $users[userId];
+        
+        // Populate the personal information fields
+        $('#firstName').val(user.name);
+        $('#email').val(user.email);
+        $('#phone').val(user.phone);
+
+        // Populate the address fields (adjusted for nested 'address' object)
+        if (user.address) {
+            $('#address').val(user.address.address || ''); // Address field
+            $('#address2').val(user.address.apartment || ''); // Apartment field
+            $('#city').val(user.address.city || ''); // City field
+            $('#zip_code').val(user.address.zip_code || ''); // Postal code field
+        } else {
+            // If no address data exists, clear the address fields
+            $('#address').val('');
+            $('#address2').val('');
+            $('#city').val('');
+            $('#zip_code').val('');
+        }
+
+    } else {
+        alert('Technical error');
+    }
+});
+
 
 
         $('#discount_percent').on('input', function() {
@@ -481,6 +537,19 @@
             }
         });
 
+       // Add an event listener for the shipping method change
+       $(document).on('change', 'input[name="shiping_cost"]', function() {
+            // Get the new shipping cost from the selected radio button
+            var shippingCost = $(this).val();
+            
+            // Update the displayed shipping cost in the UI
+            $('#shiping_cost').text(shippingCost);
+            
+            // Recalculate the total cost immediately
+            update_d_payment();
+        });
+
+        // Function to update the payment details
         const update_d_payment = () => {
             let price = $('#total_price').text();
             var d_amount = 0.00;
@@ -494,6 +563,7 @@
 
             total_price = price;
 
+            // Get the new shipping cost
             let shippingCost = $('input[name="shiping_cost"]:checked').val();
             var total_amount = parseFloat(total_price) + parseFloat(shippingCost);
             var discountPercent = $('#discount_percent').val();
@@ -508,13 +578,15 @@
             var t_price = total_price.toFixed(2);
             var t_amount = total_amount.toFixed(2);
 
+            // Update the displayed totals in the UI
             $('#total_items').text(total_items);
             $('#total_price').text(t_price);
-            $('#shiping_cost').text(shippingCost);
+            $('#shiping_cost').text(shippingCost);  // Ensure shipping cost is updated
             $('#discount_amount').text(d_amount);
             $('#total_amount').text(t_amount);
-
+            document.getElementById('total_amount_input').value = t_amount;
         }
+
 
         function imageState(state) {
             if (!state.id) {

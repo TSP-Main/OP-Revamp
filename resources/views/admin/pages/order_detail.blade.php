@@ -453,7 +453,7 @@
                                         </h5>
                                     </div>
                                 @endif                                
-                                    @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved')
+                                    @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved' && $order['status'] != 'Received')
                                         <form id="form_shiping_now" action="{{route('admin.createShippingOrder')}}"
                                               method="POST">
                                             @csrf

@@ -212,7 +212,7 @@ class AuthController extends Controller
                 $user->otp = $otp;
                 $user->save();
                 Mail::to($request->email)->send(new OTPMail($otp));
-                return redirect()->route('changePassword')->with(['status' => 'success', 'message' => "Please check you'r mail for OTP", 'email' => $request->email]);
+                return redirect()->route('changePassword')->with(['status' => 'success', 'message' => "Please check your mail for OTP", 'email' => $request->email]);
             } else {
                 return redirect()->back()->withInput()->withErrors(['email' => 'The provided email is incorrect.']);
             }
