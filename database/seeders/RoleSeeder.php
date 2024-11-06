@@ -17,10 +17,10 @@ class RoleSeeder extends Seeder
     public function run()
     {
         //create roles
-        $superAdmin = Role::create(['name' => 'super_admin']);
-        $dispensary = Role::create(['name' => 'dispensary']);
-        $doctor = Role::create(['name' => 'doctor']);
-        $user = Role::create(['name' => 'user']);
+        $superAdmin = Role::firstOrCreate(['name' => 'super_admin']);
+        $dispensary = Role::firstOrCreate(['name' => 'dispensary']);
+        $doctor = Role::firstOrCreate(['name' => 'doctor']);
+        $user = Role::firstOrCreate(['name' => 'user']);
 
         // Create permissions
         $permissions = [
@@ -82,7 +82,7 @@ class RoleSeeder extends Seeder
 
         // Create all permissions
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Assign all permissions to super admin
@@ -98,6 +98,8 @@ class RoleSeeder extends Seeder
             'gp_locations',
             'orders',
             'sops',
+            'admin.allOrders',
+            'orders_received',
             'store_query',
             'dispensary_approval',
             'doctors_approval',
@@ -119,6 +121,8 @@ class RoleSeeder extends Seeder
             'store_query',
             'orders',
             'gp_locations',
+            'admin.allOrders',
+            'orders_received',
             'gpa_letters',
             'consultation_view',
             'doctors_approval',
