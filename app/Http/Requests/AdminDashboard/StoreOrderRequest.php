@@ -25,7 +25,7 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'firstName' => 'required',
-            'lastName' => 'required',
+            'lastName' => 'nullable|string',
             'email' => 'required|email',
             'phone' => 'required',
             'address' => 'required',

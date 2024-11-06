@@ -122,7 +122,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 mt-4">
+                            {{-- <div class="col-12 mt-4">
                                 <div class="card">
                                     <div class="card-header text-center " style="background:#88888870;">
                                         <label class=" fw-bold text-dark m-0">Payment Details</label>
@@ -175,7 +175,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <div class="col-md-12 d-block">
                                 <label for="user_id" class="form-label fw-bold">Select User: </label>
@@ -213,7 +213,7 @@
                                                 </div>
                                                 <div class="col-md-6 mt-2">
                                                     <label for="lastName" class="form-label ">Last Name: </label>
-                                                    <input type="text" name="lastName" value="{{ $order['lastName'] ?? old('lastName') }}" class="form-control" id="lastName" required>
+                                                    <input type="text" name="lastName" value="{{ $order['lastName'] ?? old('lastName') }}" class="form-control" id="lastName">
                                                     <div class="invalid-feedback">Please enter Last Name!</div>
                                                     @error('lastName')
                                                     <div class="alert-danger text-danger ">{{ $message }}</div>
@@ -330,6 +330,61 @@
                                                     @enderror
                                                 </div>
                                             </div>
+
+                                              <div class="col-12 mt-4">
+                                <div class="card">
+                                    <div class="card-header text-center " style="background:#88888870;">
+                                        <label class=" fw-bold text-dark m-0">Payment Details</label>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="col-12 px-4 border-1 mt-3 mb-4 ">
+                                            <div class="row ">
+                                                <div class="col-4 ">
+                                                    <lable class="fw-semibold large text-left ">Total Items: </lable>
+                                                </div>
+                                                <div class="col-4 text-center ">
+                                                    <span id="total_items"> 0 </span> items
+                                                </div>
+                                                <div class="col-4 text-center ">
+                                                    £<span id="total_price">0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-4">
+                                                    <lable class="fw-semibold large text-left ">Shiping Cost: </lable>
+                                                </div>
+                                                <div class="col-4 text-center"> --------</div>
+                                                <div class="col-4 text-center">
+                                                    £<span id="shiping_cost">0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-4">
+                                                    <lable class="fw-semibold large text-left">Add Discount:</lable>
+                                                </div>
+                                                <div class="col-4 text-center d-flex justify-content-center">
+                                                    <div style="width: 100%;">
+                                                        <input type="number" placeholder="0 ٪" max="100" min="0.01" step="0.01" style="text-align: center;" name="discount_percent" id="discount_percent" class="form-control mx-auto w-50">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4 text-center">
+                                                    £<span id="discount_amount">0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-1">
+                                                <div class="col-4">
+                                                    <lable class="fw-bold large text-left">Total Ammount:</lable>
+                                                </div>
+                                                <div class="col-4 text-center">--------</div>
+                                                <div class="col-4 text-center">
+                                                    £<span id="total_amount">0.00</span>
+                                                </div>
+                                                <input type="hidden" name="total_amount" id="total_amount_input" value="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                                             <div class="col-md-12 mt-3 ">
                                                 <label for="note" class="form-label fw-bold">Order Notes:

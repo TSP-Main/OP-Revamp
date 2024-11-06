@@ -2,7 +2,6 @@
 @section('title', 'Checkout')
 @section('content')
 
-
     <!-- BREADCRUMB AREA START -->
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image " data-bs-bg="img/bg/14.jpg">
         <div class="container">
@@ -157,48 +156,10 @@
                         </div>
                     </div>
 
-
                     <div class="col-lg-6">
-                        <div class="ltn__checkout-payment-method mt-50">
-                            <h4 class="title-2">Shipping Method</h4>
-                            <div class="form-check">
-                                <div class="custom-control" style="display: flex; align-items:center;">
-                                    <input class="form-check-input" type="radio" name="shipping_method"
-                                        id="express_delivery" value="express"
-                                        {{ $order->shippingDetail->method === 'fast' ? '' : 'checked' }} data-ship="4.95"
-                                        required>
-                                    <label class="form-check-label" for="express_delivery">
-                                        <img src="{{ url('img/24-hours.jpg') }}" alt=""
-                                            style="max-width:140px !important; margin-left:10px;">
-                                    </label>
-                                </div>
-                                <span class="float-right">Royal Mail Tracked 24</span>
-                                <span class="float-right"> (£4.95)</span>
-                                <div class="ml-4 mb-2 small">(1-2 working days)</div>
-                            </div>
-                            <div class="form-check">
-                                <div class="custom-control" style="display: flex; align-items:center;">
-                                    <input class="form-check-input" type="radio" name="shipping_method"
-                                        id="fast_delivery" value="fast"
-                                        {{ $order->shippingDetail->method === 'fast' ? 'checked' : '' }} data-ship="3.95"
-                                        required>
-                                    <label class="form-check-label" for="fast_delivery">
-                                        <img src="{{ url('img/48-hours.jpg') }}" alt=""
-                                            style="max-width:140px !important; margin-left:10px;">
-                                    </label>
-                                </div>
-                                <span class="float-right">Royal Mail Tracked 48</span>
-                                <span class="float-right"> (£3.95)</span>
-                                <div class="ml-4 mb-2 small">(3-5 working days)</div>
-                            </div>
-                        </div>
+                        <!-- Shiping Method Here -->
                     </div>
-
-
-
-
-
-
+                    
                     <div class="col-lg-6">
                         <div class="shoping-cart-total mt-50">
                             <h4 class="title-2">Cart Totals</h4>
@@ -216,24 +177,44 @@
                                     @endphp
                                     @foreach ($order->orderDetails as $orderDetail)
                                         <tr>
-                                            <td>{{ $orderDetail->product_name }}</td>
-                                            <td>{{ $orderDetail->product_qty }}</td>
-                                            <td>£{{ number_format($orderDetail->product_qty * $orderDetail->product_price, 2) }}
+                                            <!-- Display the product title -->
+                                            <td>
+                                                <strong>{{ $orderDetail->product->title }}</strong>
+                            
+                                                @if ($orderDetail->productVariant)
+                                                    <!-- If a variant exists, display the variant name -->
+                                                    <br><small>Variant: {{ $orderDetail->productVariant->name }}</small>
+                                                @endif
                                             </td>
+                            
+                                            <!-- Display the quantity -->
+                                            <td>{{ $orderDetail->product_qty }}</td>
+                            
+                                            <!-- Display the price: check if variant exists, else use product price -->
+                                            <td>£
+                                                @php
+                                                    $price = $orderDetail->productVariant ? $orderDetail->productVariant->price : $orderDetail->product->price;
+                                                @endphp
+                                                {{ number_format($orderDetail->product_qty * $price, 2) }}
+                                            </td>
+                            
                                             @php
-                                                $subtotal += $orderDetail->product_qty * $orderDetail->product_price;
+                                                // Add to subtotal
+                                                $subtotal += $orderDetail->product_qty * $price;
                                             @endphp
                                         </tr>
                                     @endforeach
-
+                            
                                     <!-- Shipping and Handling -->
+                                   <!-- Shipping and Handling -->
                                     <tr>
                                         <td>Shipping and Handling</td>
                                         <td></td>
-
-                                        <td class="shipping_cost" data-shipping="{{ $order->shippingDetail->cost }}">
-                                            £{{ number_format($order->shippingDetail->cost, 2) }}</td>
+                                        <td class="shipping_cost" data-shipping="{{ $order->shippingDetail->cost ?? 0 }}">
+                                            £{{ number_format($order->shippingDetail->cost ?? 0, 2) }}
+                                        </td>
                                     </tr>
+
 
                                     <!-- Order Total -->
                                     <tr>
@@ -244,6 +225,8 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            
+                            
                         </div>
                     </div>
 
@@ -291,114 +274,142 @@
         });
     </script>
     <script>
-        $(document).ready(function() {
-            var updateTotals = function() {
-                var shippingCost = parseFloat($('input[name="shipping_method"]:checked').data('ship')) || 0;
-                var subTotal = parseFloat('{{ $subtotal }}') || 0;
-                var grandTotal = (shippingCost + subTotal).toFixed(2);
+      $(document).ready(function() {
+   // Function to update the shipping cost and totals when a shipping method is selected
+   var updateTotals = function() {
+        // Get the shipping cost from the data-shipping attribute in the HTML
+        var shippingCost = parseFloat($('.shipping_cost').data('shipping')) || 0; // Default to 0 if not available
+        
+        // Get the subtotal value (from a PHP variable or elsewhere in the page)
+        var subTotal = parseFloat('{{ $subtotal }}') || 0; // Ensure this is set properly in your Blade template
+        
+        // Calculate the grand total
+        var grandTotal = (shippingCost + subTotal).toFixed(2);
 
-                $('.shipping_cost').text('£' + shippingCost.toFixed(2));
-                $('.order_total strong').text('£' + grandTotal);
-                $('#total_ammount').val(grandTotal);
-                $('#shipping_cost').val(shippingCost.toFixed(2));
-            };
+        // Update the UI with the new shipping cost and grand total
+        $('.shipping_cost').text('£' + shippingCost.toFixed(2)); // Show shipping cost in £
+        $('.order_total strong').text('£' + grandTotal); // Show grand total in £
+        
+        // Set hidden fields with the updated values
+        $('#total_ammount').val(grandTotal); // Update hidden field for grand total
+        $('#shipping_cost').val(shippingCost.toFixed(2)); // Update hidden field for shipping cost
+    };
 
-            updateTotals();
+    // Initial call to update the totals
+    updateTotals();
 
-            $('input[name="shipping_method"]').change(function() {
-                updateTotals();
-            });
-        });
+    // Update totals when the shipping method is changed (if necessary)
+    $('input[name="shipping_method"]').change(function() {
+        updateTotals();
+    });
 
+});
+// Form validation function
+function validateForm() {
+    var isValid = true;
+    
+    // Validate first name
+    var firstName = $('input[name="firstName"]').val().trim();
+    if (firstName === '') {
+        isValid = false;
+        $('input[name="firstName"]').addClass('is-invalid');
+    } else {
+        $('input[name="firstName"]').removeClass('is-invalid');
+    }
 
+    // Validate last name
+    var lastName = $('input[name="lastName"]').val().trim();
+    if (lastName === '') {
+        isValid = false;
+        $('input[name="lastName"]').addClass('is-invalid');
+    } else {
+        $('input[name="lastName"]').removeClass('is-invalid');
+    }
 
-        $(document).ready(function() {
-            function validateForm() {
-                var isValid = true;
-                var firstName = $('input[name="firstName"]').val().trim();
-                if (firstName === '') {
-                    isValid = false;
-                    $('input[name="firstName"]').addClass('is-invalid');
-                } else {
-                    $('input[name="firstName"]').removeClass('is-invalid');
-                }
-                var lastName = $('input[name="lastName"]').val().trim();
-                if (lastName === '') {
-                    isValid = false;
-                    $('input[name="lastName"]').addClass('is-invalid');
-                } else {
-                    $('input[name="lastName"]').removeClass('is-invalid');
-                }
-                var email = $('input[name="email"]').val().trim();
-                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (email === '' || !emailPattern.test(email)) {
-                    isValid = false;
-                    $('input[name="email"]').addClass('is-invalid');
-                } else {
-                    $('input[name="email"]').removeClass('is-invalid');
-                }
-                var phone = $('input[name="phone"]').val().trim();
-                if (phone === '') {
-                    isValid = false;
-                    $('input[name="phone"]').addClass('is-invalid');
-                } else {
-                    $('input[name="phone"]').removeClass('is-invalid');
-                }
-                var address = $('input[name="address"]').val().trim();
-                if (address === '') {
-                    isValid = false;
-                    $('input[name="address"]').addClass('is-invalid');
-                } else {
-                    $('input[name="address"]').removeClass('is-invalid');
-                }
-                var city = $('input[name="city"]').val().trim();
-                if (city === '') {
-                    isValid = false;
-                    $('input[name="city"]').addClass('is-invalid');
-                } else {
-                    $('input[name="city"]').removeClass('is-invalid');
-                }
-                var postalCode = $('input[name="zip_code"]').val().trim();
-                if (postalCode === '') {
-                    isValid = false;
-                    $('input[name="zip_code"]').addClass('is-invalid');
-                } else {
-                    $('input[name="zip_code"]').removeClass('is-invalid');
-                }
-                return isValid;
+    // Validate email
+    var email = $('input[name="email"]').val().trim();
+    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email === '' || !emailPattern.test(email)) {
+        isValid = false;
+        $('input[name="email"]').addClass('is-invalid');
+    } else {
+        $('input[name="email"]').removeClass('is-invalid');
+    }
+
+    // Validate phone
+    var phone = $('input[name="phone"]').val().trim();
+    if (phone === '') {
+        isValid = false;
+        $('input[name="phone"]').addClass('is-invalid');
+    } else {
+        $('input[name="phone"]').removeClass('is-invalid');
+    }
+
+    // Validate address
+    var address = $('input[name="address"]').val().trim();
+    if (address === '') {
+        isValid = false;
+        $('input[name="address"]').addClass('is-invalid');
+    } else {
+        $('input[name="address"]').removeClass('is-invalid');
+    }
+
+    // Validate city
+    var city = $('input[name="city"]').val().trim();
+    if (city === '') {
+        isValid = false;
+        $('input[name="city"]').addClass('is-invalid');
+    } else {
+        $('input[name="city"]').removeClass('is-invalid');
+    }
+
+    // Validate postal code
+    var postalCode = $('input[name="zip_code"]').val().trim();
+    if (postalCode === '') {
+        isValid = false;
+        $('input[name="zip_code"]').addClass('is-invalid');
+    } else {
+        $('input[name="zip_code"]').removeClass('is-invalid');
+    }
+
+    return isValid;
+}
+
+// Handle form submission
+$('#placeOrderBtn').on('click', function() {
+    if (validateForm()) {
+        $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+        $.ajax({
+            url: $('#checkoutForm').attr('action'),
+            type: 'POST',
+            data: $('#checkoutForm').serialize(),
+            success: function(response) {
+                var redirectUrl = response.redirectUrl;
+
+                // Create an iframe for the payment process
+                var iframe = $('<iframe>', {
+                    src: redirectUrl,
+                    frameborder: '0',
+                    style: 'border: none; width: 100%; height: 100%;'
+                });
+
+                // Remove the checkout form and append the iframe
+                $('#checkoutForm').remove();
+                $('#iframeContainer').html(iframe);
+
+                // Scroll to the iframe
+                var iframeTopPosition = $('#iframeContainer').offset().top;
+                $('html, body').animate({
+                    scrollTop: iframeTopPosition
+                }, 'slow');
+            },
+            error: function(xhr, status, error) {
+                $('#placeOrderBtn').html('Proceed To Pay');
             }
-
-            $('#placeOrderBtn').on('click', function() {
-                if (validateForm()) {
-                    $('#placeOrderBtn').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-                    $.ajax({
-                        url: $('#checkoutForm').attr('action'),
-                        type: 'POST',
-                        data: $('#checkoutForm').serialize(),
-                        success: function(response) {
-
-
-                            var redirectUrl = response.redirectUrl;
-                            var iframe = $('<iframe>', {
-                                src: redirectUrl,
-                                frameborder: '0',
-                                style: 'border: none; width: 100%; height: 100%;'
-                            });
-                            $('#checkoutForm').remove();
-                            $('#iframeContainer').html(iframe);
-
-                            var iframeTopPosition = $('#iframeContainer').offset().top;
-                            $('html, body').animate({
-                                scrollTop: iframeTopPosition
-                            }, 'slow');
-                        },
-                        error: function(xhr, status, error) {
-                            $('#placeOrderBtn').html('Proceed To Pay');
-                        }
-                    });
-                }
-            });
-
         });
-    </script>
+    }
+});
+
+});
+</script>
 @endPushOnce
