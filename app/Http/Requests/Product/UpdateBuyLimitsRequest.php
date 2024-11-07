@@ -27,7 +27,7 @@ class UpdateBuyLimitsRequest extends FormRequest
             'id' => 'required',
             'min_buy' => 'nullable|integer|min:1',
             'max_buy' => 'nullable|integer|min:1',
-            'comb_variants' => 'nullable|boolean',
+            'comb_variants' => 'nullable|string',
         ];
     }
 }
