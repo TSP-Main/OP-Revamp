@@ -1,0 +1,170 @@
+
+@media screen and (min-width: 1024px) {
+    .website-switcher .navbar-dropdown {
+
+        background: #fff;
+        border: 1px solid #dedede;
+        padding: 0
+    }
+    .website-switcher .navbar-dropdown:after, .navbar-dropdown:before {
+        bottom: 100%;
+        right: 8%;
+        border: solid transparent;
+        content: "";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .website-switcher .navbar-dropdown:after {
+        border-color: rgba(255, 255, 255, 0);
+        border-bottom-color: #fff;
+        border-width: 10px;
+        margin-left: -10px;
+    }
+    .website-switcher .navbar-dropdown:hover:after {
+
+        border-bottom-color: whitesmoke;
+
+    }
+    .website-switcher .navbar-dropdown:before {
+        border-color: rgba(222, 222, 222, 0);
+        border-bottom-color: #dedede;
+        border-width: 11px;
+        margin-left: -11px;
+    }
+
+    .website-switcher .navbar-link:not(.is-arrowless)::after {
+        border-color:#fff;
+        border-radius: 0;
+        width: .5em;
+        height: .5em;
+        border-width: 1px;
+    }
+
+    .website-switcher .navbar-dropdown{
+        right: 0;
+        left: auto;
+    }
+    .website-switcher .navbar-dropdown a.navbar-item{
+        padding: 5px;
+        font-size: 12px;
+        padding-right: 35px;
+    }
+    .navbar-bottombar .website-switcher.navbar-item.has-dropdown:hover .navbar-link{
+    background: none;
+    }
+    .navbar-bottombar .website-switcher .navbar-item, .navbar-link{
+        padding: 0px 5px;
+    }
+    .navbar-bottombar .website-switcher .navbar-link img{
+        height: 2em;
+    }
+    .website-switcher .navbar-dropdown .navbar-item span{
+        padding-left: 5px;
+        font-size: 15px;
+    }
+
+    .navbar-bottombar .website-switcher .navbar-dropdown.is-boxed{
+        top: calc(100% + (0px));
+    }
+    }
+
+    @media screen and (max-width: 1023px) {
+
+        .website-switcher .navbar-dropdown .navbar-item img {
+            float: left;
+            margin-right: 5px;
+        }
+
+        .website-switcher .navbar-dropdown .navbar-item span {
+            padding-top: 5px;
+            float: left;
+        }
+
+        .website-switcher .navbar-dropdown.is-boxed{
+            border-radius: 6px;
+            border-top: none;
+            box-shadow: 0 8px 8px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+            display: block;
+            opacity: 0;
+            pointer-events: none;
+            top: calc(100% + (-4px));
+            transform: translateY(-5px);
+            transition-duration: 86ms;
+            transition-property: opacity, transform;
+            position: absolute;
+            right: 0;
+            left: auto;
+            width: 125px;
+
+        }
+
+        .website-switcher.navbar-item.is-hoverable:hover .navbar-dropdown.is-boxed {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateY(0);
+        }
+
+        .website-switcher .navbar-dropdown a.navbar-item{
+            float: left;
+            padding: 0px 5px;
+        }
+    .website-switcher .navbar-dropdown {
+
+        background: #fff;
+        border: 1px solid #dedede;
+        padding: 0
+    }
+    .website-switcher .navbar-dropdown:after, .navbar-dropdown:before {
+        bottom: 100%;
+        right: 8%;
+        border: solid transparent;
+        content: "";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .website-switcher .navbar-dropdown:after {
+        border-color: rgba(255, 255, 255, 0);
+        border-bottom-color: #fff;
+        border-width: 10px;
+        margin-left: -10px;
+    }
+    .website-switcher .navbar-dropdown:hover:after {
+
+        border-bottom-color: whitesmoke;
+
+    }
+    .website-switcher .navbar-dropdown:before {
+        border-color: rgba(222, 222, 222, 0);
+        border-bottom-color: #dedede;
+        border-width: 11px;
+        margin-left: -11px;
+    }
+
+    .website-switcher .navbar-link:not(.is-arrowless)::after {
+        border-color:#fff;
+        border-radius: 0;
+        width: .5em;
+        height: .5em;
+        border-width: 1px;
+    }
+
+    .website-switcher .navbar-dropdown{
+        right: 0;
+        left: auto;
+    }
+
+    .website-switcher  .navbar-link:hover{
+        background: none;
+    }
+
+    }
+
+    .consultation-treatments-select .website-switcher,.consultation-treatment-questions .website-switcher,.checkout-index-index .website-switcher{
+        display: none;
+    }
