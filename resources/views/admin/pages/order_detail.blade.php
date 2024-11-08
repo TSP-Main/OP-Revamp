@@ -433,10 +433,10 @@
                                     @endif
 
                                     
-                                    @if((($user->hasRole('super_admin') || $user->hasRole('dispensary'))))
+                                    @if($user->hasRole('super_admin') || $user->hasRole('dispensary'))
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Subtotal: </p>
-                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'], 2) }}</p>
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'] - (float)$order['shipping_cost'], 2) }}</p>
                                     </div>
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Shipping Charges: </p>
@@ -452,7 +452,8 @@
                                             Total paid: <span class="h2 mb-0 ms-2">£{{ number_format((float)$order['total_amount'], 2) }}</span>
                                         </h5>
                                     </div>
-                                @endif                                
+                                @endif
+                                                                
                                     @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved' && $order['status'] != 'Received')
                                         <form id="form_shiping_now" action="{{route('admin.createShippingOrder')}}"
                                               method="POST">

@@ -1688,7 +1688,7 @@ class AdminDashboardController extends Controller
         }
     
         // Apply pagination with 50 orders per page
-        $orders = $query->latest('created_at')->paginate(50);
+        $orders = $query->latest('created_at')->paginate(500);
     
         if ($orders->isNotEmpty()) {
             // Convert orderdetails to arrays for each order item

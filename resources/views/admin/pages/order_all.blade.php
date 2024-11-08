@@ -377,19 +377,17 @@
                             </div>
                         </div> --}}
                     </div>
-                    <div class="row mb-3 px-4 align-items-center">
+                    <div class="row mb-3 px-4">
                         <!-- Search Input Column -->
                         <div class="col-md-8 text-start">
                             <label for="search" class="form-label fw-bold">Search From Table</label>
-                            <form action="{{ route('admin.allOrders') }}" method="GET" class="d-flex">
-                                <input type="text" id="search" name="search" placeholder="Search here..." class="form-control me-2" value="{{ request('search') }}">
-                                <button type="submit" class="btn btn-primary" style="padding: 10px 20px; background-color: #4959e4; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer;">Search</button>
-                            </form>
-                        </div>                        
+                            <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
+                        </div>
                         <div class="col-md-4 text-end mt-auto">
-                            <div id="tbl_buttons" class="d-inline-block"></div>
+                            <div id="tbl_buttons" class="d-inline-block">
                         </div>
                     </div>
+                    
                     <div class="card-body">
                         <table id="tbl_data" class="table table-striped">
                             <thead class="thead-dark">
@@ -401,7 +399,7 @@
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
                                     <th>Email</th>
-                                    @if($user->hasRole('super_admin'))
+                                    @if ($user->role == user_roles('1'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
@@ -448,38 +446,30 @@
                                     </td>
                                     <td>
                                         {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
-                                        @if (isset($val['shipping_details']) && $val['shipping_details'])
-                                        {{ $val['shipping_details']['firstName'] ?? '' }}
-                                        {{ $val['shipping_details']['lastName'] ?? '' }}
+                                        @if (isset($val['shipingdetails']) && $val['shipingdetails'])
+                                        {{ $val['shipingdetails']['firstName'] ?? '' }}
+                                        {{ $val['shipingdetails']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
                                         {{ $val['user']['name'] ?? '' }}
                                         @else
                                         N/A
                                         @endif
+
                                     </td>
                                     <td>
-                                        @if (isset($val['shipping_details']['email']))
-                                            {{ $val['shipping_details']['email'] }}
+                                        @if (isset($val['shipingdetails']['email']))
+                                            {{ $val['shipingdetails']['email'] }}
                                         @elseif (isset($val['user']['email']))
                                             {{ $val['user']['email'] }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
-                                    @if($user->hasRole('super_admin'))
+                                    
+                                    @if ($user->role == user_roles('1'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
-                                    <td>
-                                        <?php if ($val['order_type'] == 'premd'): ?>
-                                            <span class="btn fw-bold rounded-pill btn-primary">POM</span>
-                                        <?php elseif ($val['order_type'] == 'pmd'): ?>
-                                            <span class="btn fw-bold rounded-pill btn-warning">P.Med</span>
-                                        <?php elseif ($val['order_type'] == 'premd/Reorder'): ?>
-                                            <span class="btn fw-bold rounded-pill btn-info">POM/Reorder</span>
-                                        <?php else: ?>
-                                            <span class="btn fw-bold rounded-pill btn-success">O.T.C</span>
-                                        <?php endif; ?>
-                                    </td>
+                                    <td><span class="btn  fw-bold rounded-pill {{ $val['order_type'] == 'premd' ? 'btn-primary' : ($val['order_type'] == 'pmd' ? 'btn-warning' : 'btn-success') }}">{{ $val['order_type'] == 'premd' ? 'POM' : ($val['order_type'] == 'pmd' ? 'P.Med' : 'O.T.C') }}</span>
                                     </td>
                                     <td><span class="btn fw-bold rounded-pill btn-success">
                                             {{ $val['payment_status'] ?? '' }}</span> </td>
@@ -491,11 +481,6 @@
                             </tbody>
                         </table>
                     </div>
-                     <!-- Pagination links -->
-                    <div class="pagination">
-                        {{ $paginated_orders->links() }}
-                    </div>
-   
                     <!-- /.card-body -->
                 </div>
             </div>
@@ -513,7 +498,7 @@
 
 @pushOnce('scripts')
 <script>
-    $(function() {
+ $(function() {
         $("#tbl_data").DataTable({
             "paging": true,
             "responsive": true,
