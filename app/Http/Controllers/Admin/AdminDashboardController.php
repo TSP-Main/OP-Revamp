@@ -1658,54 +1658,33 @@ class AdminDashboardController extends Controller
         return view('admin.pages.orders_recieved', $data);
     }
 
-    public function all_orders(Request $request)
+    public function all_orders()
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
     
-        // Start building the query
-        $query = Order::with([
-            'user',
-            'shippingDetails:id,order_id,firstName,lastName,email',
+        // Get orders as Eloquent Collection with relationships loaded
+        $orders = Order::with([
+            'user', 
+            'shippingDetails:id,order_id,firstName,lastName,email', 
             'orderdetails:id,order_id,consultation_type'
         ])
-        ->where('payment_status', 'Paid');
+        ->where(['payment_status' => 'Paid'])
+        ->latest('created_at')
+        ->paginate(500);  // Use paginate instead of get()
     
-        // Apply searching if there's a search term
-        if ($request->has('search') && $request->search != '') {
-            $searchTerm = $request->search;
-            $query->where(function($subQuery) use ($searchTerm) {
-                $subQuery->where('id', 'like', "%{$searchTerm}%")
-                    ->orWhereHas('user', function($q) use ($searchTerm) {
-                        $q->where('name', 'like', "%{$searchTerm}%");
-                    })
-                    ->orWhereHas('shippingDetails', function($q) use ($searchTerm) {
-                        $q->where('firstName', 'like', "%{$searchTerm}%")
-                          ->orWhere('lastName', 'like', "%{$searchTerm}%")
-                          ->orWhere('email', 'like', "%{$searchTerm}%");
-                    });
-            });
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders->items());  // Keep it a Collection
+            $data['orders'] = $this->assign_order_types($orders->items());  // Keep it a Collection
         }
     
-        // Apply pagination with 50 orders per page
-        $orders = $query->latest('created_at')->paginate(500);
-    
-        if ($orders->isNotEmpty()) {
-            // Convert orderdetails to arrays for each order item
-            $ordersArray = $orders->map(function ($order) {
-                $order['orderdetails'] = $order['orderdetails']->toArray();
-                return $order;
-            })->toArray();
-    
-            $data['order_history'] = $this->get_prev_orders($ordersArray);
-            $data['orders'] = $this->assign_order_types($ordersArray);
-        }
-    
-        // Pass the paginated orders for links
-        $data['paginated_orders'] = $orders;
+        // Pass pagination links to the view
+        $data['orders_paginate'] = $orders;
     
         return view('admin.pages.order_all', $data);
     }
+    
+    
     
 
     public function otc_orders()
@@ -2669,9 +2648,13 @@ class AdminDashboardController extends Controller
 
 
     private function assign_order_types($orders)
-    {
-        foreach ($orders as &$order) {
-            $consultationTypes = array_column($order['orderdetails'], 'consultation_type');
+{
+            foreach ($orders as &$order) {
+                // Convert orderdetails back to a Collection if it's an array
+                $orderDetailsCollection = collect($order['orderdetails']);  // Convert to a Collection
+        
+                // Now you can safely use pluck on the Collection
+                $consultationTypes = $orderDetailsCollection->pluck('consultation_type')->toArray();
 
             if (in_array('premd', $consultationTypes)) {
                 $order['order_type'] = 'premd';
@@ -2683,6 +2666,8 @@ class AdminDashboardController extends Controller
             } else {
                 $order['order_type'] = 'one_over';
             }
+
+            $order['consultation_types'] = $consultationTypes;
         }
         return $orders;
     }
