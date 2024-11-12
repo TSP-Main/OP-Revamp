@@ -1316,7 +1316,7 @@ class AdminDashboardController extends Controller
         $data['order']['shipping_cost'] = $order->shippingDetail->cost ?? 0;
     
         // Shipping details
-        $data['order']['shipping_details'] = $order->shippingDetail->only(['firstName', 'lastName', 'phone', 'email', 'city','product_status', 'zip_code', 'address']);
+        $data['order']['shipping_details'] = $order->shippingDetail->only(['firstName', 'lastName', 'phone', 'email', 'city','product_status', 'zip_code', 'address','tracking_no']);
     
       // Calculate subtotal for approved products based on product table prices
         $data['order']['total_amount'] = $order->orderdetails->sum(function ($detail) {
@@ -2256,29 +2256,48 @@ class AdminDashboardController extends Controller
 
     public function get_shipping_order(Request $request)
     {
+        // Get order ID from the request
         $order_id = $request->id;
-        $order = Order::findOrFail($order_id);
-        $tracking_nos = Null;
+    
+        // Fetch the ShippingDetail record for the given order ID
+        $shippingDetail = ShippingDetail::where('order_id', $order_id)->first();
+    
+        // If the ShippingDetail record doesn't exist, return early with a message
+        if (!$shippingDetail) {
+            return redirect()->route('admin.orderDetail', ['id' => base64_encode($order_id)])
+                ->with('status', 'fail')
+                ->with('msg', 'Shipping detail not found');
+        }
+    
+        // Set up the API request
         $apiKey = '74b1b61e-efd0-4932-be7d-7a27276f26e3';
-
         $client = new Client();
-        $response = $client->get('https://api.parcel.royalmail.com/api/v1/orders/' . $order->order_identifier, [
+        $response = $client->get('https://api.parcel.royalmail.com/api/v1/orders/' . $shippingDetail->order_identifier, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $apiKey,
             ]
         ]);
-
-        $statusCode = $response->getStatusCode();
+    
+        // Decode the API response
         $body = json_decode($response->getBody()->getContents(), true);
-        if ($statusCode == '200') {
-            $tracking_nos = array_column($body, 'trackingNumber');
+    
+        // Check if the response status is successful and contains tracking numbers
+        $tracking_nos = $response->getStatusCode() === 200 && isset($body[0]['trackingNumber']) ? [$body[0]['trackingNumber']] : null;
+    
+        // If tracking number is found, update the shipping detail
+        if ($tracking_nos) {
+            $shippingDetail->tracking_no = $tracking_nos[0];
+            $shippingDetail->save();
+    
+            return redirect()->route('admin.orderDetail', ['id' => base64_encode($order_id)])
+                ->with('status', 'success')
+                ->with('msg', 'Order is Tracked');
         }
-
-        $order->shippingDetails->tracking_no = $tracking_nos[0] ?? Null;
-        $update = $order->save();
-        $msg = ($tracking_nos[0] ?? Null) ? 'Order is Tracked' : 'Order tracking failed';
-        $status = ($tracking_nos[0] ?? Null) ? 'success' : 'fail';
-        return redirect()->route('admin.orderDetail', ['id' => base64_encode($order->id)])->with('status', $status)->with('msg', $msg);
+    
+        // If no tracking number is found, set the status as failed
+        return redirect()->route('admin.orderDetail', ['id' => base64_encode($order_id)])
+            ->with('status', 'fail')
+            ->with('msg', 'Order tracking failed');
     }
     public function create_shipping_order(Request $request)
     {
@@ -2328,6 +2347,7 @@ class AdminDashboardController extends Controller
                     $shipped = [];
                     if ($response['createdOrders']) {
                         foreach ($response['createdOrders'] as $val) {
+                           // dd( $val['orderIdentifier']);
                             $shipped[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
