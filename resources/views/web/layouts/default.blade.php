@@ -8,6 +8,7 @@
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','GTM-MZDH78X7');</script>
     <!-- End Google Tag Manager -->
+    <meta name="google-site-verification" content="KJTAShNSPV42Bgr10RFpZx_52B8fua2le82p9G_K7DE" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-YMQV5MH96N"></script>
