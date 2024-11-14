@@ -51,13 +51,30 @@
                                     </td>
                                     <td>
                                         @foreach($order['orderdetails'] as $detailKey => $val)
-                                            <div>{{ ++$detailKey }}. 
-                                                @if(isset($val['product']) && !empty($val['product']['title']))
-                                                    {{ $val['product']['title'] }} X <span id="qty-{{ $val['id'] }}">{{ $val['product_qty'] }}</span>
-                                                @else
-                                                    Product information not available.
+                                        <div>{{ ++$detailKey }}. 
+                                            @if(isset($val['product']) && !empty($val['product']['title']))
+                                                {{-- Display the product title --}}
+                                                {{ $val['product']['title'] }} X <span id="qty-{{ $val['id'] }}">{{ $val['product_qty'] }}</span>
+                                        
+                                                {{-- Display the variant title if it exists --}}
+                                                @if(isset($val['variant_id']))
+                                                    @php
+                                                        // Find the variant based on variant_id
+                                                        $variant = collect($val['product']['variants'])->firstWhere('id', $val['variant_id']);
+                                                    @endphp
+                                                    {{-- Check if a variant is found and display the variant title --}}
+                                                    @if($variant)
+                                                        <br><span class="variant-title"><strong>Variant:</strong> {{ $variant['title'] }}</span>
+                                                        <br><span class="variant-value"><strong>Variant Value:</strong> {{ $variant['value'] }}</span>
+                                                    @else
+                                                        <br><span class="variant-title">Variant: Not Available</span>
+                                                    @endif
                                                 @endif
-                                            </div>
+                                            @else
+                                                Product information not available.
+                                            @endif
+                                        </div>
+                                        
                                             <div class="col-3">
                                                 <div class="text-center">
                                                     @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd' || $val['consultation_type'] == 'premd/Reorder')
@@ -125,10 +142,22 @@
 
                 // Check if there are variants for the product
                 let variantSelect = '';
+                let variantValue = '';  // This will store the variant value
+
                 if (detail.product.variants.length > 0) {
                     variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
+
+                    // Add label for variant dropdown
+                  variantSelect = `<label for="variant-${detail.id}"><strong>Select Variant</label>` + variantSelect;
+                    
+                    // Loop through each variant to create the select dropdown
                     detail.product.variants.forEach(function(variant) {
-                        variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.title} - £${variant.price}</option>`;
+                        variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.value} - £${variant.price}</option>`;
+                        
+                        // Assuming you want to display the first variant value next to the product title:
+                        if (!variantValue) {  // Only set the value if it's not already set (for the first variant)
+                            variantValue = variant.value;  // Store the first variant value
+                        }
                     });
                     variantSelect += `</select>`;
                 }
@@ -136,12 +165,16 @@
                 $('#quantityFields').append(`
                     <div class="mb-3">
                         <input type="checkbox" id="product-${detail.id}" checked>
-                        <label for="product-${detail.id}">${detail.product.title}:</label>
-                        ${variantSelect}
-                        <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
+                        <label for="product-${detail.id}">
+                            ${detail.product.title}
+                            ${variantValue ? ` - <strong>Variant:</strong> ${variantValue}` : ''}  <!-- Display the variant value if it exists -->
+                        </label>
+                        ${variantSelect}  <!-- Display the dropdown for variants -->
+                        <input type="number" class="form-control mt-3" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
                         ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
                     </div>
                 `);
+
             });
 
             // Show the modal

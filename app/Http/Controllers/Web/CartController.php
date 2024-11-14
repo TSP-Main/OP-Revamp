@@ -393,11 +393,19 @@ class CartController extends Controller
                     ]);
                 }
             }
+    
+        
+                $shippingCost = $existingOrder->shippingdetails->cost;
             
+    
+            // Add the shipping cost to the total amount
+            $totalAmount += $shippingCost;
+    
             // Update the total amount of the new order
             $newOrder->total_ammount = $totalAmount;
-            $newOrder->save();
+            $newOrder->save(); // Update the total amount of the new order
     
+            // Copy shipping details if available
             if ($existingOrder->shippingdetails) {
                 $shippingDetail = $existingOrder->shippingdetails; // Get the single shipping detail
                 $shippingData = $shippingDetail->toArray();
@@ -408,11 +416,16 @@ class CartController extends Controller
             // Prepare for payment processing
             session()->put('order_id', $newOrder->id);
             $payable_amount = $newOrder->total_ammount * 100; // Convert to cents if needed
-            $productDescription = 'Reorder from Pharmacy 4U';
+            $productDescription = 'Reorder Pharmacy 4U';
             $full_name = $existingOrder->email; // Assuming email is used for full name
     
-            // Obtain Access Token
-            $accessToken = $this->getAccessToken();
+            // Get payment environment from .env file
+            $paymentEnv = env('PAYMENT_ENV');  // Default to 'Test' if not set
+    
+            \Log::info("Payment Environment: " . $paymentEnv);  // Log the environment being used
+    
+            // Obtain Access Token based on environment
+            $accessToken = $this->getAccessToken($paymentEnv);
     
             // Prepare POST fields for creating a payment order
             $postFields = [
@@ -437,6 +450,7 @@ class CartController extends Controller
                 'merchantTrns' => "Reorder from Pharmacy 4U",
             ];
     
+            // Send the payment request to VivaPayments API
             $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
             $responseData = json_decode($response, true);
     
@@ -445,13 +459,13 @@ class CartController extends Controller
                 $temp_code = random_int(00000, 99999);
                 $payment_details = [
                     'order_id' => $newOrder->id,
-                    'orderCode' => ($this->ENV == 'Live') ? $orderCode : $temp_code,
+                    'orderCode' => ($paymentEnv == 'Live') ? $orderCode : $temp_code,
                     'amount' => $newOrder->total_ammount,
                 ];
     
                 $payment_init = PaymentDetail::create($payment_details);
                 if ($payment_init) {
-                    $redirectUrl = ($this->ENV == 'Live') 
+                    $redirectUrl = ($paymentEnv == 'Live') 
                         ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" 
                         : url("/Completed-order?t=$temp_code&s=$temp_code&lang=en-GB&eventId=0&eci=1");
     
@@ -508,98 +522,6 @@ class CartController extends Controller
 
         // Return the response body
         return $response->body();
-    }
-
-    public function completedOrder(Request $request)
-    {
-        $transetion_id = $request->query('t');
-        $orderCode = $request->query('s');
-    
-        $payment_detail = PaymentDetail::where('orderCode', $orderCode)->first();
-    
-        if (!$payment_detail) {
-            return response()->json(['status' => false, 'message' => 'No payment details found.'], 404);
-        }
-    
-        if ($this->ENV == 'Live') {
-            $accessToken = $this->getAccessToken();
-            $url = "https://api.vivapayments.com/checkout/v2/transactions/{$transetion_id}";
-    
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
-                'Content-Type'  => 'application/json',
-            ])->get($url);
-    
-            if ($response->failed()) {
-                return response()->json(['status' => false, 'message' => 'Failed to retrieve transaction details.'], 500);
-            }
-    
-            $responseData = json_decode($response->body(), true);
-            
-            // Validate response data
-            if (!isset($responseData['fullName'], $responseData['email'])) {
-                return response()->json(['status' => false, 'message' => 'Invalid response from payment gateway.'], 400);
-            }
-    
-            $update_payment = [
-                'transactionId' => $transetion_id,
-                'fullName' => $responseData['fullName'],
-                'email' => $responseData['email'],
-                'cardNumber' => $responseData['cardNumber'],
-                'statusId' => $responseData['statusId'],
-                'insDate' => $responseData['insDate'],
-                'amount' => $responseData['amount'],
-            ];
-        } else {
-            $update_payment = [
-                'transactionId' => $transetion_id,
-                'fullName' => 'test',
-                'email' => 'testing@gmail.com',
-                'cardNumber' => '34234test34234',
-                'statusId' => 'F',
-                'insDate' => now(),
-            ];
-        }
-    
-        PaymentDetail::where('id', $payment_detail->id)->update($update_payment);
-    
-        $order = Order::with('orderdetails', 'orderdetails.product')
-            ->where('id', $payment_detail->order_id)
-            ->latest('created_at')
-            ->first();
-    
-        if (!$order) {
-            return response()->json(['status' => false, 'message' => 'Order not found.'], 404);
-        }
-    
-        $user = auth()->user();
-        $order->update(['payment_status' => 'Paid']);
-        
-        // Notify relevant users
-        $rolesToCheck = ['super_admin'];
-        if ($order->order_for === 'doctor') {
-            $rolesToCheck[] = 'doctor';
-        } else {
-            $rolesToCheck[] = 'dispensary';
-        }
-        
-        $users = User::role($rolesToCheck)->where('status', 1)->get();
-        Notification::send($users, new UserOrderNotification($order));
-        Mail::to($order->shippingDetails->email)->send(new OrderConfirmation($order));
-    
-        // Logout and redirect
-        Session::flush();
-        if ($user) {
-            Auth::logout();
-            Auth::login($user);
-        }
-    
-        $name = $order->shippingDetails->firstName;
-        $redirectUrl = route('thankYou', ['n' => $name]);
-    
-        return response()->json(['status' => true, 'redirect' => $redirectUrl]);
-    }
-
-    
+    }    
     
 }
