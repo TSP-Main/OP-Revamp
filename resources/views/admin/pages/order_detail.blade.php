@@ -445,7 +445,7 @@
                                     <hr>
                                     <div class="d-flex justify-content-between">
                                         <p class="fw-bold mb-0">Total: </p> 
-                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'] + (float)$order['shipping_cost'], 2) }}</p>
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'], 2 ) }}</p>
                                     </div>
                                     <div class="card-footer border-0 px-4">
                                         <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">
