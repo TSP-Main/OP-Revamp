@@ -214,7 +214,7 @@
                             </tr>
                             <tr>
                                 <td colspan="2"><strong>Total Amount:</strong></td>
-                                <td colspan="2">£{{ number_format($order['total_ammount'] + (float)$order['shipping_cost'], 2) }}</td>
+                                <td colspan="2">£{{ number_format($order['total_ammount'], 2) }}</td>
                             </tr>
                         </tbody>
                     </table>
