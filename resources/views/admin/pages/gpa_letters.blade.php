@@ -133,7 +133,16 @@
                                     <td style="vertical-align: middle; text-align: center;">
                                         <input class="form-control" type="email" id="gpa_email_{{$val['id']}}" value="">
                                     </td>
-                                    <td><span class="btn  fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span> </td>
+                                    <td>
+                                        <span class="btn fw-bold rounded-pill 
+                                            {{ $val['order_type'] == 'premd' ? 'btn-primary' : 
+                                                ($val['order_type'] == 'pmd' ? 'btn-warning' : 
+                                                ($val['order_type'] == 'premd/Reorder' ? 'btn-info' : 'btn-success')) }}">
+                                            {{ $val['order_type'] == 'premd' ? 'POM' : 
+                                                ($val['order_type'] == 'pmd' ? 'P.Med' : 
+                                                ($val['order_type'] == 'premd/Reorder' ? 'Reorder' : 'O.T.C')) }}
+                                        </span>
+                                    </td>
                                     <th>
                                         <button type="button" data-id="{{$val['id']}}" class="btn btn-small  bg-secondary  rounded-pill text-center update_gpa">
                                             <i class="bi bi-pencil-square"></i>

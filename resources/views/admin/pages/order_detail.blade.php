@@ -81,6 +81,10 @@
             .textarea {
                 resize: none
             }
+            /* Position the button in the top-right corner */
+            .d-flex.justify-content-between {
+                position: relative;
+            }
         </style>
         <div class="pagetitle ">
             <div class="">
@@ -251,9 +255,17 @@
                         <div class="card-body">
                             <div class="row d-flex justify-content-center align-items-center">
                                 <div class="col-lg-12">
-                                    <div class="text">
-                                        <h4 class="fw-bold">Order Placed</h4>
-                                        <p>{{ \Carbon\Carbon::parse($order['created_at'])->format('M, d, Y - H:i') }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text">
+                                            <h4 class="fw-bold">Order Placed</h4>
+                                            <p>{{ \Carbon\Carbon::parse($order['created_at'])->format('M, d, Y - H:i') }}</p>
+                                        </div>
+                                        <!-- Download GPA Button -->
+                                        @if($order['status'] != 'Not_Approved' && $order['status'] != 'Received')
+                                        <button style="margin-right: 10px; background-color:#146c43;" type="button" data-id="{{ $order['id'] }}" class="btn btn-success rounded-pill text-center download_gpa">
+                                            <i class="bi bi-download"></i> GPA Letter
+                                        </button>
+                                        @endif
                                     </div>
                                     <div class="card shadow-0 border mb-4">
                                         <div class="card-body">
@@ -445,7 +457,7 @@
                                     <hr>
                                     <div class="d-flex justify-content-between">
                                         <p class="fw-bold mb-0">Total: </p> 
-                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'], 2 ) }}</p>
+                                        <p class="text-muted mb-0">£{{ number_format($order['total_ammount'],2 ) }}</p>
                                     </div>
                                     <div class="card-footer border-0 px-4">
                                         <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">
@@ -572,6 +584,10 @@
         <input type="hidden" id="user_id" value="{{auth()->user()->id}}">
     </main>
     <!-- End #main -->
+    <form id="download_form" action="{{route('pdf.createGpaLetters')}}" method="post">
+        <input id="pdf_form_id_input" type="hidden" value="" name="id">
+        <input type="hidden" name="view_name" value="gpa_letters" required>
+    </form>
 
     <div class="modal fade" id="order_refund_mdl" tabindex="-1" data-bs-backdrop="false">
         <div class="modal-dialog modal-dialog-centered">
@@ -732,6 +748,12 @@
                 }
             });
 
+            
+        $(document).on('click', '.download_gpa', function() {
+            var id = $(this).data('id');
+            $('#pdf_form_id_input').val(id);
+            $('#download_form').submit();
+        });
 
         });
     </script>

@@ -1671,7 +1671,7 @@ class AdminDashboardController extends Controller
         ])
         ->where(['payment_status' => 'Paid'])
         ->latest('created_at')
-        ->paginate(500);  // Use paginate instead of get()
+        ->paginate();  // Use paginate instead of get()
     
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders->items());  // Keep it a Collection
@@ -2303,32 +2303,35 @@ class AdminDashboardController extends Controller
     {
         $user = $this->getAuthUser();
         $this->authorize('orders');
-    
+        
         $validatedData = $request->validate([
             'id' => 'required|exists:orders,id'
         ]);
-    
+        
         // Fetch the order with the related models
-        $order = Order::with(['user', 'shippingDetails', 'orderdetails.product'])->where([
-            'id' => $request->id,
-            'payment_status' => 'Paid'
-        ])->first();
-    
+        $order = Order::with(['user', 'shippingDetails', 'orderdetails.product', 'orderdetails.product.variants'])
+                      ->where([
+                          'id' => $request->id,
+                          'payment_status' => 'Paid'
+                      ])
+                      ->first();
+        
         if ($order) {
             try {
-                $order = $order->toArray() ?? [];
+                $order = $order->toArray();
                 $weightSum = 0;
-    
+        
                 // Calculate total weight using the product weight from the product table
                 foreach ($order['orderdetails'] as $orderDetail) {
-                    $product = $orderDetail['product']; // Assuming 'product' relation is eager-loaded
+                    $product = $orderDetail['product']; // Accessing the 'product' relation
                     $weightSum += ($product['weight'] ?? 0) * $orderDetail['product_qty']; // Multiply by quantity
                 }
-    
+        
+                // Update weight and quantity for the order
                 $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
-                // dd($order['weight']);
                 $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
-    
+        
+                // Create the shipping payload for the API
                 $payload = $this->make_shiping_payload($order);
                 $apiKey = env('ROYAL_MAIL_API_KEY');
                 $client = new Client();
@@ -2339,15 +2342,17 @@ class AdminDashboardController extends Controller
                     ],
                     'json' => $payload,
                 ]);
-    
+        
                 $statusCode = $response->getStatusCode();
                 $body = $response->getBody()->getContents();
+        
                 if ($statusCode == 200) {
                     $response = json_decode($body, true);
                     $shipped = [];
+                    
                     if ($response['createdOrders']) {
                         foreach ($response['createdOrders'] as $val) {
-                           // dd( $val['orderIdentifier']);
+                            // Create or update ShippingDetail
                             $shipped[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
@@ -2357,145 +2362,199 @@ class AdminDashboardController extends Controller
                                     'created_by' => $user->id,
                                 ]
                             );
+        
+                            // Deduct stock for each product in the order
+                            foreach ($order['orderdetails'] as $orderDetail) {
+                                $product = $orderDetail['product'];
+                                $product_qty = $orderDetail['product_qty'];
+                                
+                                // If the order has a variant_id (which means a variant was selected), deduct from the variant
+                                if ($orderDetail['variant_id']) {
+                                    $variant = ProductVariant::find($orderDetail['variant_id']);
+                                    
+                                    if ($variant) {
+                                        // Deduct stock from the variant
+                                        $variant->inventory -= $product_qty;
+                                        $variant->save();
+                                    } else {
+                                        Log::error("Variant not found for order detail ID: {$orderDetail['id']}");
+                                    }
+                                } else {
+                                    // If no variant, deduct from the main product stock
+                                    $productModel = Product::find($product['id']);
+                                    
+                                    if ($productModel) {
+                                        // Deduct stock from the main product
+                                        $productModel->stock -= $product_qty;
+                                        $productModel->save();
+                                    } else {
+                                        Log::error("Product not found for order detail ID: {$orderDetail['id']}");
+                                    }
+                                }
+                            }
                         }
                     }
-                    if ($response['failedOrders']) {
-                        foreach ($response['failedOrders'] as $val) {
-                            $shipped[] = ShippingDetail::updateOrCreate(
+        
+                    // Update the order status to "Shipped"
+                    $orderModel = Order::findOrFail($order['id']);
+                    $orderModel->status = $shipped[0]->shipping_status;
+                    $orderModel->save();
+                    
+                    // Return success message
+                    $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
+                    $status = ($shipped[0]->shipping_status == 'Shipped') ? 'success' : 'fail';
+                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
+                                     ->with('status', $status)
+                                     ->with('msg', $msg);
+                } else {
+                    Log::error("Royal Mail API failed with status code: {$statusCode}");
+                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
+                                     ->with('status', 'fail')
+                                     ->with('msg', 'Error with shipping API.');
+                }
+            } catch (\Exception $e) {
+                Log::error("Error during shipping order creation: " . $e->getMessage());
+                return redirect()->back()->with('status', 'fail')
+                                        ->with('msg', 'An error occurred while processing the shipping order.');
+            }
+        }
+        
+        return redirect()->back()->with('status', 'fail')->with('msg', 'Order not found or payment not confirmed.');
+    }
+    
+       
+
+ public function batchShipping(Request $request)
+{
+    $user = $this->getAuthUser();
+    $this->authorize('orders');
+    
+    $validatedData = $request->validate([
+        'order_ids' => 'required|array',
+        'order_ids.*' => 'exists:orders,id'
+    ]);
+    
+    $shippedOrders = [];
+    $failedOrders = [];
+    
+    foreach ($validatedData['order_ids'] as $orderId) {
+        $order = Order::with('user', 'shippingDetails', 'orderdetails.product', 'orderdetails.product.variants')
+                      ->where(['id' => $orderId, 'payment_status' => 'Paid'])
+                      ->first();
+    
+        if ($order) {
+            try {
+                $order = $order->toArray();
+                
+                // Calculate weight and quantity
+                $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
+                $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
+                $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
+    
+                // Prepare the payload for shipping
+                $payload = $this->make_shiping_payload($order);
+                $apiKey = env('ROYAL_MAIL_API_KEY');
+                $client = new Client();
+                
+                $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $apiKey,
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => $payload,
+                ]);
+    
+                $statusCode = $response->getStatusCode();
+                $body = $response->getBody()->getContents();
+    
+                if ($statusCode == 200) {
+                    $response = json_decode($body, true);
+                    
+                    if (!empty($response['createdOrders'])) {
+                        foreach ($response['createdOrders'] as $val) {
+                            $shippedOrders[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
                                     'order_identifier' => $val['orderIdentifier'],
                                     'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
-                                    'shipping_status' => 'ShippingFail',
+                                    'shipping_status' => 'Shipped',
                                     'created_by' => $user->id,
                                 ]
                             );
+    
+                            // Deduct stock for each product in the order
+                            foreach ($order['orderdetails'] as $orderDetail) {
+                                $product = $orderDetail['product'];
+                                $product_qty = $orderDetail['product_qty'];
+                                
+                                if ($product['variant_id']) {  // If product has variants
+                                    // Deduct stock from the relevant product variant
+                                    $variant = $orderDetail['product']['variant'];  // Eager-loaded variant data
+                                    if ($variant) {
+                                        $variant->inventory -= $product_qty;
+                                        $variant->save();
+                                    }
+                                } else {  // If product has no variant
+                                    // Deduct stock from the main product
+                                    $productModel = Product::find($product['id']);
+                                    if ($productModel && $productModel->stock >= $product_qty) {
+                                        $productModel->stock -= $product_qty;
+                                        $productModel->save();
+                                    } else {
+                                        // Handle error (stock insufficient)
+                                        Log::error("Not enough stock for product ID: {$product['id']}.");
+                                    }
+                                }
+                            }
+                        }
+    
+                        // Update the order status to "Shipped"
+                        $orderToUpdate = Order::findOrFail($order['id']);
+                        $orderToUpdate->status = 'Shipped';
+                        $orderToUpdate->save();
+                    }
+    
+                    if (!empty($response['failedOrders'])) {
+                        foreach ($response['failedOrders'] as $val) {
+                            $failedOrders[] = [
+                                'order_id' => $order['id'],
+                                'order_identifier' => $val['orderIdentifier'],
+                                'errors' => json_encode($val['errors'] ?? []),
+                                'status' => 'ShippingFail',
+                            ];
                         }
                     }
-                    $orderModel = Order::findOrFail($order['id']);
-                    $orderModel->status = $shipped[0]->shipping_status;
-                    $update = $orderModel->save();
-                    $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
-                    $status = ($shipped[0]->shipping_status == 'Shipped') ? 'success' : 'fail';
-                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
-                        ->with('status', $status)->with('msg', $msg);
                 } else {
-                    echo "contact to developer";
-                }
-            } catch (\Exception $e) {
-                dd($e);
-            }
-        }
-        return redirect()->back();
-    }
-    
-
-    public function  batchShipping(Request $request)
-    {
-        $user = $this->getAuthUser();
-        $this->authorize('orders');
-    
-        $validatedData = $request->validate([
-            'order_ids' => 'required|array',
-            'order_ids.*' => 'exists:orders,id'
-        ]);
-    
-        $shippedOrders = [];
-        $failedOrders = [];
-    
-        foreach ($validatedData['order_ids'] as $orderId) {
-            $order = Order::with('user', 'shippingDetails', 'orderdetails.product')
-                          ->where(['id' => $orderId, 'payment_status' => 'Paid'])
-                          ->first();
-    
-            if ($order) {
-                try {
-                    $order = $order->toArray();
-                    
-                    // Calculate weight and quantity
-                    $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
-                    $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
-                    $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
-    
-                    // Prepare the payload for shipping
-                    $payload = $this->make_shiping_payload($order);
-                    $apiKey = env('ROYAL_MAIL_API_KEY');
-                    $client = new Client();
-                    
-                    $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
-                        'headers' => [
-                            'Authorization' => 'Bearer ' . $apiKey,
-                            'Content-Type' => 'application/json',
-                        ],
-                        'json' => $payload,
-                    ]);
-    
-                    $statusCode = $response->getStatusCode();
-                    $body = $response->getBody()->getContents();
-    
-                    if ($statusCode == 200) {
-                        $response = json_decode($body, true);
-                        
-                        if (!empty($response['createdOrders'])) {
-                            foreach ($response['createdOrders'] as $val) {
-                                $shippedOrders[] = ShippingDetail::updateOrCreate(
-                                    ['order_id' => $order['id']],
-                                    [
-                                        'order_identifier' => $val['orderIdentifier'],
-                                        'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
-                                        'shipping_status' => 'Shipped',
-                                        'created_by' => $user->id,
-                                    ]
-                                );
-                            }
-    
-                            // Update the order status to shipped
-                            $orderToUpdate = Order::findOrFail($order['id']);
-                            $orderToUpdate->status = 'Shipped';
-                            $orderToUpdate->save();
-                        }
-    
-                        if (!empty($response['failedOrders'])) {
-                            foreach ($response['failedOrders'] as $val) {
-                                $failedOrders[] = [
-                                    'order_id' => $order['id'],
-                                    'order_identifier' => $val['orderIdentifier'],
-                                    'errors' => json_encode($val['errors'] ?? []),
-                                    'status' => 'ShippingFail',
-                                ];
-                            }
-                        }
-                    } else {
-                        // Log and handle errors if the API response is not 200
-                        Log::error('Batch Shipping Error: ' . $body);
-                        $failedOrders[] = [
-                            'order_id' => $order['id'],
-                            'errors' => 'API response was not 200.',
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Batch Shipping Exception: ' . $e->getMessage());
+                    // Log and handle errors if the API response is not 200
+                    Log::error('Batch Shipping Error: ' . $body);
                     $failedOrders[] = [
-                        'order_id' => $orderId,
-                        'errors' => $e->getMessage(),
+                        'order_id' => $order['id'],
+                        'errors' => 'API response was not 200.',
                     ];
                 }
-            } else {
-                Log::warning("Order ID {$orderId} not found or not paid.");
+            } catch (\Exception $e) {
+                Log::error('Batch Shipping Exception: ' . $e->getMessage());
                 $failedOrders[] = [
                     'order_id' => $orderId,
-                    'errors' => 'Order not found or not paid.',
+                    'errors' => $e->getMessage(),
                 ];
             }
+        } else {
+            Log::warning("Order ID {$orderId} not found or not paid.");
+            $failedOrders[] = [
+                'order_id' => $orderId,
+                'errors' => 'Order not found or not paid.',
+            ];
         }
-    
-        // Return response with summary of shipped and failed orders
-        return response()->json([
-            'shippedOrders' => $shippedOrders,
-            'failedOrders' => $failedOrders,
-        ]);
     }
     
+    // Return response with summary of shipped and failed orders
+    return response()->json([
+        'shippedOrders' => $shippedOrders,
+        'failedOrders' => $failedOrders,
+    ]);
+}
+
     
     
 

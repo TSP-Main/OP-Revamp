@@ -166,7 +166,7 @@
                     <div class="mb-3">
                         <input type="checkbox" id="product-${detail.id}" checked>
                         <label for="product-${detail.id}">
-                            ${detail.product.title}
+                            ${detail.product.title}<br>
                             ${variantValue ? ` - <strong>Variant:</strong> ${variantValue}` : ''}  <!-- Display the variant value if it exists -->
                         </label>
                         ${variantSelect}  <!-- Display the dropdown for variants -->
