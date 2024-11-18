@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('desc');
             $table->text('main_image');
             $table->decimal('price',8,2);
-            $table->string('stock');
+            $table->string('stock')->nullable();
             $table->string('weight')->default(0);
             $table->string('min_buy')->nullable();
             $table->string('max_buy')->nullable();

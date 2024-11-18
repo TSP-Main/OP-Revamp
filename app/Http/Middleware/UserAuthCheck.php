@@ -27,17 +27,17 @@ class UserAuthCheck
                 Auth::logout();
         
                 if (isset($user->role) && $user->role == user_roles('1')) {
-                    return redirect('/login');
+                    return redirect('/sign-in');
                 } else if (isset($user->role) && $user->role == user_roles('2')) {
-                    return redirect('/login');
+                    return redirect('/sign-in');
                 } else if (isset($user->role) && $user->role == user_roles('3')) {
-                    return redirect('/login');
+                    return redirect('/sign-in');
                 } else if (isset($user->role) && $user->role == user_roles('4')) {
                     return redirect('/');
                 }
             }
         }else{
-            return redirect('/login');
+            return redirect('/');
         }
     }
 }

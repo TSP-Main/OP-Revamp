@@ -370,6 +370,11 @@
                     @enderror
                 </div>
                 <div class="col-md-6">
+                    <label for="low_limit" class="col-form-label">Low Stock <span class="extra-text">(Low Stock Alert)</span></label>
+                    <input type="number" id="low_limit" name="low_limit" value="{{ $product['low_limit'] ?? old('low_limit') }}" class="form-control" required>
+                    <div class="invalid-feedback">Enter low stock limit!</div>
+                </div>
+                <div class="col-md-6">
                     <label for="stock" class="col-form-label">SKU </label>
                     <input type="text" name="SKU" id="SKU" value="{{  $product['SKU'] ?? old('SKU') }}" class="form-control">
                     <div class="invalid-feedback">Enter avialable stock!</div>
@@ -451,9 +456,9 @@
                     <div class="variants-div">
                         <h4 class="fw-bold">Product Variants</h4>
                     </div>
-                    <div class=" float-end">
+                    <div class="float-end">
                         <div class="p-2">
-                            <lable id="add_new_row" class="btn btn-success mb-2"><i class="fa fa-plus"></i> Add Variants</lable>
+                            <label id="add_new_row" class="btn btn-success mb-2"><i class="fa fa-plus"></i> Add Variants</label>
                         </div>
                     </div>
                 </div>
@@ -501,6 +506,26 @@
                                 <div class="invalid-feedback">Enter variant stock!</div>
                             </div>
                         </div>
+                        <!-- Stock Status -->
+                        <div class="col-md-4 col-sm-12">
+                            <div class="p-2">
+                                <label for="" class="form-label">Stock Status</label>
+                                <select class="form-control" name="exist_vari_stock_status[]">
+                                    <option value="IN" {{ $variant['stock_status'] == 'IN' ? 'selected' : '' }}>IN</option>
+
+                                    <option value="OUT" {{ $variant['stock_status'] == 'OUT' ? 'selected' : '' }}>OUT</option>
+                                </select>
+                                <div class="invalid-feedback">Select stock status!</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="p-2">
+                                <label for="" class="form-label">Low Stock</label>
+                                <input type="number" class="form-control" name="exist_vari_low_limit[]" value="{{ old('exist_vari_low_limit', $variant['low_limit'] ?? '') }}" required>
+                                <div class="invalid-feedback">Enter low stock limit!</div>
+                            </div>
+                        </div>
+
                         <div class="col-md-4 col-sm-12 ">
                             <div class="p-2">
                                 <label for="" class="form-label">weight <span class="extra-text">(gm)</span></label>
@@ -598,6 +623,7 @@
                 }
             });
         });
+        
 
         $('#sub_category').change(function() {
             var category_id = $(this).val();
@@ -811,6 +837,33 @@
     // Initialize the visibility on page load
     document.addEventListener('DOMContentLoaded', toggleLeafletLink);
 
+    const addVariantButton = document.getElementById('add_new_row');
+    const inventoryField = document.getElementById('stock');
+    const lowLimitField = document.getElementById('low_limit');
+
+    // Function to toggle the state of the fields
+    function toggleFields() {
+        // Disable the fields when adding variants
+        const isAddingVariants = addVariantButton.classList.contains('active');
+        if (isAddingVariants) {
+            inventoryField.disabled = true;
+            lowLimitField.disabled = true;
+        } else {
+            inventoryField.disabled = false;
+            lowLimitField.disabled = false;
+        }
+    }
+
+    // Initial state on page load
+    toggleFields();
+
+    // Toggle 'active' class on button click and call toggleFields
+    addVariantButton.addEventListener('click', function () {
+        // Toggle the class 'active' to indicate that variants are being added
+        addVariantButton.classList.toggle('active');
+        toggleFields();
+    })
+
 
     // new row add 
     var new_row = `<div class="row bg-white rounded-3  mb-4 py-2">
@@ -850,6 +903,24 @@
                                 <label for="" class="form-label">Inventory <span class="extra-text">(Available Stock)</span></label>
                                 <input type="number" class="form-control" name="vari_inventory[]" id="" required>
                                 <div class="invalid-feedback">Enter variant stock!</div>
+                            </div>
+                        </div>
+                        <!-- Stock Status -->
+                        <div class="col-md-4 col-sm-12">
+                            <div class="p-2">
+                                <label for="" class="form-label">Stock Status</label>
+                                <select class="form-control" name="vari_stock_status[]">
+                                    <option value="IN">IN</option>
+                                    <option value="OUT">OUT</option>
+                                </select>
+                                <div class="invalid-feedback">Select stock status!</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="p-2">
+                                <label for="" class="form-label">Low Stock</label>
+                                <input type="number" class="form-control" name="vari_low_limit[]" value="{{ old('vari_low_limit') }}" required>
+                                <div class="invalid-feedback">Enter low stock limit!</div>
                             </div>
                         </div>
                         <div class="col-md-4 col-sm-12">

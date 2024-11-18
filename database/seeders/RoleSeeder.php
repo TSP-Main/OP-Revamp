@@ -64,6 +64,7 @@ class RoleSeeder extends Seeder
             'gpa_letters',
             'orders_received',
             'admin.allOrders',
+            'admin.lowlimitProducts',
             'doctors_approval',
             'doctors',
             'add_doctor',

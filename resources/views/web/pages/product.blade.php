@@ -249,7 +249,7 @@
                                                     <i class="fas fa-exclamation-circle"></i>
                                                     <span>Out of Stock</span> <br>
                                                     <button type="button" class="theme-btn-1 btn btn-effect-1" title="Notify Me" onclick="notifyMe({{ auth()->check() ? 'true' : 'false' }}, '{{ route('notify.me', $product->id) }}')">
-                                                        <span>Notify on Restock</span>
+                                                        <span>Notify When in Stock</span>
                                                     </button>
                                                 </form>
                                                 {{-- <a class="btn btn-secondary disabled" title="Out of Stock" aria-disabled="true">
@@ -395,8 +395,6 @@
     </div>
 </div>
 <!-- PRODUCT SLIDER AREA END -->
-
-
 <!-- MODAL AREA START (Add To Cart Modal) -->
 <div class="ltn__modal-area ltn__add-to-cart-modal-area">
     <div class="modal fade" id="add_to_cart_modal" tabindex="-1">
@@ -434,11 +432,7 @@
 </div>
 <!-- MODAL AREA END -->
 
-
-
-
 @stop
-
 @pushOnce('scripts')
 <script>
     $(document).ready(function() {
@@ -543,7 +537,6 @@ $(document).ready(function() {
         $(this).data('clicked', true);
     });
 });
-
 function notifyMe(isLoggedIn, actionUrl) {
     if (!isLoggedIn) {
         // alert('You must be logged in to receive notifications.');
@@ -555,7 +548,5 @@ function notifyMe(isLoggedIn, actionUrl) {
     // If logged in, submit the form
     document.getElementById('notify-form-' + actionUrl.split('/').pop()).submit();
 }
-
-
 </script>
 @endPushOnce

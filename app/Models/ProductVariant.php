@@ -15,6 +15,8 @@ class ProductVariant extends Model
         'price',
         'weight',
         'value',
+        'stock_status',
+        'low_limit',
         'slug',
         'barcode',
         'sku',
