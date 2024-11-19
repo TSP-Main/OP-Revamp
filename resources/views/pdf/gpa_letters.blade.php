@@ -38,8 +38,18 @@
             <h5>Dear Practice Manager,</h5>
             <p>I hope all is well.</p>
             <p>
-                I recently had a private consultation with <b>Mr./Mis. {{ $order['user']['name'] ?? '' }}</b> ({{ $order['user']['dob'] ?? '' }} ) and I have deemed the
-                following supply clinically appropriate for the management of their symptoms:
+                I recently had a private consultation with <b>Mr./Mis. {{ $order['user']['name'] ?? '' }}</b>
+                 (DOB: {{ $order['user']['profile']['date_of_birth'] ?? '' }}, 
+                 Address: {{ implode(', ', array_filter([
+                    $order['shipping_details']['address2'] ?? null,
+                    $order['shipping_details']['address'] ?? null,
+                    $order['shipping_details']['zip_code'] ?? null,
+                    $order['shipping_details']['state'] ?? null,
+                    $order['shipping_details']['city'] ?? null,
+                ])) }}) and I have deemed the
+                following supply clinically appropriate for the management of their symptoms:</b>
+                {{-- order date: {{ $order['created_at'] }} --}}
+                Order Date: {{ \Illuminate\Support\Carbon::parse($order['created_at'])->format('Y-m-d') }}
             </p>
             @foreach($order['orderdetails'] as $key => $item)
             @if($item['consultation_type'] == 'premd')
