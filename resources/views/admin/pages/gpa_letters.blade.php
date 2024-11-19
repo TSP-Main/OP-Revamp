@@ -99,8 +99,8 @@
                                     <th>Order No.</th>
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
-                                    <th>Shipping Email</th>
-                                    <!-- <th>Address</th> -->
+                                    <th>DOB</th>
+                                    <th>General Question</th>
                                     <th>GP Email</th>
                                     <th>Order Type</th>
                                     <th>Actions</th>
@@ -128,8 +128,13 @@
                                         @endif
 
                                     </td>
-                                    <td>{{ $val['shipping_details']['email'] ?? '' }}</td>
-                                    <!-- <td>{{$val['shipping_details']['address'] ?? ''}}</td> -->
+                                    <td>{{ $val['user']['profile']['date_of_birth'] ?? '' }}</td>
+                                    @php
+                                        $genericConsultation = isset($val['orderdetails'][0]['generic_consultation']) 
+                                            ? json_decode($val['orderdetails'][0]['generic_consultation'], true) 
+                                            : [];
+                                    @endphp
+                                    <td>{{ $genericConsultation[4] ?? '' }}</td>
                                     <td style="vertical-align: middle; text-align: center;">
                                         <input class="form-control" type="email" id="gpa_email_{{$val['id']}}" value="">
                                     </td>
