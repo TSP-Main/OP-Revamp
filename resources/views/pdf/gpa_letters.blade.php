@@ -47,7 +47,9 @@
                     $order['shipping_details']['state'] ?? null,
                     $order['shipping_details']['city'] ?? null,
                 ])) }}) and I have deemed the
+
                 following supply clinically appropriate for the management of their symptoms:<br>
+
                 {{-- order date: {{ $order['created_at'] }} --}}
                 Order Date: {{ \Illuminate\Support\Carbon::parse($order['created_at'])->format('Y-m-d') }}
             </p>

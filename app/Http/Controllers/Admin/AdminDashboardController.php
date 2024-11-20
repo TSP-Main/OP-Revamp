@@ -1933,7 +1933,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('gpa_letters');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,address,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user.profile', 'shippingDetails:id,order_id,firstName,lastName,address,email', 'orderdetails'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->orderBy('id', 'DESC')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
