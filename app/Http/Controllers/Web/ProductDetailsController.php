@@ -88,15 +88,15 @@ class ProductDetailsController extends Controller
      */
     private function getProducts($category_detail, Request $request, $category, $sub_category, $child_category)
     {
-//        $this->shareMenuCategories();
+        //        $this->shareMenuCategories();
         if ($category_detail) {
             if ($category && $sub_category && $child_category) {
 
-                return Product::where(['status' => $this->status['Active'], 'child_category' => $category_detail->id])->paginate(20);
+                return Product::where(['status' => $this->status['Active'], 'child_category' => $category_detail->id])->paginate(100);
             } elseif ($category && $sub_category && !$child_category) {
-                return Product::where(['status' => $this->status['Active'], 'sub_category' => $category_detail->id])->paginate(20);
+                return Product::where(['status' => $this->status['Active'], 'sub_category' => $category_detail->id])->paginate(100);
             } elseif ($category && !$sub_category && !$child_category) {
-                return Product::where(['status' => $this->status['Active'], 'category_id' => $category_detail->id])->paginate(20);
+                return Product::where(['status' => $this->status['Active'], 'category_id' => $category_detail->id])->paginate(100);
             }
         }
 
@@ -434,5 +434,4 @@ class ProductDetailsController extends Controller
         }
         return 1;
     }
-
 }

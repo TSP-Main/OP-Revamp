@@ -12,16 +12,13 @@ use PDF;
 
 class PdfGeneratorController extends Controller
 {
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     public function index(Request $request)
     {
         $data = $request->all();
         $data['order'] = json_decode($data['content'], true);
-       // dd($data);
+        // dd($data);
 
         // Retrieve and update the order record
         $order = Order::findOrFail($data['order']['id']);
@@ -46,7 +43,7 @@ class PdfGeneratorController extends Controller
     {
         if ($request->id) {
             $id = $request->id;
-            $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+            $order = Order::with('user.profile', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
             if ($order) {
                 $data['order']  = $order->toArray() ?? [];
                 $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shipping_details']['firstName'] . '.pdf';
@@ -74,7 +71,7 @@ class PdfGeneratorController extends Controller
                 $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
-                   // dd($data);
+                    // dd($data);
                     $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shiping_details']['firstName'] . '.pdf';
                     $view_name = 'pdf.' . $request->view_name;
 
@@ -110,7 +107,7 @@ class PdfGeneratorController extends Controller
         if ($request->order_ids) {
             $data['role'] = $request->role ?? '';
             $orderIds = explode(',', $request->order_ids);
-            $orders = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product' ,'orderdetails.variant')
+            $orders = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product', 'orderdetails.variant')
                 ->whereIn('id', $orderIds)
                 ->where('payment_status', 'Paid')
                 ->get();

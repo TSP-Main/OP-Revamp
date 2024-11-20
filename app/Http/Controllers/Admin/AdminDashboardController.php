@@ -1697,8 +1697,8 @@ class AdminDashboardController extends Controller
         ->orWhere('status', 'like', "%{$searchQuery}%");
     })
     ->latest('created_at')
-    ->paginate(100);
-    
+    ->paginate();
+
     if ($orders) {
         $data['order_history'] = $this->get_prev_orders($orders->items());
         $data['orders'] = $this->assign_order_types($orders->items());
