@@ -71,8 +71,8 @@ class PdfGeneratorController extends Controller
                 $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
-                    // dd($data);
-                    $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shiping_details']['firstName'] . '.pdf';
+                  //  dd($data);
+                    $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shipping_details']['firstName'] . '.pdf';
                     $view_name = 'pdf.' . $request->view_name;
 
                     $pdf = PDF::loadView($view_name, $data);

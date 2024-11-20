@@ -116,15 +116,21 @@
                 <form id="reorderForm">
                     <input type="hidden" id="orderId" name="order_id">
                     <div id="quantityFields"></div>
+                    <div id="fileUploadAlert" class="alert alert-warning d-none" role="alert">
+                        You must upload the necessary files in the consultation edit page before reordering any product from Weight Loss Category.
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn" style="background-color: blue; color: white;" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn" style="background-color: green; color: white;" onclick="confirmReorder()">Reorder</button>
+                <button type="button" class="btn" style="background-color: green; color: white;" id="reorderBtn" onclick="confirmReorder()">Reorder</button>
             </div>
         </div>
     </div>
 </div>
+
+
+
 
     <div id="iframeContainer" class="vh-100 w-100"></div>
 
@@ -132,57 +138,64 @@
 
 @pushOnce('scripts')
 <script>
-        function openReorderModal(orderId, orderDetails) {
-            $('#orderId').val(orderId);
-            $('#quantityFields').empty();
-
-            orderDetails.forEach(function(detail) {
-                const consultationLink = (detail.consultation_type === 'premd' || detail.consultation_type === 'pmd' || detail.consultation_type === 'premd/Reorder') ? 
-                    `{{ route('admin.consultationFormEdit', ['odd_id' => '__id__']) }}`.replace('__id__', btoa(detail.id)) : '';
-
-                // Check if there are variants for the product
-                let variantSelect = '';
-                let variantValue = '';  // This will store the variant value
-
-                if (detail.product.variants.length > 0) {
-                    variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
-
-                    // Add label for variant dropdown
-                  variantSelect = `<label for="variant-${detail.id}"><strong>Select Variant</label>` + variantSelect;
-                    
-                    // Loop through each variant to create the select dropdown
-                    detail.product.variants.forEach(function(variant) {
-                        variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.value} - £${variant.price}</option>`;
-                        
-                        // Assuming you want to display the first variant value next to the product title:
-                        if (!variantValue) {  // Only set the value if it's not already set (for the first variant)
-                            variantValue = variant.value;  // Store the first variant value
-                        }
-                    });
-                    variantSelect += `</select>`;
-                }
-
-                $('#quantityFields').append(`
-                    <div class="mb-3">
-                        <input type="checkbox" id="product-${detail.id}" checked>
-                        <label for="product-${detail.id}">
-                            ${detail.product.title}<br>
-                            ${variantValue ? ` - <strong>Variant:</strong> ${variantValue}` : ''}  <!-- Display the variant value if it exists -->
-                        </label>
-                        ${variantSelect}  <!-- Display the dropdown for variants -->
-                        <input type="number" class="form-control mt-3" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
-                        ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
-                    </div>
-                `);
-
-            });
-
-            // Show the modal
-            $('#reorderModal').modal('show');
-        }
-
-
-
+      function openReorderModal(orderId, orderDetails) {
+         $('#orderId').val(orderId);
+         $('#quantityFields').empty(); // Clear previous quantity fields
+         $('#fileUploadAlert').addClass('d-none'); // Hide the alert initially
+       
+ 
+         let requiresFileUpload = false; 
+ 
+         orderDetails.forEach(function(detail) {
+             // Check if the product belongs to child category 19
+             if (detail.product.child_category === 19) {
+                 requiresFileUpload = true; // Set flag if file upload is required
+             }
+ 
+             const consultationLink = (detail.consultation_type === 'premd' || detail.consultation_type === 'pmd' || detail.consultation_type === 'premd/Reorder') ? 
+                 `{{ route('admin.consultationFormEdit', ['odd_id' => '__id__']) }}`.replace('__id__', btoa(detail.id)) : '';
+ 
+             // Handle variants
+             let variantSelect = '';
+             let variantValue = '';  // This will store the variant value
+ 
+             if (detail.product.variants.length > 0) {
+                 variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
+                 variantSelect = `<label for="variant-${detail.id}"><strong>Select Variant</strong></label>` + variantSelect;
+ 
+                 detail.product.variants.forEach(function(variant) {
+                     variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.value} - £${variant.price}</option>`;
+                     if (!variantValue) {  // Set the value for the first variant
+                         variantValue = variant.value;
+                     }
+                 });
+                 variantSelect += `</select>`;
+             }
+ 
+             $('#quantityFields').append(`
+                 <div class="mb-3">
+                     <input type="checkbox" id="product-${detail.id}" checked>
+                     <label for="product-${detail.id}">
+                         ${detail.product.title}<br>
+                         ${variantValue ? ` - <strong>Variant:</strong> ${variantValue}` : ''}
+                     </label>
+                     ${variantSelect}
+                     <input type="number" class="form-control mt-3" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
+                     ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
+                 </div>
+             `);
+         });
+ 
+         // If any product requires file upload (category 19), show the warning alert and disable the reorder button
+         if (requiresFileUpload) {
+             $('#fileUploadAlert').removeClass('d-none'); // Show the alert
+           
+         }
+ 
+         // Show the modal with Bootstrap's modal API
+         const reorderModal = new bootstrap.Modal(document.getElementById('reorderModal'));
+         reorderModal.show();
+     }
         function confirmReorder() {
             const orderId = $('#orderId').val();
             const formData = $('#reorderForm').serializeArray();

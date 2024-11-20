@@ -383,9 +383,6 @@
                             <label for="search" class="form-label fw-bold">Search From Table</label>
                             <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
                         </div>
-                        <div class="col-md-4 text-end mt-auto">
-                            <div id="tbl_buttons" class="d-inline-block">
-                        </div>
                     </div>
                     
                     <div class="card-body">
@@ -399,74 +396,54 @@
                                     <th>Date-Time</th>
                                     <th>Customer Name</th>
                                     <th>Email</th>
-                                    @if ($user->role == user_roles('1'))
+                                    @if ($user->hasRole('super_admin'))
                                     <th>Total Atm.</th>
                                     @endif
                                     <th>Order Type</th>
                                     <th>Payment Status</th>
                                     <th>Order Status</th>
-
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="order-tbody">
                                 @foreach ($orders ?? [] as $key => $val)
                                 <tr>
-                                    <td style="align-items: center; ">
+                                    <td style="align-items: center;">
                                         <div class="text-center d-flex align-items-center justify-content-center">
                                             <input class="custom-checkbox" id="checkbox_{{ $val['id'] }}" name="checkbox_{{ $val['id'] }}" type="checkbox" value="{{ $val['id'] }}">
                                         </div>
                                     </td>
                                     <td>{{ ++$key }}</td>
                                     <td>
-                                        <a href="{{ route('admin.orderDetail', ['id' => base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex; ">
+                                        <a href="{{ route('admin.orderDetail', ['id' => base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex;">
                                             #{{ $val['id'] }}
                                         </a>
                                     </td>
                                     <td>
-
                                         @php
                                         $totalOrderDetails = count($val['orderdetails']);
                                         @endphp
                                         <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                     </td>
-                                    @php
-                                    $isNewOrder = null;
-                                    if ($val['status'] == 'Received'):
-                                    $createdAt = isset($val['created_at'])
-                                    ? strtotime($val['created_at'])
-                                    : null;
-                                    $isNewOrder = $createdAt && $createdAt > strtotime('-3 days');
-                                    endif;
-                                    @endphp
+                                    <td>{{ date_time_uk($val['created_at']) }}</td>
                                     <td>
-                                        @if ($isNewOrder)
-                                        <span class="badge bg-primary">New Order</span> <br>
-                                        @endif
-                                        {{date_time_uk($val['created_at'])}}
-                                    </td>
-                                    <td>
-                                        {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
                                         @if (isset($val['shippingDetails']) && $val['shippingDetails'])
-                                        {{ $val['shippingDetails']['firstName'] ?? '' }}
-                                        {{ $val['shippingDetails']['lastName'] ?? '' }}
+                                        {{ $val['shippingDetails']['firstName'] ?? '' }} {{ $val['shippingDetails']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
                                         {{ $val['user']['name'] ?? '' }}
                                         @else
                                         N/A
                                         @endif
-
                                     </td>
                                     <td>
                                         @if (isset($val['shippingDetails']['email']))
-                                            {{ $val['shippingDetails']['email'] }}
+                                        {{ $val['shippingDetails']['email'] }}
                                         @elseif (isset($val['user']['email']))
-                                            {{ $val['user']['email'] }}
+                                        {{ $val['user']['email'] }}
                                         @else
-                                            N/A
+                                        N/A
                                         @endif
                                     </td>
-                                    
-                                    @if ($user->role == user_roles('1'))
+                                    @if ($user->hasRole('super_admin'))
                                     <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
                                     @endif
                                     <td>
@@ -479,18 +456,15 @@
                                                 ($val['order_type'] == 'premd/Reorder' ? 'Reorder' : 'O.T.C')) }}
                                         </span>
                                     </td>
-                                    
-                                    <td><span class="btn fw-bold rounded-pill btn-success">
-                                            {{ $val['payment_status'] ?? '' }}</span> </td>
-                                    <td><span class="btn  fw-bold btn-primary rounded-pill">{{ $val['status'] ?? '' }}</span>
-                                    </td>
-
+                                    <td><span class="btn fw-bold rounded-pill btn-success">{{ $val['payment_status'] ?? '' }}</span> </td>
+                                    <td><span class="btn fw-bold btn-primary rounded-pill">{{ $val['status'] ?? '' }}</span></td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                         {{ $orders_paginate->links() }}
                     </div>
+                    
                     <!-- /.card-body -->
                 </div>
             </div>
@@ -508,6 +482,22 @@
 
 @pushOnce('scripts')
 <script>
+    $(document).ready(function() {
+    $('#search').on('input', function() {
+        var searchQuery = $(this).val().toLowerCase();
+        $('#order-tbody tr').each(function() {
+            var row = $(this);
+            var rowText = row.text().toLowerCase();
+            
+            if (rowText.indexOf(searchQuery) > -1) {
+                row.show();
+            } else {
+                row.hide();
+            }
+        });
+    });
+});
+
  $(function() {
         $("#tbl_data").DataTable({
             "paging": true,
@@ -517,7 +507,7 @@
             "searching": true,
             "ordering": true,
             "info": true,
-            // "pageLength": 50,
+            "pageLength": 50,
             "buttons": [{
                     extend: 'pdf',
                     text: 'Download PDF ',

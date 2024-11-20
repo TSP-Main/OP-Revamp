@@ -347,7 +347,7 @@
                         <div class="card-header mt-3 d-flex justify-content-between align-items-center">
                             <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                                 <button id="batch-shipping" class="btn btn-primary" disabled>Batch Shipping</button>
-                                {{-- <button><a href="{{ route('admin.POMorders.exportCsv') }}" class="btn btn-primary me-1">Export CSV</a></button> --}}
+                                <button><a href="{{ route('admin.POMorders.exportCsv') }}" class="btn btn-primary me-1">Export CSV</a></button>
                             </div>
                             <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                             </div>
