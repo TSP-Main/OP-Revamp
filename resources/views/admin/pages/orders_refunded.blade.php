@@ -394,51 +394,61 @@
                             <tbody>
                                 @foreach($orders ?? [] as $key => $val)
                                 <tr>
-                                    <td style="align-items: center; ">
+                                    <td style="align-items: center;">
                                         <div class="text-center d-flex align-items-center justify-content-center">
                                             <input class="custom-checkbox" id="checkbox_{{$val['id']}}" name="checkbox_{{$val['id']}}" type="checkbox" value="{{$val['id']}}">
                                         </div>
                                     </td>
                                     <td>{{ ++$key }}</td>
                                     <td>
-                                        <a href="{{ route('admin.orderDetail',['id'=> base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex; ">
+                                        <a href="{{ route('admin.orderDetail',['id'=> base64_encode($val['id'])]) }}" class="text-primary mb-0 font-weight-semibold fw-bold" style="font-size: smaller; display:flex;">
                                             #{{ $val['id'] }}
                                         </a>
                                     </td>
-{{--                                    <td>--}}
-{{--                                        @foreach($order_history as $ind => $value)--}}
-{{--                                        @if($value['email'] == $val['shipping_details']['email'])--}}
-{{--                                        <span class=" px-5 fw-bold">{{$value['total_orders'] ?? 0}} </span>--}}
-{{--                                        @endif--}}
-{{--                                        @endforeach--}}
-{{--                                    </td>--}}
+                            
                                     <td>
                                         @php
-                                            $totalOrderDetails = count($val['orderdetails']);
+                                            // Ensure orderdetails is an array before counting
+                                            $totalOrderDetails = isset($val['orderdetails']) && is_array($val['orderdetails']) ? count($val['orderdetails']) : 0;
                                         @endphp
                                         <span class="px-5 fw-bold">{{ $totalOrderDetails }}</span>
                                     </td>
+                            
                                     <td>
-                                    {{date_time_uk($val['created_at'])}}
+                                        {{ date_time_uk($val['created_at'] ?? '') }}
                                     </td>
-                                    <td>{{ $val['shipping_details']['firstName'] .' '. $val['shipping_details']['lastName']  ?? $val['user']['name']  }}</td>
+                            
+                                    <td>
+                                        {{-- Ensure shipping_details exists before accessing firstName and lastName --}}
+                                        {{ isset($val['shipping_details']) ? ($val['shipping_details']['firstName'] ?? '') . ' ' . ($val['shipping_details']['lastName'] ?? '') : ($val['user']['name'] ?? 'N/A') }}
+                                    </td>
+                            
                                     @if ($user->hasRole('super_admin'))
                                     <td>
-                                        @if (isset($val['shipping_details']['email']))
-                                            {{ $val['shipping_details']['email']}}
-                                        @elseif (isset($val['user']['email']))
-                                            {{ $val['user']['email'] }}
-                                        @else
-                                            N/A
-                                        @endif
+                                        {{-- Check if shipping_details or user email exists --}}
+                                        {{ $val['shipping_details']['email'] ?? $val['user']['email'] ?? 'N/A' }}
                                     </td>
-                                    <td>£{{ number_format((float)str_replace(',', '', $val['total_ammount']), 2) }}</td>
+                                    
+                                    <td>
+                                        {{-- Check if total_ammount exists before formatting it --}}
+                                        £{{ isset($val['total_ammount']) ? number_format((float)str_replace(',', '', $val['total_ammount']), 2) : '0.00' }}
+                                    </td>
                                     @endif
-                                    <td><span class="btn  fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary': (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">{{ ($val['order_type'] == 'premd') ? 'POM': (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}</span> </td>
-                                    <td><span class="btn  fw-bold btn-primary rounded-pill">{{$val['status'] ?? ''}}</span> </td>
+                            
+                                    <td>
+                                        {{-- Check order_type and assign appropriate class --}}
+                                        <span class="btn fw-bold rounded-pill {{ ($val['order_type'] == 'premd') ? 'btn-primary' : (($val['order_type'] == 'pmd') ? 'btn-warning' : 'btn-success') }}">
+                                            {{ ($val['order_type'] == 'premd') ? 'POM' : (($val['order_type'] == 'pmd') ? 'P.Med' : 'O.T.C') }}
+                                        </span>
+                                    </td>
+                            
+                                    <td>
+                                        {{-- Handle potential null value for status --}}
+                                        <span class="btn fw-bold btn-primary rounded-pill">{{ $val['status'] ?? 'N/A' }}</span>
+                                    </td>
                                 </tr>
                                 @endforeach
-                            </tbody>
+                            </tbody>                            
                         </table>
                     </div>
                     <!-- /.card-body -->

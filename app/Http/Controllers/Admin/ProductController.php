@@ -194,6 +194,38 @@ class ProductController extends Controller
         return view('admin.pages.products.featured_products', $data);
     }
 
+    public function lowlimit_products()
+    {
+        $user = $this->getAuthUser();
+        $this->authorize('products');
+        
+        $query = Product::query();
+    
+        if ($user->hasRole('super_admin')) {
+            // For products with no variants, check if their stock is 'low_limit'
+            $products = $query->when(
+                function ($query) {
+                    return $query->where(function ($subQuery) {
+                        // Condition for products with no variants and their stock is 'low_limit'
+                        $subQuery->whereColumn('stock', '=', 'low_limit');
+                    })
+                    ->orWhereHas('variants', function ($q) {
+                        // Condition for products that have variants and any variant's inventory is 'low_limit'
+                        $q->whereColumn('inventory', '=', 'low_limit');
+                    });
+                }
+            )
+            ->with('variants')  // Eager load variants
+            ->latest('id')
+            ->get();
+        }
+    
+        return view('admin.pages.products.lowlimit_products', ['products' => $products]);
+    }
+    
+    
+    
+
     public function store_featured_products(StoreFeaturedProductRequest $request)
     {
         $user = $this->getAuthUser();
@@ -324,6 +356,7 @@ class ProductController extends Controller
                 'SKU' => $request->SKU,
                 'weight' => $request->weight ?? 0,
                 'stock' => $request->stock,
+                'low_limit' => $request->low_limit,
                 'stock_status' => $request->stock_status,
                 'high_risk'      => $request->high_risk,
                 'leaflet_link'   => $request->leaflet_link,
@@ -332,7 +365,7 @@ class ProductController extends Controller
                 'created_by' => $user->id,
             ]
         );
-
+     
         if ($product) {
             // Handle additional image uploads
             $uploadedImages = [];
@@ -386,6 +419,9 @@ class ProductController extends Controller
         $nameArr = $request['vari_name'];
         $barcodeArr = $request['vari_barcode'];
         $inventoryArr = $request['vari_inventory'];
+        $inventoryArr = $request['vari_inventory'];
+        $stockstatusArr = $request['vari_stock_status'];
+        $lowlimitArr = $request['vari_low_limit'];
         $weightArr = $request['vari_weight'] ?? 0;
 
         foreach ($skuArr as $key => $val) {
@@ -398,6 +434,8 @@ class ProductController extends Controller
                 'slug' => SlugService::createSlug(ProductVariant::class, 'slug', $request->title . ' ' . $valueArr[$key], ['unique' => false]),
                 'barcode' => $barcodeArr[$key],
                 'inventory' => $inventoryArr[$key],
+                'stock_status' => $stockstatusArr[$key],
+                'low_limit'  => $lowlimitArr[$key],
                 'sku' => $skuArr[$key],
                 'weight' => $weightArr[$key] ?? 0,
                 'image' => $this->handleVariantImage($request, $key, "vari_attr_images"),
@@ -417,6 +455,8 @@ class ProductController extends Controller
         $nameArrExist = $request['exist_vari_name'];
         $barcodeArrExist = $request['exist_vari_barcode'];
         $inventoryArrExist = $request['exist_vari_inventory'];
+        $stockstatusArrExist = $request['exist_vari_stock_status'];
+        $lowlimitArrExist = $request['exist_vari_low_limit'];
         $weightArrExist = $request['exist_vari_weight'] ?? 0;
 
         foreach ($skuArrExist as $key => $val) {
@@ -430,6 +470,8 @@ class ProductController extends Controller
                 'slug' => SlugService::createSlug(ProductVariant::class, 'slug', $request->title . ' ' . $valueArrExist[$key], ['unique' => false]),
                 'barcode' => $barcodeArrExist[$key],
                 'inventory' => $inventoryArrExist[$key],
+                'stock_status' => $stockstatusArrExist[$key],
+                'low_limit' => $lowlimitArrExist[$key],
                 'sku' => $skuArrExist[$key],
                 'weight' => $weightArrExist[$key] ?? 0,
             ];
@@ -451,6 +493,8 @@ class ProductController extends Controller
         $nameArrExist = $request['exist_vari_name'];
         $barcodeArrExist = $request['exist_vari_barcode'];
         $inventoryArrExist = $request['exist_vari_inventory'];
+        $stockstatusArrExist = $request['exist_vari_stock_status'];
+        $lowlimitArrExist = $request['exist_vari_low_limit'];
         $weightArrExist = $request['exist_vari_weight'] ?? 0;
 
         foreach ($skuArrExist as $key => $val) {
@@ -462,6 +506,8 @@ class ProductController extends Controller
                 'value' => $valueArrExist[$key],
                 'barcode' => $barcodeArrExist[$key],
                 'inventory' => $inventoryArrExist[$key],
+                'stock_status' => $stockstatusArrExist[$key],
+                'low_limit' => $lowlimitArrExist[$key],
                 'sku' => $skuArrExist[$key],
                 'weight' => $weightArrExist[$key] ?? 0,
                 'image' => $this->handleVariantImage($request, $key, "exist_vari_attr_images"),

@@ -45,9 +45,9 @@ class DashboardController extends Controller
             }
 
             // Default case if no roles match (optional)
-            return redirect('/login');
+            return redirect('/sign-in');
         } else {
-            return redirect('/login');
+            return redirect('/sign-in');
         }
     }
     

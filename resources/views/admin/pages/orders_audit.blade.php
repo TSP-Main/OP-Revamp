@@ -84,7 +84,7 @@
             <div class="col-lg-12">
 
                 <div class="card">
-                    {{-- <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"><a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary me-1">Export CSV</a></div> --}}
+                    <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"><a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary me-1">Export CSV</a></div>
                     {{-- <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                         <a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary">Export CSV</a>
                     </div> --}}

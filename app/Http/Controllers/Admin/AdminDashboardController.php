@@ -31,6 +31,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use League\Csv\Writer;
+use SplTempFileObject;
+use Response;
+
 
 // models ...
 use App\Models\Comment;
@@ -1529,7 +1533,6 @@ class AdminDashboardController extends Controller
 
     public function consultation_form_edit(Request $request)
     {  
-        
         $data['user'] = $this->getAuthUser();
         $this->authorize('consultation_view');
     
@@ -1547,6 +1550,7 @@ class AdminDashboardController extends Controller
                 } else {
                     $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->get(['id', 'title', 'desc'])->toArray();
     
+                    // Fetching product consultation questions and answers
                     $pro_quest_ans = json_decode($consultaion->product_consultation, true);
                     $pro_quest_ids = array_keys(array_filter($pro_quest_ans, fn($value) => $value !== null));
                     $product_consultation = Question::whereIn('id', $pro_quest_ids)
@@ -1554,6 +1558,7 @@ class AdminDashboardController extends Controller
                         ->get(['id', 'title', 'desc'])
                         ->toArray();
     
+                    // Mapping product questions
                     $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
                         return [$item['id'] => $item];
                     });
@@ -1591,50 +1596,55 @@ class AdminDashboardController extends Controller
                 $data['user_profile_details'] = $data['order_user_detail'] ? User::find($data['order_user_detail']->user_id) : [];
     
                 $data['order_detail_id'] = $consultaion->id; // Add this line
-                    // Initialize the variable
-                $requires_image_upload = false; 
     
-                // Check if question #607 exists in product consultation
+                // Initialize the variable
                 $requires_image_upload = false;
-                if (collect($prod_result)->contains('id', 607)) {
+    
+                // Check if either question #607 or #800 exists in product consultation
+                if (collect($prod_result)->contains('id', 607) || collect($prod_result)->contains('id', 800)) {
                     $requires_image_upload = true;
                 }
-                    // Pass the variable to the view
-            $data['requires_image_upload'] = $requires_image_upload;
     
-            if ($request->isMethod('post')) {
-                $request->validate([
-                    'answers.generic' => 'required|array',
-                    'answers.product' => 'array',
-                    'image' => 'nullable|image|max:2048', // Validate image if provided
-                ]);
-        
-                \Log::info('Request Method: ' . $request->method());
-                \Log::info($request->all());
-        
-                // Extract answers into a local variable
-                $answers = $request->input('answers');
-        
-                // Handle image upload if provided
-                if ($request->hasFile('image')) {
-                    $image = $request->file('image');
-                    $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
-        
-                    // Replace the answer for question #607 with the image path
-                    $answers['product'][607] = $imagePath;
+                // Pass the variable to the view
+                $data['requires_image_upload'] = $requires_image_upload;
+    
+                if ($request->isMethod('post')) {
+                    $request->validate([
+                        'answers.generic' => 'required|array',
+                        'answers.product' => 'array',
+                        'image' => 'nullable|image|max:2048', // Validate image if provided
+                    ]);
+    
+                    \Log::info('Request Method: ' . $request->method());
+                    \Log::info($request->all());
+    
+                    // Extract answers into a local variable
+                    $answers = $request->input('answers');
+    
+                    // Handle image upload if provided
+                    if ($request->hasFile('image')) {
+                        $image = $request->file('image');
+                        $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
+    
+                        // Replace the answer for question #607 with the image path (or question 800)
+                        if (collect($prod_result)->contains('id', 607)) {
+                            $answers['product'][607] = $imagePath;
+                        } elseif (collect($prod_result)->contains('id', 800)) {
+                            $answers['product'][800] = $imagePath;
+                        }
+                    }
+    
+                    // Save updated answers back to the consultation
+                    $consultaion->generic_consultation = json_encode($answers['generic']);
+                    $consultaion->product_consultation = json_encode($answers['product'] ?? []);
+                    $consultaion->save();
+    
+                    notify()->success('Consultation updated successfully.');
+                    return redirect()->route('admin.prescriptionOrders', ['odd_id' => base64_encode($odd_id)]);
                 }
-        
-                // Save updated answers back to the consultation
-                $consultaion->generic_consultation = json_encode($answers['generic']);
-                $consultaion->product_consultation = json_encode($answers['product'] ?? []);
-                $consultaion->save();
-        
-                notify()->success('Consultation updated successfully.');
-                return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
-            }
-        
-            return view('admin.pages.consultation_formedit', $data);
-        } else {
+    
+                return view('admin.pages.consultation_formedit', $data);
+            } else {
                 notify()->error('Consultation Id not found. ⚡️');
                 return redirect()->back()->with('error', 'Transaction not found.');
             }
@@ -1643,6 +1653,7 @@ class AdminDashboardController extends Controller
             return redirect()->back();
         }
     }
+    
 
     public function ordersReceived()
     {
@@ -1658,32 +1669,51 @@ class AdminDashboardController extends Controller
         return view('admin.pages.orders_recieved', $data);
     }
 
-    public function all_orders()
-    {
-        $data['user'] = $this->getAuthUser();
-        $this->authorize('orders_received');
+   public function all_orders(Request $request)
+{
+    $data['user'] = $this->getAuthUser();
+    $this->authorize('orders_received');
     
-        // Get orders as Eloquent Collection with relationships loaded
-        $orders = Order::with([
-            'user', 
-            'shippingDetails:id,order_id,firstName,lastName,email', 
-            'orderdetails:id,order_id,consultation_type'
-        ])
-        ->where(['payment_status' => 'Paid'])
-        ->latest('created_at')
-        ->paginate(500);  // Use paginate instead of get()
+    $searchQuery = $request->input('search', ''); // Get search query, default to empty string
     
-        if ($orders) {
-            $data['order_history'] = $this->get_prev_orders($orders->items());  // Keep it a Collection
-            $data['orders'] = $this->assign_order_types($orders->items());  // Keep it a Collection
-        }
-    
-        // Pass pagination links to the view
-        $data['orders_paginate'] = $orders;
-    
-        return view('admin.pages.order_all', $data);
+    // Get orders as Eloquent Collection with relationships loaded
+    $orders = Order::with([
+        'user', 
+        'shippingDetails:id,order_id,firstName,lastName,email', 
+        'orderdetails:id,order_id,consultation_type'
+    ])
+    ->where('payment_status', 'Paid')
+    ->where(function($query) use ($searchQuery) {
+        $query->whereHas('shippingDetails', function($q) use ($searchQuery) {
+            $q->where('firstName', 'like', "%{$searchQuery}%")
+              ->orWhere('lastName', 'like', "%{$searchQuery}%")
+              ->orWhere('email', 'like', "%{$searchQuery}%");
+        })
+        ->orWhereHas('user', function($q) use ($searchQuery) {
+            $q->where('name', 'like', "%{$searchQuery}%")
+              ->orWhere('email', 'like', "%{$searchQuery}%");
+        })
+        ->orWhere('id', 'like', "%{$searchQuery}%")
+        ->orWhere('status', 'like', "%{$searchQuery}%");
+    })
+    ->latest('created_at')
+    ->paginate();
+
+    if ($orders) {
+        $data['order_history'] = $this->get_prev_orders($orders->items());
+        $data['orders'] = $this->assign_order_types($orders->items());
     }
     
+    $data['orders_paginate'] = $orders;
+
+    if ($request->ajax()) {
+        // Return partial view when it's an AJAX request
+        return view('admin.pages.order_all', $data)->render();
+    }
+
+    return view('admin.pages.order_all', $data);
+}
+
     
     
 
@@ -1933,61 +1963,79 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
-
+    
+        // Fetch orders with relationships
         $orders = Order::with([
             'user',
-            'shippingDetails',
+            'shippingDetails', // Ensure the relationship is loaded
             'orderdetails' => function ($query) {
-                $query->with('product:id,title');
+                $query->with('product:id,title'); // Ensure product details are loaded
             }
         ])
-            ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
-            ->latest('created_at')
-            ->get()
-            ->toArray();
-
-
+        ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
+        ->latest('created_at')
+        ->get()
+        ->toArray();
+    
         $data['filters'] = [];
         $postalCodeProductCount = [];
-
+    
         if ($orders) {
+            // Generate unique address and postal code combinations, handle missing shipping details
             $combined = array_map(function ($order) {
-                return $order['shipping_details']['address'] . '_chapi_' . $order['shipping_details']['zip_code'];
+                // Safely access 'shipping_details' and check if it's set
+                $address = optional($order['shipping_details'])['address'] ?? 'N/A';
+                $zipCode = optional($order['shipping_details'])['zip_code'] ?? 'N/A';
+                return $address . '_chapi_' . $zipCode;
             }, $orders);
-
+    
+            // Remove any null values from the array
+            $combined = array_filter($combined, function ($item) {
+                return $item !== null;
+            });
+    
+            // Ensure uniqueness
             $uniqueCombined = array_unique($combined);
-
+    
+            // Split combined values into address and postal code
             $filters = array_map(function ($item) {
                 $parts = explode('_chapi_', $item, 2);
                 return [
-                    'address' => $parts[0],
-                    'postal_code' => $parts[1]
+                    'address' => $parts[0] ?? 'N/A',
+                    'postal_code' => $parts[1] ?? 'N/A',
                 ];
             }, $uniqueCombined);
-
+    
             $data['filters'] = $filters;
-
+    
             // Aggregate product counts by postal code
             foreach ($orders as $order) {
-                $postalCode = $order['shipping_details']['zip_code'];
+                // Safely access 'shipping_details' and check if it's available
+                $postalCode = optional($order['shipping_details'])['zip_code'] ?? 'N/A';
+                
                 foreach ($order['orderdetails'] as $detail) {
+                    // Safely access product title, fallback to 'N/A' if product is missing
+                    $productTitle = optional($detail['product'])['title'] ?? 'N/A';
+    
+                    // Initialize count for this postal code and product if not already set
                     if (!isset($postalCodeProductCount[$postalCode])) {
                         $postalCodeProductCount[$postalCode] = [];
                     }
-                    $productId = $detail['product']['title'];
-                    if (!isset($postalCodeProductCount[$postalCode][$productId])) {
-                        $postalCodeProductCount[$postalCode][$productId] = 0;
+                    
+                    if (!isset($postalCodeProductCount[$postalCode][$productTitle])) {
+                        $postalCodeProductCount[$postalCode][$productTitle] = 0;
                     }
-                    $postalCodeProductCount[$postalCode][$productId]++;
+                    $postalCodeProductCount[$postalCode][$productTitle]++;
                 }
             }
-
+    
             $data['postalCodeProductCount'] = $postalCodeProductCount;
-            $data['orders'] = $this->assign_order_types($orders);
+            $data['orders'] = $this->assign_order_types($orders); // Assuming this method is properly defined
         }
-
+    
         return view('admin.pages.orders_audit', $data);
     }
+    
 
 
     public function add_order()
@@ -2303,32 +2351,35 @@ class AdminDashboardController extends Controller
     {
         $user = $this->getAuthUser();
         $this->authorize('orders');
-    
+        
         $validatedData = $request->validate([
             'id' => 'required|exists:orders,id'
         ]);
-    
+        
         // Fetch the order with the related models
-        $order = Order::with(['user', 'shippingDetails', 'orderdetails.product'])->where([
-            'id' => $request->id,
-            'payment_status' => 'Paid'
-        ])->first();
-    
+        $order = Order::with(['user', 'shippingDetails', 'orderdetails.product', 'orderdetails.product.variants'])
+                      ->where([
+                          'id' => $request->id,
+                          'payment_status' => 'Paid'
+                      ])
+                      ->first();
+        
         if ($order) {
             try {
-                $order = $order->toArray() ?? [];
+                $order = $order->toArray();
                 $weightSum = 0;
-    
+        
                 // Calculate total weight using the product weight from the product table
                 foreach ($order['orderdetails'] as $orderDetail) {
-                    $product = $orderDetail['product']; // Assuming 'product' relation is eager-loaded
+                    $product = $orderDetail['product']; // Accessing the 'product' relation
                     $weightSum += ($product['weight'] ?? 0) * $orderDetail['product_qty']; // Multiply by quantity
                 }
-    
+        
+                // Update weight and quantity for the order
                 $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
-                // dd($order['weight']);
                 $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
-    
+        
+                // Create the shipping payload for the API
                 $payload = $this->make_shiping_payload($order);
                 $apiKey = env('ROYAL_MAIL_API_KEY');
                 $client = new Client();
@@ -2339,15 +2390,17 @@ class AdminDashboardController extends Controller
                     ],
                     'json' => $payload,
                 ]);
-    
+        
                 $statusCode = $response->getStatusCode();
                 $body = $response->getBody()->getContents();
+        
                 if ($statusCode == 200) {
                     $response = json_decode($body, true);
                     $shipped = [];
+                    
                     if ($response['createdOrders']) {
                         foreach ($response['createdOrders'] as $val) {
-                           // dd( $val['orderIdentifier']);
+                            // Create or update ShippingDetail
                             $shipped[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
@@ -2357,145 +2410,199 @@ class AdminDashboardController extends Controller
                                     'created_by' => $user->id,
                                 ]
                             );
+        
+                            // Deduct stock for each product in the order
+                            foreach ($order['orderdetails'] as $orderDetail) {
+                                $product = $orderDetail['product'];
+                                $product_qty = $orderDetail['product_qty'];
+                                
+                                // If the order has a variant_id (which means a variant was selected), deduct from the variant
+                                if ($orderDetail['variant_id']) {
+                                    $variant = ProductVariant::find($orderDetail['variant_id']);
+                                    
+                                    if ($variant) {
+                                        // Deduct stock from the variant
+                                        $variant->inventory -= $product_qty;
+                                        $variant->save();
+                                    } else {
+                                        Log::error("Variant not found for order detail ID: {$orderDetail['id']}");
+                                    }
+                                } else {
+                                    // If no variant, deduct from the main product stock
+                                    $productModel = Product::find($product['id']);
+                                    
+                                    if ($productModel) {
+                                        // Deduct stock from the main product
+                                        $productModel->stock -= $product_qty;
+                                        $productModel->save();
+                                    } else {
+                                        Log::error("Product not found for order detail ID: {$orderDetail['id']}");
+                                    }
+                                }
+                            }
                         }
                     }
-                    if ($response['failedOrders']) {
-                        foreach ($response['failedOrders'] as $val) {
-                            $shipped[] = ShippingDetail::updateOrCreate(
+        
+                    // Update the order status to "Shipped"
+                    $orderModel = Order::findOrFail($order['id']);
+                    $orderModel->status = $shipped[0]->shipping_status;
+                    $orderModel->save();
+                    
+                    // Return success message
+                    $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
+                    $status = ($shipped[0]->shipping_status == 'Shipped') ? 'success' : 'fail';
+                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
+                                     ->with('status', $status)
+                                     ->with('msg', $msg);
+                } else {
+                    Log::error("Royal Mail API failed with status code: {$statusCode}");
+                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
+                                     ->with('status', 'fail')
+                                     ->with('msg', 'Error with shipping API.');
+                }
+            } catch (\Exception $e) {
+                Log::error("Error during shipping order creation: " . $e->getMessage());
+                return redirect()->back()->with('status', 'fail')
+                                        ->with('msg', 'An error occurred while processing the shipping order.');
+            }
+        }
+        
+        return redirect()->back()->with('status', 'fail')->with('msg', 'Order not found or payment not confirmed.');
+    }
+    
+       
+
+ public function batchShipping(Request $request)
+{
+    $user = $this->getAuthUser();
+    $this->authorize('orders');
+    
+    $validatedData = $request->validate([
+        'order_ids' => 'required|array',
+        'order_ids.*' => 'exists:orders,id'
+    ]);
+    
+    $shippedOrders = [];
+    $failedOrders = [];
+    
+    foreach ($validatedData['order_ids'] as $orderId) {
+        $order = Order::with('user', 'shippingDetails', 'orderdetails.product', 'orderdetails.product.variants')
+                      ->where(['id' => $orderId, 'payment_status' => 'Paid'])
+                      ->first();
+    
+        if ($order) {
+            try {
+                $order = $order->toArray();
+                
+                // Calculate weight and quantity
+                $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
+                $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
+                $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
+    
+                // Prepare the payload for shipping
+                $payload = $this->make_shiping_payload($order);
+                $apiKey = env('ROYAL_MAIL_API_KEY');
+                $client = new Client();
+                
+                $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $apiKey,
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => $payload,
+                ]);
+    
+                $statusCode = $response->getStatusCode();
+                $body = $response->getBody()->getContents();
+    
+                if ($statusCode == 200) {
+                    $response = json_decode($body, true);
+                    
+                    if (!empty($response['createdOrders'])) {
+                        foreach ($response['createdOrders'] as $val) {
+                            $shippedOrders[] = ShippingDetail::updateOrCreate(
                                 ['order_id' => $order['id']],
                                 [
                                     'order_identifier' => $val['orderIdentifier'],
                                     'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
-                                    'shipping_status' => 'ShippingFail',
+                                    'shipping_status' => 'Shipped',
                                     'created_by' => $user->id,
                                 ]
                             );
+    
+                            // Deduct stock for each product in the order
+                            foreach ($order['orderdetails'] as $orderDetail) {
+                                $product = $orderDetail['product'];
+                                $product_qty = $orderDetail['product_qty'];
+                                
+                                if ($product['variant_id']) {  // If product has variants
+                                    // Deduct stock from the relevant product variant
+                                    $variant = $orderDetail['product']['variant'];  // Eager-loaded variant data
+                                    if ($variant) {
+                                        $variant->inventory -= $product_qty;
+                                        $variant->save();
+                                    }
+                                } else {  // If product has no variant
+                                    // Deduct stock from the main product
+                                    $productModel = Product::find($product['id']);
+                                    if ($productModel && $productModel->stock >= $product_qty) {
+                                        $productModel->stock -= $product_qty;
+                                        $productModel->save();
+                                    } else {
+                                        // Handle error (stock insufficient)
+                                        Log::error("Not enough stock for product ID: {$product['id']}.");
+                                    }
+                                }
+                            }
+                        }
+    
+                        // Update the order status to "Shipped"
+                        $orderToUpdate = Order::findOrFail($order['id']);
+                        $orderToUpdate->status = 'Shipped';
+                        $orderToUpdate->save();
+                    }
+    
+                    if (!empty($response['failedOrders'])) {
+                        foreach ($response['failedOrders'] as $val) {
+                            $failedOrders[] = [
+                                'order_id' => $order['id'],
+                                'order_identifier' => $val['orderIdentifier'],
+                                'errors' => json_encode($val['errors'] ?? []),
+                                'status' => 'ShippingFail',
+                            ];
                         }
                     }
-                    $orderModel = Order::findOrFail($order['id']);
-                    $orderModel->status = $shipped[0]->shipping_status;
-                    $update = $orderModel->save();
-                    $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';
-                    $status = ($shipped[0]->shipping_status == 'Shipped') ? 'success' : 'fail';
-                    return redirect()->route('admin.orderDetail', ['id' => base64_encode($validatedData['id'])])
-                        ->with('status', $status)->with('msg', $msg);
                 } else {
-                    echo "contact to developer";
-                }
-            } catch (\Exception $e) {
-                dd($e);
-            }
-        }
-        return redirect()->back();
-    }
-    
-
-    public function  batchShipping(Request $request)
-    {
-        $user = $this->getAuthUser();
-        $this->authorize('orders');
-    
-        $validatedData = $request->validate([
-            'order_ids' => 'required|array',
-            'order_ids.*' => 'exists:orders,id'
-        ]);
-    
-        $shippedOrders = [];
-        $failedOrders = [];
-    
-        foreach ($validatedData['order_ids'] as $orderId) {
-            $order = Order::with('user', 'shippingDetails', 'orderdetails.product')
-                          ->where(['id' => $orderId, 'payment_status' => 'Paid'])
-                          ->first();
-    
-            if ($order) {
-                try {
-                    $order = $order->toArray();
-                    
-                    // Calculate weight and quantity
-                    $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
-                    $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
-                    $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
-    
-                    // Prepare the payload for shipping
-                    $payload = $this->make_shiping_payload($order);
-                    $apiKey = env('ROYAL_MAIL_API_KEY');
-                    $client = new Client();
-                    
-                    $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
-                        'headers' => [
-                            'Authorization' => 'Bearer ' . $apiKey,
-                            'Content-Type' => 'application/json',
-                        ],
-                        'json' => $payload,
-                    ]);
-    
-                    $statusCode = $response->getStatusCode();
-                    $body = $response->getBody()->getContents();
-    
-                    if ($statusCode == 200) {
-                        $response = json_decode($body, true);
-                        
-                        if (!empty($response['createdOrders'])) {
-                            foreach ($response['createdOrders'] as $val) {
-                                $shippedOrders[] = ShippingDetail::updateOrCreate(
-                                    ['order_id' => $order['id']],
-                                    [
-                                        'order_identifier' => $val['orderIdentifier'],
-                                        'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
-                                        'shipping_status' => 'Shipped',
-                                        'created_by' => $user->id,
-                                    ]
-                                );
-                            }
-    
-                            // Update the order status to shipped
-                            $orderToUpdate = Order::findOrFail($order['id']);
-                            $orderToUpdate->status = 'Shipped';
-                            $orderToUpdate->save();
-                        }
-    
-                        if (!empty($response['failedOrders'])) {
-                            foreach ($response['failedOrders'] as $val) {
-                                $failedOrders[] = [
-                                    'order_id' => $order['id'],
-                                    'order_identifier' => $val['orderIdentifier'],
-                                    'errors' => json_encode($val['errors'] ?? []),
-                                    'status' => 'ShippingFail',
-                                ];
-                            }
-                        }
-                    } else {
-                        // Log and handle errors if the API response is not 200
-                        Log::error('Batch Shipping Error: ' . $body);
-                        $failedOrders[] = [
-                            'order_id' => $order['id'],
-                            'errors' => 'API response was not 200.',
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Batch Shipping Exception: ' . $e->getMessage());
+                    // Log and handle errors if the API response is not 200
+                    Log::error('Batch Shipping Error: ' . $body);
                     $failedOrders[] = [
-                        'order_id' => $orderId,
-                        'errors' => $e->getMessage(),
+                        'order_id' => $order['id'],
+                        'errors' => 'API response was not 200.',
                     ];
                 }
-            } else {
-                Log::warning("Order ID {$orderId} not found or not paid.");
+            } catch (\Exception $e) {
+                Log::error('Batch Shipping Exception: ' . $e->getMessage());
                 $failedOrders[] = [
                     'order_id' => $orderId,
-                    'errors' => 'Order not found or not paid.',
+                    'errors' => $e->getMessage(),
                 ];
             }
+        } else {
+            Log::warning("Order ID {$orderId} not found or not paid.");
+            $failedOrders[] = [
+                'order_id' => $orderId,
+                'errors' => 'Order not found or not paid.',
+            ];
         }
-    
-        // Return response with summary of shipped and failed orders
-        return response()->json([
-            'shippedOrders' => $shippedOrders,
-            'failedOrders' => $failedOrders,
-        ]);
     }
     
+    // Return response with summary of shipped and failed orders
+    return response()->json([
+        'shippedOrders' => $shippedOrders,
+        'failedOrders' => $failedOrders,
+    ]);
+}
+
     
     
 
@@ -3103,5 +3210,135 @@ class AdminDashboardController extends Controller
 
         return redirect()->route('admin.prescriptionMedGQ')->with('success', 'Question deleted successfully');
     }
+    public function exportDoctorsApprovalCSV()
+    {
+        // Fetch all relevant orders with related data
+        $orders = Order::with([
+            'user:id,name',
+            'approved_by:id,name', 
+            'shippingDetails:id,order_id,zip_code,city', 
+            'orderdetails:id,order_id,product_id,product_status,variant_id,consultation_type,product_qty',
+            'orderdetails.product:id,title',
+            'orderdetails.variant:id,value'
+        ])
+        ->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])
+        ->latest('created_at')
+        ->get();
+    
+        // Create CSV writer instance
+        $csv = Writer::createFromFileObject(new SplTempFileObject());
+    
+        // Add CSV header
+        $csv->insertOne([
+            'Order ID', 'User Name', 'Product Name', 'Variant Details', 'Zip Code', 'City', 'Consultation Type', 'Status', 'Quantity'
+        ]);
+    
+        // Loop through orders and write data to CSV
+        foreach ($orders as $order) {
+            foreach ($order->orderdetails as $orderDetail) {
+                $csv->insertOne([
+                    $order->id,
+                    $order->user->name ?? 'N/A',
+                    $orderDetail->product->title ?? 'N/A',
+                    $orderDetail->variant->value ?? 'N/A',
+                    $order->shippingDetails->zip_code ?? 'N/A',
+                    $order->shippingDetails->city ?? 'N/A',
+                    $orderDetail->consultation_type ?? 'N/A',
+                    $order->status ?? 'N/A',
+                    $orderDetail->product_qty ?? 'N/A',
+                ]);
+            }
+        }
+    
+        // Return the CSV as a downloadable file
+        return response()->stream(function () use ($csv) {
+            $csv->output('orders.csv');
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="orders.csv"',
+        ]);
+    }
+    
+
+    public function exportOrdersCSV()
+    {
+        // Fetch orders with related data
+        $orders = Order::with([
+            'user', 
+            'shippingDetail:id,order_id,firstName,lastName,zip_code,email', 
+            'orderdetails:id,order_id,product_id,product_qty', 
+            'orderdetails.product:id,title', 
+        ])
+        ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
+        ->latest('created_at')
+        ->get();
+    
+        // Create CSV writer instance
+        $csv = Writer::createFromFileObject(new SplTempFileObject());
+    
+        // Add CSV header
+        $csv->insertOne([
+            'Zip Code', 'Date/Time', 'Shipping Full Name', 'Order No', 'Product Name', 'Email', 'Quantity',
+        ]);
+    
+        // Add order data
+        foreach ($orders as $order) {
+            // Fetch shipping details
+            $zipCode = $order->shippingDetail->zip_code ?? 'N/A';
+            $email = $order->shippingDetail->email ?? 'N/A'; 
+            $firstName = $order->shippingDetail->firstName ?? 'N/A';
+            $lastName = $order->shippingDetail->lastName ?? 'N/A'; 
+            // $customerName = $order->user->name ?? 'N/A'; 
+            $orderId = $order->id;
+            $orderDate = $order->created_at->format('Y-m-d H:i:s'); // Date/Time in desired format
+    
+            // Iterate over order details and sum the quantities for each product
+            $productQuantities = [];
+    
+            foreach ($order->orderdetails as $detail) {
+                $productId = $detail->product_id; 
+                $quantity = $detail->product_qty ?? 1; 
+                
+                // Sum quantities by product ID
+                if (!isset($productQuantities[$productId])) {
+                    $productQuantities[$productId] = 0;
+                }
+                $productQuantities[$productId] += $quantity;
+            }
+    
+            // Iterate through the product quantities and insert data into the CSV
+            foreach ($productQuantities as $productId => $totalQuantity) {
+                // Fetch product name from the loaded 'product' relationship
+                $productName = $order->orderdetails->firstWhere('product_id', $productId)->product->title ?? 'N/A';
+    
+                // Combine first and last name to form the full name
+                $fullName = $firstName . ' ' . $lastName;
+    
+                $csv->insertOne([
+                    $zipCode,
+                    $orderDate,
+                    $fullName ,
+                 //   $customerName,
+                    $orderId,
+                    $productName,
+                    $email,
+                    $totalQuantity,
+                ]);
+            }
+        }
+    
+        // Prepare the CSV for download
+        $csvData = $csv->toString();
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="audit_orders.csv"',
+        ];
+    
+        return Response::make($csvData, 200, $headers);
+    }
+    
+
+
+
 
 }

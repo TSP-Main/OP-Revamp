@@ -25,6 +25,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/products', [ProductController::class, 'products'])->name('admin.products');
     Route::match(['get', 'post'], '/proTrash', [ProductController::class, 'product_trash'])->name('admin.proTrash');
     Route::match(['get', 'post'], '/productsLimits', [ProductController::class, 'products_limits'])->name('admin.productsLimits');
+    Route::match(['get', 'post'], '/lowstockProducts', [ProductController::class, 'lowlimit_products'])->name('admin.lowlimitProducts');
     Route::match(['get', 'post'], '/featuredProducts', [ProductController::class, 'featured_products'])->name('admin.featuredProducts');
     Route::match(['get', 'post'], '/storeFeaturedProducts', [ProductController::class, 'store_featured_products'])->name('admin.storeFeaturedProducts');
     Route::match(['get', 'post'], '/deleteFeaturedProducts', [ProductController::class, 'delete_featured_products'])->name('admin.deleteFeaturedProducts');
@@ -115,6 +116,8 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/ordersShipped', [AdminDashboardController::class, 'orders_shipped'])->name('admin.ordersShiped');
     Route::get('/orders-ShippingFail', [AdminDashboardController::class, 'orders_unshipped'])->name('admin.ordersShippingFail');
     Route::get('/ordersAudit', [AdminDashboardController::class, 'orders_audit'])->name('admin.ordersAudit');
+    Route::get('/admin/orders/export-csv', [AdminDashboardController::class, 'exportOrdersCSV'])->name('admin.auditorders.exportCsv');
+    Route::get('/admin/pomorders/export-csv', [AdminDashboardController::class, 'exportDoctorsApprovalCSV'])->name('admin.POMorders.exportCsv');
     Route::get('/gpaLeters', [AdminDashboardController::class, 'gpa_letters'])->name('admin.gpaLeters');
     Route::get('/orderDetail/{id}', [AdminDashboardController::class, 'order_detail'])->name('admin.orderDetail');
     Route::get('/consultationView/{odd_id}', [AdminDashboardController::class, 'consultation_view'])->name('admin.consultationView');

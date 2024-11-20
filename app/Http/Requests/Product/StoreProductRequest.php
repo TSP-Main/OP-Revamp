@@ -22,6 +22,7 @@ class StoreProductRequest extends FormRequest
             'stock' => 'required|integer|min:0', // Ensure stock is a positive integer
             'stock_status' => 'required',
             'high_risk' => 'required|integer', // Assuming this is an integer
+            'low_limit' => 'nullable|integer|min:0', // Assuming this is an integer
             'cut_price' => 'nullable|regex:/^\d+(\.\d{1,2})?$/',
             'desc' => 'required',
             'title' => [
