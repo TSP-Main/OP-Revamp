@@ -17,19 +17,26 @@ class OrderController extends Controller
     {
         $user = $this->getAuthUser();
         $user->hasPermissionTo('prescription_orders');
-
+        
         $data['user'] = $user;
-        $orders = Order::with(['user', 'orderdetails.product.variants']) 
-        ->where(['payment_status' => 'Paid', 'user_id' => $user->id, 'order_for' => 'doctor'])
-        ->latest('created_at')->get()->toArray();
+        
+        // Ensure that the relationships are loaded correctly
+        $orders = Order::with(['user', 'orderdetails.product', 'orderdetails.product.variants'])
+            ->where(['payment_status' => 'Paid', 'user_id' => $user->id, 'order_for' => 'doctor'])
+            ->latest('created_at')
+            ->get();
+        
+        // Pass the orders to the view
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $orders;
         }
-
+        
         $data['title'] = 'Prescription Orders';
         return view('admin.pages.prescription_orders', $data);
     }
+    
+    
 
     public function online_clinic_orders()
     {

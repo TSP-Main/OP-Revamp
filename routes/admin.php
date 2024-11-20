@@ -116,6 +116,8 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::get('/ordersShipped', [AdminDashboardController::class, 'orders_shipped'])->name('admin.ordersShiped');
     Route::get('/orders-ShippingFail', [AdminDashboardController::class, 'orders_unshipped'])->name('admin.ordersShippingFail');
     Route::get('/ordersAudit', [AdminDashboardController::class, 'orders_audit'])->name('admin.ordersAudit');
+    Route::get('/admin/orders/export-csv', [AdminDashboardController::class, 'exportOrdersCSV'])->name('admin.auditorders.exportCsv');
+    Route::get('/admin/pomorders/export-csv', [AdminDashboardController::class, 'exportDoctorsApprovalCSV'])->name('admin.POMorders.exportCsv');
     Route::get('/gpaLeters', [AdminDashboardController::class, 'gpa_letters'])->name('admin.gpaLeters');
     Route::get('/orderDetail/{id}', [AdminDashboardController::class, 'order_detail'])->name('admin.orderDetail');
     Route::get('/consultationView/{odd_id}', [AdminDashboardController::class, 'consultation_view'])->name('admin.consultationView');
