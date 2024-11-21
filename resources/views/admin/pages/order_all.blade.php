@@ -486,8 +486,7 @@
     // Live Search using AJAX for all records from the database
     $('#search').on('input', function() {
         var searchQuery = $(this).val();  // Get the search query from input
-        
-        // Send AJAX request to fetch all matching orders based on the search query
+   
         $.ajax({
             url: '{{ route('admin.allOrders') }}',  // The URL to fetch the orders
             method: 'GET',
