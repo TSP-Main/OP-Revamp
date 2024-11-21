@@ -45,6 +45,20 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
+        // New mailer for GPA Letter
+        'gpa_letter' => [
+            'transport' => 'smtp',
+            'host' => env('GPA_MAIL_HOST', 'secure.emailsrvr.com'),
+            'port' => env('GPA_MAIL_PORT', 465),
+            'encryption' => env('GPA_MAIL_ENCRYPTION', 'ssl'), 
+            'username' => env('GPA_MAIL_USERNAME'),
+            'password' => env('GPA_MAIL_PASSWORD'),
+            'from' => [
+                'address' => env('GPA_MAIL_FROM_ADDRESS', 'prescriptions@online-pharmacy4u.co.uk'),
+                'name' => env('GPA_MAIL_FROM_NAME', 'Online Pharmacy4U'),
+            ],
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
@@ -81,9 +95,9 @@ return [
     ],
 
     /*
-    |--------------------------------------------------------------------------
+    |---------------------------------------------------------------------------
     | Global "From" Address
-    |--------------------------------------------------------------------------
+    |---------------------------------------------------------------------------
     |
     | You may wish for all e-mails sent by your application to be sent from
     | the same address. Here, you may specify a name and address that is
@@ -97,9 +111,9 @@ return [
     ],
 
     /*
-    |--------------------------------------------------------------------------
+    |---------------------------------------------------------------------------
     | Markdown Mail Settings
-    |--------------------------------------------------------------------------
+    |---------------------------------------------------------------------------
     |
     | If you are using Markdown based email rendering, you may configure your
     | theme and component paths here, allowing you to customize the design
