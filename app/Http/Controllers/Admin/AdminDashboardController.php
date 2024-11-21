@@ -1699,7 +1699,7 @@ class AdminDashboardController extends Controller
     
         $data['orders_paginate'] = $orders;  // Pass paginated results to the view
     
-        // If the request is an AJAX request, return only the updated part of the page
+     
         if ($request->ajax()) {
             return view('admin.pages.order_all', $data)->render();
         }
