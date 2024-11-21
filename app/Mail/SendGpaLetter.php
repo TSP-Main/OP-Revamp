@@ -21,10 +21,12 @@ class SendGpaLetter extends Mailable
     public function build()
     {
         return $this->view('emails.gpa_letter')
-                    ->subject('Your GPA Letter')
+                    ->subject('Your GP Letter')
                     ->attach($this->pdf_path, [
                         'as' => $this->file_name,
-                        'mime' => 'application/pdf',
-                    ]);
+                        'mime' => 'application/pdf' ])
+                    ->from(env('GPA_MAIL_FROM_ADDRESS'), env('GPA_MAIL_FROM_NAME'))
+                    ->mailer('gpa_letter'); 
+                
     }
 }
