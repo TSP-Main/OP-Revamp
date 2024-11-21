@@ -1550,7 +1550,6 @@ class AdminDashboardController extends Controller
                 } else {
                     $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->get(['id', 'title', 'desc'])->toArray();
     
-                    // Fetching product consultation questions and answers
                     $pro_quest_ans = json_decode($consultaion->product_consultation, true);
                     $pro_quest_ids = array_keys(array_filter($pro_quest_ans, fn($value) => $value !== null));
                     $product_consultation = Question::whereIn('id', $pro_quest_ids)
@@ -1558,7 +1557,6 @@ class AdminDashboardController extends Controller
                         ->get(['id', 'title', 'desc'])
                         ->toArray();
     
-                    // Mapping product questions
                     $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
                         return [$item['id'] => $item];
                     });
@@ -1596,55 +1594,50 @@ class AdminDashboardController extends Controller
                 $data['user_profile_details'] = $data['order_user_detail'] ? User::find($data['order_user_detail']->user_id) : [];
     
                 $data['order_detail_id'] = $consultaion->id; // Add this line
+                    // Initialize the variable
+                $requires_image_upload = false; 
     
-                // Initialize the variable
+                // Check if question #607 exists in product consultation
                 $requires_image_upload = false;
-    
-                // Check if either question #607 or #800 exists in product consultation
-                if (collect($prod_result)->contains('id', 607) || collect($prod_result)->contains('id', 800)) {
+                if (collect($prod_result)->contains('id', 607)) {
                     $requires_image_upload = true;
                 }
+                    // Pass the variable to the view
+            $data['requires_image_upload'] = $requires_image_upload;
     
-                // Pass the variable to the view
-                $data['requires_image_upload'] = $requires_image_upload;
-    
-                if ($request->isMethod('post')) {
-                    $request->validate([
-                        'answers.generic' => 'required|array',
-                        'answers.product' => 'array',
-                        'image' => 'nullable|image|max:2048', // Validate image if provided
-                    ]);
-    
-                    \Log::info('Request Method: ' . $request->method());
-                    \Log::info($request->all());
-    
-                    // Extract answers into a local variable
-                    $answers = $request->input('answers');
-    
-                    // Handle image upload if provided
-                    if ($request->hasFile('image')) {
-                        $image = $request->file('image');
-                        $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
-    
-                        // Replace the answer for question #607 with the image path (or question 800)
-                        if (collect($prod_result)->contains('id', 607)) {
-                            $answers['product'][607] = $imagePath;
-                        } elseif (collect($prod_result)->contains('id', 800)) {
-                            $answers['product'][800] = $imagePath;
-                        }
-                    }
-    
-                    // Save updated answers back to the consultation
-                    $consultaion->generic_consultation = json_encode($answers['generic']);
-                    $consultaion->product_consultation = json_encode($answers['product'] ?? []);
-                    $consultaion->save();
-    
-                    notify()->success('Consultation updated successfully.');
-                    return redirect()->route('admin.prescriptionOrders', ['odd_id' => base64_encode($odd_id)]);
+            if ($request->isMethod('post')) {
+                $request->validate([
+                    'answers.generic' => 'required|array',
+                    'answers.product' => 'array',
+                    'image' => 'nullable|image|max:2048', // Validate image if provided
+                ]);
+        
+                \Log::info('Request Method: ' . $request->method());
+                \Log::info($request->all());
+        
+                // Extract answers into a local variable
+                $answers = $request->input('answers');
+        
+                // Handle image upload if provided
+                if ($request->hasFile('image')) {
+                    $image = $request->file('image');
+                    $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
+        
+                    // Replace the answer for question #607 with the image path
+                    $answers['product'][607] = $imagePath;
                 }
-    
-                return view('admin.pages.consultation_formedit', $data);
-            } else {
+        
+                // Save updated answers back to the consultation
+                $consultaion->generic_consultation = json_encode($answers['generic']);
+                $consultaion->product_consultation = json_encode($answers['product'] ?? []);
+                $consultaion->save();
+        
+                notify()->success('Consultation updated successfully.');
+                return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
+            }
+        
+            return view('admin.pages.consultation_formedit', $data);
+        } else {
                 notify()->error('Consultation Id not found. ⚡️');
                 return redirect()->back()->with('error', 'Transaction not found.');
             }
@@ -1653,7 +1646,6 @@ class AdminDashboardController extends Controller
             return redirect()->back();
         }
     }
-    
 
     public function ordersReceived()
     {
@@ -1669,51 +1661,53 @@ class AdminDashboardController extends Controller
         return view('admin.pages.orders_recieved', $data);
     }
 
-   public function all_orders(Request $request)
-{
-    $data['user'] = $this->getAuthUser();
-    $this->authorize('orders_received');
+    public function all_orders(Request $request)
+    {
+        $data['user'] = $this->getAuthUser();
+        $this->authorize('orders_received');
     
-    $searchQuery = $request->input('search', ''); // Get search query, default to empty string
+        // Get the search query from the request
+        $searchQuery = $request->input('search', '');
     
-    // Get orders as Eloquent Collection with relationships loaded
-    $orders = Order::with([
-        'user', 
-        'shippingDetails:id,order_id,firstName,lastName,email', 
-        'orderdetails:id,order_id,consultation_type'
-    ])
-    ->where('payment_status', 'Paid')
-    ->where(function($query) use ($searchQuery) {
-        $query->whereHas('shippingDetails', function($q) use ($searchQuery) {
-            $q->where('firstName', 'like', "%{$searchQuery}%")
-              ->orWhere('lastName', 'like', "%{$searchQuery}%")
-              ->orWhere('email', 'like', "%{$searchQuery}%");
+        // Get orders with relationships loaded, paginated based on the search query
+        $orders = Order::with([
+            'user', 
+            'shippingDetails:id,order_id,firstName,lastName,email', 
+            'orderdetails:id,order_id,consultation_type'
+        ])
+        ->where('payment_status', 'Paid')
+        ->where(function($query) use ($searchQuery) {
+            $query->whereHas('shippingDetails', function($q) use ($searchQuery) {
+                $q->where('firstName', 'like', "%{$searchQuery}%")
+                  ->orWhere('lastName', 'like', "%{$searchQuery}%")
+                  ->orWhere('email', 'like', "%{$searchQuery}%");
+            })
+            ->orWhereHas('user', function($q) use ($searchQuery) {
+                $q->where('name', 'like', "%{$searchQuery}%")
+                  ->orWhere('email', 'like', "%{$searchQuery}%");
+            })
+            ->orWhere('id', 'like', "%{$searchQuery}%")
+            ->orWhere('status', 'like', "%{$searchQuery}%");
         })
-        ->orWhereHas('user', function($q) use ($searchQuery) {
-            $q->where('name', 'like', "%{$searchQuery}%")
-              ->orWhere('email', 'like', "%{$searchQuery}%");
-        })
-        ->orWhere('id', 'like', "%{$searchQuery}%")
-        ->orWhere('status', 'like', "%{$searchQuery}%");
-    })
-    ->latest('created_at')
-    ->paginate();
-
-    if ($orders) {
-        $data['order_history'] = $this->get_prev_orders($orders->items());
-        $data['orders'] = $this->assign_order_types($orders->items());
+        ->latest('created_at')
+        ->paginate(50);  // Paginate the results with 20 records per page
+    
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders->items());
+            $data['orders'] = $this->assign_order_types($orders->items());
+        }
+    
+        $data['orders_paginate'] = $orders;  // Pass paginated results to the view
+    
+        // If the request is an AJAX request, return only the updated part of the page
+        if ($request->ajax()) {
+            return view('admin.pages.order_all', $data)->render();
+        }
+    
+        return view('admin.pages.order_all', $data);
     }
     
-    $data['orders_paginate'] = $orders;
-
-    if ($request->ajax()) {
-        // Return partial view when it's an AJAX request
-        return view('admin.pages.order_all', $data)->render();
-    }
-
-    return view('admin.pages.order_all', $data);
-}
-
+    
     
     
 
@@ -1933,7 +1927,7 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('gpa_letters');
-        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,address,email', 'orderdetails:id,order_id,consultation_type'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->latest('created_at')->get()->toArray();
+        $orders = Order::with(['user.profile', 'shippingDetails:id,order_id,firstName,lastName,address,email', 'orderdetails'])->where(['payment_status' => 'Paid', 'order_for' => 'doctor'])->whereIn('status', ['Approved', 'Shipped'])->orderBy('id', 'DESC')->get()->toArray();
         if ($orders) {
             $data['order_history'] = $this->get_prev_orders($orders);
             $data['orders'] = $this->assign_order_types($orders);
@@ -1963,79 +1957,61 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_shipped');
-    
-        // Fetch orders with relationships
+
         $orders = Order::with([
             'user',
-            'shippingDetails', // Ensure the relationship is loaded
+            'shippingDetails',
             'orderdetails' => function ($query) {
-                $query->with('product:id,title'); // Ensure product details are loaded
+                $query->with('product:id,title');
             }
         ])
-        ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
-        ->latest('created_at')
-        ->get()
-        ->toArray();
-    
+            ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
+            ->latest('created_at')
+            ->get()
+            ->toArray();
+
+
         $data['filters'] = [];
         $postalCodeProductCount = [];
-    
+
         if ($orders) {
-            // Generate unique address and postal code combinations, handle missing shipping details
             $combined = array_map(function ($order) {
-                // Safely access 'shipping_details' and check if it's set
-                $address = optional($order['shipping_details'])['address'] ?? 'N/A';
-                $zipCode = optional($order['shipping_details'])['zip_code'] ?? 'N/A';
-                return $address . '_chapi_' . $zipCode;
+                return $order['shipping_details']['address'] . '_chapi_' . $order['shipping_details']['zip_code'];
             }, $orders);
-    
-            // Remove any null values from the array
-            $combined = array_filter($combined, function ($item) {
-                return $item !== null;
-            });
-    
-            // Ensure uniqueness
+
             $uniqueCombined = array_unique($combined);
-    
-            // Split combined values into address and postal code
+
             $filters = array_map(function ($item) {
                 $parts = explode('_chapi_', $item, 2);
                 return [
-                    'address' => $parts[0] ?? 'N/A',
-                    'postal_code' => $parts[1] ?? 'N/A',
+                    'address' => $parts[0],
+                    'postal_code' => $parts[1]
                 ];
             }, $uniqueCombined);
-    
+
             $data['filters'] = $filters;
-    
+
             // Aggregate product counts by postal code
             foreach ($orders as $order) {
-                // Safely access 'shipping_details' and check if it's available
-                $postalCode = optional($order['shipping_details'])['zip_code'] ?? 'N/A';
-                
+                $postalCode = $order['shipping_details']['zip_code'];
                 foreach ($order['orderdetails'] as $detail) {
-                    // Safely access product title, fallback to 'N/A' if product is missing
-                    $productTitle = optional($detail['product'])['title'] ?? 'N/A';
-    
-                    // Initialize count for this postal code and product if not already set
                     if (!isset($postalCodeProductCount[$postalCode])) {
                         $postalCodeProductCount[$postalCode] = [];
                     }
-                    
-                    if (!isset($postalCodeProductCount[$postalCode][$productTitle])) {
-                        $postalCodeProductCount[$postalCode][$productTitle] = 0;
+                    $productId = $detail['product']['title'];
+                    if (!isset($postalCodeProductCount[$postalCode][$productId])) {
+                        $postalCodeProductCount[$postalCode][$productId] = 0;
                     }
-                    $postalCodeProductCount[$postalCode][$productTitle]++;
+                    $postalCodeProductCount[$postalCode][$productId]++;
                 }
             }
-    
+
             $data['postalCodeProductCount'] = $postalCodeProductCount;
-            $data['orders'] = $this->assign_order_types($orders); // Assuming this method is properly defined
+            $data['orders'] = $this->assign_order_types($orders);
         }
-    
+
         return view('admin.pages.orders_audit', $data);
     }
-    
 
 
     public function add_order()
@@ -2423,7 +2399,14 @@ class AdminDashboardController extends Controller
                                     if ($variant) {
                                         // Deduct stock from the variant
                                         $variant->inventory -= $product_qty;
-                                        $variant->save();
+                                        
+                                        // Check if the variant stock is 0, and update stock status to "OUT"
+                                        if ($variant->inventory <= 0) {
+                                            $variant->stock_status = 'OUT';
+                                            $variant->save();
+                                        } else {
+                                            $variant->save();
+                                        }
                                     } else {
                                         Log::error("Variant not found for order detail ID: {$orderDetail['id']}");
                                     }
@@ -2434,7 +2417,14 @@ class AdminDashboardController extends Controller
                                     if ($productModel) {
                                         // Deduct stock from the main product
                                         $productModel->stock -= $product_qty;
-                                        $productModel->save();
+                                        
+                                        // Check if the product stock is 0, and update stock status to "OUT"
+                                        if ($productModel->stock <= 0) {
+                                            $productModel->stock_status = 'OUT';
+                                            $productModel->save();
+                                        } else {
+                                            $productModel->save();
+                                        }
                                     } else {
                                         Log::error("Product not found for order detail ID: {$orderDetail['id']}");
                                     }
@@ -2470,139 +2460,158 @@ class AdminDashboardController extends Controller
         return redirect()->back()->with('status', 'fail')->with('msg', 'Order not found or payment not confirmed.');
     }
     
-       
-
- public function batchShipping(Request $request)
-{
-    $user = $this->getAuthUser();
-    $this->authorize('orders');
     
-    $validatedData = $request->validate([
-        'order_ids' => 'required|array',
-        'order_ids.*' => 'exists:orders,id'
-    ]);
-    
-    $shippedOrders = [];
-    $failedOrders = [];
-    
-    foreach ($validatedData['order_ids'] as $orderId) {
-        $order = Order::with('user', 'shippingDetails', 'orderdetails.product', 'orderdetails.product.variants')
-                      ->where(['id' => $orderId, 'payment_status' => 'Paid'])
-                      ->first();
-    
-        if ($order) {
-            try {
-                $order = $order->toArray();
-                
-                // Calculate weight and quantity
-                $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
-                $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
-                $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
-    
-                // Prepare the payload for shipping
-                $payload = $this->make_shiping_payload($order);
-                $apiKey = env('ROYAL_MAIL_API_KEY');
-                $client = new Client();
-                
-                $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $apiKey,
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $payload,
-                ]);
-    
-                $statusCode = $response->getStatusCode();
-                $body = $response->getBody()->getContents();
-    
-                if ($statusCode == 200) {
-                    $response = json_decode($body, true);
+    public function batchShipping(Request $request)
+    {
+        $user = $this->getAuthUser();
+        $this->authorize('orders');
+        
+        $validatedData = $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'exists:orders,id'
+        ]);
+        
+        $shippedOrders = [];
+        $failedOrders = [];
+        
+        foreach ($validatedData['order_ids'] as $orderId) {
+            $order = Order::with('user', 'shippingDetails', 'orderdetails.product', 'orderdetails.product.variants')
+                          ->where(['id' => $orderId, 'payment_status' => 'Paid'])
+                          ->first();
+        
+            if ($order) {
+                try {
+                    $order = $order->toArray();
                     
-                    if (!empty($response['createdOrders'])) {
-                        foreach ($response['createdOrders'] as $val) {
-                            $shippedOrders[] = ShippingDetail::updateOrCreate(
-                                ['order_id' => $order['id']],
-                                [
-                                    'order_identifier' => $val['orderIdentifier'],
-                                    'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
-                                    'shipping_status' => 'Shipped',
-                                    'created_by' => $user->id,
-                                ]
-                            );
-    
-                            // Deduct stock for each product in the order
-                            foreach ($order['orderdetails'] as $orderDetail) {
-                                $product = $orderDetail['product'];
-                                $product_qty = $orderDetail['product_qty'];
-                                
-                                if ($product['variant_id']) {  // If product has variants
-                                    // Deduct stock from the relevant product variant
-                                    $variant = $orderDetail['product']['variant'];  // Eager-loaded variant data
-                                    if ($variant) {
-                                        $variant->inventory -= $product_qty;
-                                        $variant->save();
-                                    }
-                                } else {  // If product has no variant
-                                    // Deduct stock from the main product
-                                    $productModel = Product::find($product['id']);
-                                    if ($productModel && $productModel->stock >= $product_qty) {
-                                        $productModel->stock -= $product_qty;
-                                        $productModel->save();
+                    // Calculate weight and quantity
+                    $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
+                    $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
+                    $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
+        
+                    // Prepare the payload for shipping
+                    $payload = $this->make_shiping_payload($order);
+                    $apiKey = env('ROYAL_MAIL_API_KEY');
+                    $client = new Client();
+                    
+                    $response = $client->post('https://api.parcel.royalmail.com/api/v1/orders', [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $apiKey,
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => $payload,
+                    ]);
+        
+                    $statusCode = $response->getStatusCode();
+                    $body = $response->getBody()->getContents();
+        
+                    if ($statusCode == 200) {
+                        $response = json_decode($body, true);
+                        
+                        if (!empty($response['createdOrders'])) {
+                            foreach ($response['createdOrders'] as $val) {
+                                $shippedOrders[] = ShippingDetail::updateOrCreate(
+                                    ['order_id' => $order['id']],
+                                    [
+                                        'order_identifier' => $val['orderIdentifier'],
+                                        'tracking_no' => $this->get_tracking_number($val['orderIdentifier']) ?? null,
+                                        'shipping_status' => 'Shipped',
+                                        'created_by' => $user->id,
+                                    ]
+                                );
+        
+                                // Deduct stock and update stock status
+                                foreach ($order['orderdetails'] as $orderDetail) {
+                                    $product = $orderDetail['product'];
+                                    $product_qty = $orderDetail['product_qty'];
+                                    
+                                    // If the order has a variant_id (which means a variant was selected), deduct from the variant
+                                    if ($orderDetail['variant_id']) {
+                                        $variant = ProductVariant::find($orderDetail['variant_id']);
+                                        
+                                        if ($variant) {
+                                            // Deduct stock from the variant
+                                            $variant->inventory -= $product_qty;
+                                            
+                                            // Check if the variant stock is 0, and update stock status to "OUT"
+                                            if ($variant->inventory <= 0) {
+                                                $variant->stock_status = 'OUT';
+                                                $variant->save();
+                                            } else {
+                                                $variant->save();
+                                            }
+                                        } else {
+                                            Log::error("Variant not found for order detail ID: {$orderDetail['id']}");
+                                        }
                                     } else {
-                                        // Handle error (stock insufficient)
-                                        Log::error("Not enough stock for product ID: {$product['id']}.");
+                                        // If no variant, deduct from the main product stock
+                                        $productModel = Product::find($product['id']);
+                                        
+                                        if ($productModel) {
+                                            // Deduct stock from the main product
+                                            $productModel->stock -= $product_qty;
+                                            
+                                            // Check if the product stock is 0, and update stock status to "OUT"
+                                            if ($productModel->stock <= 0) {
+                                                $productModel->stock_status = 'OUT';
+                                                $productModel->save();
+                                            } else {
+                                                $productModel->save();
+                                            }
+                                        } else {
+                                            Log::error("Product not found for order detail ID: {$orderDetail['id']}");
+                                        }
                                     }
                                 }
                             }
+        
+                            // Update the order status to "Shipped"
+                            $orderToUpdate = Order::findOrFail($order['id']);
+                            $orderToUpdate->status = 'Shipped';
+                            $orderToUpdate->save();
                         }
-    
-                        // Update the order status to "Shipped"
-                        $orderToUpdate = Order::findOrFail($order['id']);
-                        $orderToUpdate->status = 'Shipped';
-                        $orderToUpdate->save();
-                    }
-    
-                    if (!empty($response['failedOrders'])) {
-                        foreach ($response['failedOrders'] as $val) {
-                            $failedOrders[] = [
-                                'order_id' => $order['id'],
-                                'order_identifier' => $val['orderIdentifier'],
-                                'errors' => json_encode($val['errors'] ?? []),
-                                'status' => 'ShippingFail',
-                            ];
+        
+                        if (!empty($response['failedOrders'])) {
+                            foreach ($response['failedOrders'] as $val) {
+                                $failedOrders[] = [
+                                    'order_id' => $order['id'],
+                                    'order_identifier' => $val['orderIdentifier'],
+                                    'errors' => json_encode($val['errors'] ?? []),
+                                    'status' => 'ShippingFail',
+                                ];
+                            }
                         }
+                    } else {
+                        // Log and handle errors if the API response is not 200
+                        Log::error('Batch Shipping Error: ' . $body);
+                        $failedOrders[] = [
+                            'order_id' => $order['id'],
+                            'errors' => 'API response was not 200.',
+                        ];
                     }
-                } else {
-                    // Log and handle errors if the API response is not 200
-                    Log::error('Batch Shipping Error: ' . $body);
+                } catch (\Exception $e) {
+                    Log::error('Batch Shipping Exception: ' . $e->getMessage());
                     $failedOrders[] = [
-                        'order_id' => $order['id'],
-                        'errors' => 'API response was not 200.',
+                        'order_id' => $orderId,
+                        'errors' => $e->getMessage(),
                     ];
                 }
-            } catch (\Exception $e) {
-                Log::error('Batch Shipping Exception: ' . $e->getMessage());
+            } else {
+                Log::warning("Order ID {$orderId} not found or not paid.");
                 $failedOrders[] = [
                     'order_id' => $orderId,
-                    'errors' => $e->getMessage(),
+                    'errors' => 'Order not found or not paid.',
                 ];
             }
-        } else {
-            Log::warning("Order ID {$orderId} not found or not paid.");
-            $failedOrders[] = [
-                'order_id' => $orderId,
-                'errors' => 'Order not found or not paid.',
-            ];
         }
+        
+        // Return response with summary of shipped and failed orders
+        return response()->json([
+            'shippedOrders' => $shippedOrders,
+            'failedOrders' => $failedOrders,
+        ]);
     }
     
-    // Return response with summary of shipped and failed orders
-    return response()->json([
-        'shippedOrders' => $shippedOrders,
-        'failedOrders' => $failedOrders,
-    ]);
-}
-
+    
     
     
 

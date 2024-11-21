@@ -132,10 +132,7 @@ return view('emails.order_confrimation');
 });
 
 //Sitemap
-Route::get('/sitemap_index.xml', [SiteMapController::class, 'sitemap'])->name('sitemap');
-Route::get('/page-sitemap.xml', [SiteMapController::class, 'pageSitemap'])->name('sitemap');
-Route::get('/products-sitemap.xml', [SiteMapController::class, 'productSitemap'])->name('sitemap');
-Route::get('/categories-sitemap.xml', [SiteMapController::class, 'categoriesSitemap'])->name('sitemap');
+Route::get('/sitemap.xml', [SitemapController::class, 'generateSitemap'])->name('sitemap');
 
 //Categories
 Route::match(['get', 'post'], '/skincare', [CategoriesController::class, 'skincare'])->name('web.skincare');

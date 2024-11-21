@@ -68,11 +68,11 @@ class PdfGeneratorController extends Controller
             $id = $request->id;
             $email = $request->email ?? '';
             if ($email) {
-                $order = Order::with('user', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+                $order = Order::with('user.profile', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
                   //  dd($data);
-                    $file_name = $data['order']['id'] . '_gpa_letter_' . $data['order']['shipping_details']['firstName'] . '.pdf';
+                    $file_name = $data['order']['id'] . '_gp_letter_' . $data['order']['shipping_details']['firstName'] . '.pdf';
                     $view_name = 'pdf.' . $request->view_name;
 
                     $pdf = PDF::loadView($view_name, $data);
@@ -88,7 +88,7 @@ class PdfGeneratorController extends Controller
                     // Delete the temporary PDF file
                     unlink($pdf_path);
 
-                    return redirect()->back()->with('success', 'GPA letter sent successfully.');
+                    return redirect()->back()->with('success', 'GP letter sent successfully.');
                 } else {
                     notify()->error("Order not found. ⚡️");
                     return redirect()->back()->with('error', 'Order not found.');
