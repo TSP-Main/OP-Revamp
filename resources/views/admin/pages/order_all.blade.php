@@ -426,8 +426,8 @@
                                     </td>
                                     <td>{{ date_time_uk($val['created_at']) }}</td>
                                     <td>
-                                        @if (isset($val['shippingDetails']) && $val['shippingDetails'])
-                                        {{ $val['shippingDetails']['firstName'] ?? '' }} {{ $val['shippingDetails']['lastName'] ?? '' }}
+                                        @if (isset($val['shipping_details']) && $val['shipping_details'])
+                                        {{ $val['shipping_details']['firstName'] ?? '' }} {{ $val['shipping_details']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
                                         {{ $val['user']['name'] ?? '' }}
                                         @else
@@ -435,8 +435,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if (isset($val['shippingDetails']['email']))
-                                        {{ $val['shippingDetails']['email'] }}
+                                        @if (isset($val['shipping_details']['email']))
+                                        {{ $val['shipping_details']['email'] }}
                                         @elseif (isset($val['user']['email']))
                                         {{ $val['user']['email'] }}
                                         @else
@@ -462,7 +462,7 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        {{ $orders_paginate->links() }}
+                      
                     </div>
                     
                     <!-- /.card-body -->
@@ -470,6 +470,8 @@
             </div>
         </div>
     </section>
+
+
 
 </main>
 <!-- End #main -->
@@ -482,65 +484,63 @@
 
 @pushOnce('scripts')
 <script>
- $(document).ready(function() {
-    // Live Search using AJAX for all records from the database
-    $('#search').on('input', function() {
-        var searchQuery = $(this).val();  // Get the search query from input
-   
-        $.ajax({
-            url: '{{ route('admin.allOrders') }}',  // The URL to fetch the orders
-            method: 'GET',
-            data: {
-                search: searchQuery  // Sending search query to the server
-            },
-            success: function(response) {
-                // On success, update the table with the new data
-                // Replace the table body with the updated rows from the response
-                $('#order-tbody').html($(response).find('#order-tbody').html());
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching data:', error);
+ $(function() {
+        $("#tbl_data").DataTable({
+            "paging": true,
+            "responsive": true,
+            "lengthChange": false,
+            "autoWidth": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "pageLength": 50,
+            "buttons": [{
+                    extend: 'pdf',
+                    text: 'Download PDF ',
+                    className: 'btn-blue',
+                },
+                {
+                    extend: 'print',
+                    text: 'Print Out',
+                    className: 'btn-blue',
+                }
+            ]
+        }).buttons().container().appendTo('#tbl_buttons');
+    });
+
+    $(document).ready(function() {
+        var tableApi = $('#tbl_data').DataTable();
+        $('#search').on('input', function() {
+            let text = $(this).val();
+            if (text === '') {
+                tableApi.search('').draw();
+            } else {
+                tableApi.search(text).draw();
+            }
+        });
+
+        $(document).on('click', '#select-all', function() {
+            $('.custom-checkbox').prop('checked', true);
+        });
+
+
+        $(document).on('click', '#deselect-all', function() {
+            $('.custom-checkbox').prop('checked', false);
+        });
+
+        $(document).on('click', "#print-slips", function() {
+            var selectedIds = [];
+            $('.custom-checkbox:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+
+            if (selectedIds.length > 0) {
+                $('input[name="order_ids"]').val(selectedIds);
+                $('#bulk_print').submit();
+            } else {
+                alert('Please select at least one order.');
             }
         });
     });
-
-    // Initialize DataTable with custom settings (pagination disabled)
-    $("#tbl_data").DataTable({
-        "paging": false,  // Disable pagination
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-        "searching": false,  // Disable DataTable's internal search (we're handling it ourselves)
-        "ordering": true,
-        "info": false,  // Disable info
-    }).buttons().container().appendTo('#tbl_buttons');
-
-    // Select all checkboxes
-    $(document).on('click', '#select-all', function() {
-        $('.custom-checkbox').prop('checked', true);
-    });
-
-    // Deselect all checkboxes
-    $(document).on('click', '#deselect-all', function() {
-        $('.custom-checkbox').prop('checked', false);
-    });
-
-    // Handle print slip functionality for selected orders
-    $(document).on('click', "#print-slips", function() {
-        var selectedIds = [];
-        $('.custom-checkbox:checked').each(function() {
-            selectedIds.push($(this).val());
-        });
-
-        // If there are selected orders, submit them for printing
-        if (selectedIds.length > 0) {
-            $('input[name="order_ids"]').val(selectedIds);
-            $('#bulk_print').submit();
-        } else {
-            alert('Please select at least one order.');
-        }
-    });
-});
-
 </script>
 @endPushOnce
