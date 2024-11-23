@@ -19,7 +19,7 @@ class StoreProductRequest extends FormRequest
             'price' => 'required|regex:/^\d+(\.\d{1,2})?$/',
             'category_id' => 'required|exists:categories,id', // Ensure the category exists
             'product_template' => 'required',
-            'stock' => 'required|integer|min:0', // Ensure stock is a positive integer
+            'stock' => 'integer|min:0', // Ensure stock is a positive integer
             'stock_status' => 'required',
             'high_risk' => 'required|integer', // Assuming this is an integer
             'low_limit' => 'nullable|integer|min:0', // Assuming this is an integer
