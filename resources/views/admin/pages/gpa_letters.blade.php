@@ -103,6 +103,7 @@
                                     <th>General Question</th>
                                     <th>GP Email</th>
                                     <th>Order Type</th>
+                                    <th>Email Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -114,19 +115,16 @@
                                             #{{ $val['id'] }}
                                         </a>
                                     </td>
-                                    <td>{{date_time_uk($val['created_at'])}}
-                                    </td>
+                                    <td>{{date_time_uk($val['created_at'])}}</td>
                                     <td>
-                                        {{-- {{ $val['shipingdetails']['firstName'] . ' ' . $val['shipingdetails']['lastName'] ?? $val['user']['name'] }} --}}
                                         @if (isset($val['shipping_details']) && $val['shipping_details'])
-                                        {{ $val['shipping_details']['firstName'] ?? '' }}
-                                        {{ $val['shipping_details']['lastName'] ?? '' }}
+                                            {{ $val['shipping_details']['firstName'] ?? '' }}
+                                            {{ $val['shipping_details']['lastName'] ?? '' }}
                                         @elseif(isset($val['user']) && $val['user'])
-                                        {{ $val['user']['name'] ?? '' }}
+                                            {{ $val['user']['name'] ?? '' }}
                                         @else
-                                        N/A
+                                            N/A
                                         @endif
-
                                     </td>
                                     <td>{{ $val['user']['profile']['date_of_birth'] ?? '' }}</td>
                                     @php
@@ -148,6 +146,19 @@
                                                 ($val['order_type'] == 'premd/Reorder' ? 'Reorder' : 'O.T.C')) }}
                                         </span>
                                     </td>
+                                
+                                    <!-- New Column: Email Status -->
+                                    <td style="vertical-align: middle; text-align: center;">
+                                        <?php
+                                        // Check if there's a log entry for the email for this order
+                                        $emailLog = \DB::table('email_logs')->where('order_id', $val['id'])->first();
+                                        ?>
+                                        <span class="badge 
+                                            {{ $emailLog ? 'bg-success' : 'bg-danger' }}">
+                                            {{ $emailLog ? 'Sent' : 'Not Sent' }}
+                                        </span>
+                                    </td>
+                                
                                     <th>
                                         <button type="button" data-id="{{$val['id']}}" class="btn btn-small  bg-secondary  rounded-pill text-center update_gpa">
                                             <i class="bi bi-pencil-square"></i>
@@ -159,9 +170,9 @@
                                             <i class="bi bi-download"></i>
                                         </button>
                                     </th>
-
                                 </tr>
                                 @endforeach
+                                
                             </tbody>
                         </table>
                     </div>

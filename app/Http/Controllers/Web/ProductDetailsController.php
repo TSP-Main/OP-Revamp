@@ -223,7 +223,7 @@ class ProductDetailsController extends Controller
     public function notify(Request $request, $productId)
     {
         if (!auth()->check()) {
-            return redirect()->route('login')->with('error', 'You need to be logged in to receive notifications.');
+            return redirect()->route('sign_in_form')->with('error', 'You need to be logged in to receive notifications.');
         }
 
         // Validate and fetch user email

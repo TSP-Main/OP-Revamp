@@ -67,27 +67,41 @@ class PdfGeneratorController extends Controller
         if ($request->id) {
             $id = $request->id;
             $email = $request->email ?? '';
+            
             if ($email) {
-                $order = Order::with('user.profile', 'shippingDetails', 'orderdetails', 'orderdetails.product')->where(['id' => $id, 'payment_status' => 'Paid'])->first();
+                $order = Order::with('user.profile', 'shippingDetails', 'orderdetails', 'orderdetails.product')
+                              ->where(['id' => $id, 'payment_status' => 'Paid'])
+                              ->first();
+                
                 if ($order) {
                     $data['order']  = $order->toArray() ?? [];
-                  //  dd($data);
+                    
                     $file_name = $data['order']['id'] . '_gp_letter_' . $data['order']['shipping_details']['firstName'] . '.pdf';
                     $view_name = 'pdf.' . $request->view_name;
-
+    
                     $pdf = PDF::loadView($view_name, $data);
                     $pdf->setPaper('a4', 'portrait');
-
+    
                     // Save the PDF to a temporary location
                     $pdf_path = storage_path('app/public/' . $file_name);
                     $pdf->save($pdf_path);
-
+    
                     // Send the email with the PDF attached
                     Mail::to($email)->send(new SendGpaLetter($pdf_path, $file_name));
-
+    
+                    // Log the email in the email_logs table
+                    \DB::table('email_logs')->insert([
+                        'order_id'   => $order->id,
+                        'email_to'   => $email,
+                        'subject'    => 'GP Letter',
+                        'body'       => 'Attached is the GP letter for the order.',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+    
                     // Delete the temporary PDF file
                     unlink($pdf_path);
-
+    
                     return redirect()->back()->with('success', 'GP letter sent successfully.');
                 } else {
                     notify()->error("Order not found. ⚡️");
@@ -101,7 +115,7 @@ class PdfGeneratorController extends Controller
             return redirect()->back()->with('error', 'Order ID is required.');
         }
     }
-
+    
     public function order_bulk_print(Request $request)
     {
         if ($request->order_ids) {

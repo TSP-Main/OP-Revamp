@@ -1666,22 +1666,45 @@ class AdminDashboardController extends Controller
     {
         $data['user'] = $this->getAuthUser();
         $this->authorize('orders_received');
-
+    
+        // Get the search query from the request
+        $searchQuery = $request->input('search', '');
+    
+        // Get orders with relationships loaded, paginated based on the search query
         $orders = Order::with([
             'user', 
-            'shippingDetails:id,order_id,firstName,lastName,email',
+            'shippingDetails:id,order_id,firstName,lastName,email', 
             'orderdetails:id,order_id,consultation_type'
         ])
-        ->where(['payment_status' => 'Paid'])
+        ->where('payment_status', 'Paid')
+        ->where(function($query) use ($searchQuery) {
+            $query->whereHas('shippingDetails', function($q) use ($searchQuery) {
+                $q->where('firstName', 'like', "%{$searchQuery}%")
+                  ->orWhere('lastName', 'like', "%{$searchQuery}%")
+                  ->orWhere('email', 'like', "%{$searchQuery}%");
+            })
+            ->orWhereHas('user', function($q) use ($searchQuery) {
+                $q->where('name', 'like', "%{$searchQuery}%")
+                  ->orWhere('email', 'like', "%{$searchQuery}%");
+            })
+            ->orWhere('id', 'like', "%{$searchQuery}%")
+            ->orWhere('status', 'like', "%{$searchQuery}%");
+        })
         ->latest('created_at')
-        ->get()
-        ->toArray();
-        
+        ->paginate(50); ;
+       
         if ($orders) {
-            $data['order_history'] = $this->get_prev_orders($orders);
-            $data['orders'] = $this->assign_order_types($orders);
+            $data['order_history'] = $this->get_prev_orders($orders->items());
+            $data['orders'] = $this->assign_order_types($orders->items());
         }
-
+    
+        $data['orders_paginate'] = $orders; 
+    
+     
+        if ($request->ajax()) {
+            return view('admin.pages.order_all', $data)->render();
+        }
+    
         return view('admin.pages.order_all', $data);
     }
     
