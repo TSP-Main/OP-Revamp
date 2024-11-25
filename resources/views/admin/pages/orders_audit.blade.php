@@ -127,6 +127,15 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-md-3 d-block">
+                            <label for="status" class="form-label fw-bold">Filter by Status</label>
+                            <select id="status" class="form-select select2" data-placeholder="search status...">
+                                <option value="All">All</option>
+                                @foreach($statuses ?? [] as $status)
+                                <option value="{{ $status }}">{{ $status }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="col-md-12 mt-3 text-center d-block">
                             <label for="search" class="form-label fw-bold">Search From Table </label>
                             <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
@@ -286,6 +295,13 @@
         var product = $(this).val();
         console.log('Filtering by product:', product);
         tableApi.column(6).search(product === 'All' ? '' : product).draw();
+    });
+
+      // Filter by Status
+      $('#status').on('change', function() {
+        var status = $(this).val();
+        console.log('Filtering by status:', status);
+        tableApi.column(8).search(status === 'All' ? '' : status).draw();
     });
 
     // General Search

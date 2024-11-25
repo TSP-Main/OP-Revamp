@@ -5,7 +5,7 @@
 <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-        <a href="/admin" class="logo d-flex align-items-center">
+        <a href="/dashboard" class="logo d-flex align-items-center">
             <img src="{{ asset('img/logo.webp') }}" alt="">
             <span class="d-none d-lg-block">
                 {{ auth()->user()->getRoleNames()->first() ? Str::of(auth()->user()->getRoleNames()->first())->replace('_', ' ')->title() : '' }}
