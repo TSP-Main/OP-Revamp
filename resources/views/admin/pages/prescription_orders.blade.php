@@ -116,8 +116,8 @@
                 <form id="reorderForm">
                     <input type="hidden" id="orderId" name="order_id">
                     <div id="quantityFields"></div>
-                    <div id="fileUploadAlert" class="alert alert-warning d-none" role="alert">
-                        You must upload the necessary files in the consultation edit page before reordering any product from Weight Loss Category.
+                    <div id="fileUploadAlert" class="alert alert-danger d-none" role="alert">
+                        Please upload the required files on the consultation edit page before reordering any product from the Weight Loss category.<strong>Failure to do so may result in your order being rejected</strong>
                     </div>
                 </form>
             </div>

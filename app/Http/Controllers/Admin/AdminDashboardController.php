@@ -1550,6 +1550,7 @@ class AdminDashboardController extends Controller
                 } else {
                     $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->get(['id', 'title', 'desc'])->toArray();
     
+                    // Fetch the product consultation answers
                     $pro_quest_ans = json_decode($consultaion->product_consultation, true);
                     $pro_quest_ids = array_keys(array_filter($pro_quest_ans, fn($value) => $value !== null));
                     $product_consultation = Question::whereIn('id', $pro_quest_ids)
@@ -1557,10 +1558,12 @@ class AdminDashboardController extends Controller
                         ->get(['id', 'title', 'desc'])
                         ->toArray();
     
+                    // Map the product questions with keys
                     $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
                         return [$item['id'] => $item];
                     });
     
+                    // Prepare the product consultation answers
                     foreach ($pro_quest_ans as $q_id => $answer) {
                         if (isset($product_consultation[$q_id])) {
                             $prod_result[] = [
@@ -1574,7 +1577,7 @@ class AdminDashboardController extends Controller
                     }
                 }
     
-                // Prepare user results
+                // Prepare user results for generic consultation
                 $user_result = [];
                 foreach ($consutl_quest_ans as $quest_id => $ans) {
                     if (isset($consult_questions[$quest_id])) {
@@ -1593,51 +1596,76 @@ class AdminDashboardController extends Controller
                 $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest()->first();
                 $data['user_profile_details'] = $data['order_user_detail'] ? User::find($data['order_user_detail']->user_id) : [];
     
-                $data['order_detail_id'] = $consultaion->id; // Add this line
-                    // Initialize the variable
-                $requires_image_upload = false; 
+                $data['order_detail_id'] = $consultaion->id;
     
-                // Check if question #607 exists in product consultation
-                $requires_image_upload = false;
-                if (collect($prod_result)->contains('id', 607)) {
-                    $requires_image_upload = true;
-                }
-                    // Pass the variable to the view
-            $data['requires_image_upload'] = $requires_image_upload;
+                // Check if either 607 or 800 is in the product consultation
+                $requires_image_upload_607 = collect($prod_result)->contains(function ($value) {
+                    return $value['id'] == 607;
+                });
     
-            if ($request->isMethod('post')) {
-                $request->validate([
-                    'answers.generic' => 'required|array',
-                    'answers.product' => 'array',
-                    'image' => 'nullable|image|max:2048', // Validate image if provided
-                ]);
-        
-                \Log::info('Request Method: ' . $request->method());
-                \Log::info($request->all());
-        
-                // Extract answers into a local variable
-                $answers = $request->input('answers');
-        
-                // Handle image upload if provided
-                if ($request->hasFile('image')) {
-                    $image = $request->file('image');
-                    $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
-        
-                    // Replace the answer for question #607 with the image path
-                    $answers['product'][607] = $imagePath;
+                $requires_image_upload_800 = collect($prod_result)->contains(function ($value) {
+                    return $value['id'] == 800;
+                });
+    
+                // Store flags for image upload requirements
+                $data['requires_image_upload_607'] = $requires_image_upload_607;
+                $data['requires_image_upload_800'] = $requires_image_upload_800;
+    
+                // Step 1: Fetch new questions for the product category
+                $category_id = $consultaion->product->question_category; // Assuming this is where category_id is stored
+                $new_product_questions = Question::where('category_id', $category_id)
+                    ->where('type', 'non_dependent') // Only non-dependent questions
+                    ->whereNotIn('id', array_keys($pro_quest_ans)) // Exclude already answered questions
+                    ->where('status', 'Active') // Only active questions
+                    ->get();
+    
+                // Pass new product questions to the view
+                $data['new_product_questions'] = $new_product_questions;
+    
+                // Handle form submission
+                if ($request->isMethod('post')) {
+                    $request->validate([
+                        'answers.generic' => 'required|array',
+                        'answers.product' => 'array',
+                        'image_607' => 'nullable|image|max:2048', // Validate image for 607 if provided
+                        'image_800' => 'nullable|image|max:2048', // Validate image for 800 if provided
+                    ]);
+    
+                    \Log::info('Request Method: ' . $request->method());
+                    \Log::info($request->all());
+    
+                    // Extract answers from request
+                    $answers = $request->input('answers');
+    
+                    // Handle image upload for 607 if provided
+                    if ($request->hasFile('image_607')) {
+                        $image_607 = $request->file('image_607');
+                        $imagePath_607 = $image_607->store('consultation/product', 'public'); // Store in the 'public' disk
+    
+                        // Replace the answer for question #607 with the image path
+                        $answers['product'][607] = $imagePath_607;
+                    }
+    
+                    // Handle image upload for 800 if provided
+                    if ($request->hasFile('image_800')) {
+                        $image_800 = $request->file('image_800');
+                        $imagePath_800 = $image_800->store('consultation/product', 'public'); // Store in the 'public' disk
+    
+                        // Replace the answer for question #800 with the image path
+                        $answers['product'][800] = $imagePath_800;
+                    }
+    
+                    // Save updated answers back to the consultation
+                    $consultaion->generic_consultation = json_encode($answers['generic']);
+                    $consultaion->product_consultation = json_encode($answers['product'] ?? []);
+                    $consultaion->save();
+    
+                    notify()->success('Consultation updated successfully.');
+                    return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
                 }
-        
-                // Save updated answers back to the consultation
-                $consultaion->generic_consultation = json_encode($answers['generic']);
-                $consultaion->product_consultation = json_encode($answers['product'] ?? []);
-                $consultaion->save();
-        
-                notify()->success('Consultation updated successfully.');
-                return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
-            }
-        
-            return view('admin.pages.consultation_formedit', $data);
-        } else {
+    
+                return view('admin.pages.consultation_formedit', $data);
+            } else {
                 notify()->error('Consultation Id not found. ⚡️');
                 return redirect()->back()->with('error', 'Transaction not found.');
             }
@@ -3233,20 +3261,59 @@ class AdminDashboardController extends Controller
             'Content-Disposition' => 'attachment; filename="orders.csv"',
         ]);
     }
-    
-
-    public function exportOrdersCSV()
+       
+    public function exportOrdersCSV(Request $request)
     {
-        // Fetch orders with related data
-        $orders = Order::with([
+        // Get the filters from the request
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $address = $request->input('address');
+        $postalCode = $request->input('postalCode');
+        $product = $request->input('product');
+        $status = $request->input('status');
+    
+        // Build the query
+        $query = Order::with([
             'user', 
             'shippingDetail:id,order_id,firstName,lastName,zip_code,email', 
             'orderdetails:id,order_id,product_id,product_qty', 
             'orderdetails.product:id,title', 
         ])
-        ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
-        ->latest('created_at')
-        ->get();
+        ->where(['payment_status' => 'Paid', 'status' => 'Shipped']);
+        
+        // Apply filters
+        if ($startDate) {
+            $query->where('created_at', '>=', $startDate);
+        }
+        
+        if ($endDate) {
+            $query->where('created_at', '<=', $endDate);
+        }
+    
+        if ($address && $address !== 'All') {
+            $query->whereHas('shippingDetail', function($q) use ($address) {
+                $q->where('address', 'like', '%' . $address . '%');
+            });
+        }
+    
+        if ($postalCode && $postalCode !== 'All') {
+            $query->whereHas('shippingDetail', function($q) use ($postalCode) {
+                $q->where('zip_code', 'like', '%' . $postalCode . '%');
+            });
+        }
+    
+        if ($product && $product !== 'All') {
+            $query->whereHas('orderdetails.product', function($q) use ($product) {
+                $q->where('title', 'like', '%' . $product . '%');
+            });
+        }
+    
+        if ($status && $status !== 'All') {
+            $query->where('status', $status);
+        }
+    
+        // Fetch filtered orders
+        $orders = $query->latest('created_at')->get();
     
         // Create CSV writer instance
         $csv = Writer::createFromFileObject(new SplTempFileObject());
