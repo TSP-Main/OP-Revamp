@@ -1576,15 +1576,16 @@ class AdminDashboardController extends Controller
                         }
                     }
                 }
-    
-                // Prepare user results for generic consultation
+                $consult_questions_map = collect($consult_questions)->keyBy('id');
+         
                 $user_result = [];
                 foreach ($consutl_quest_ans as $quest_id => $ans) {
-                    if (isset($consult_questions[$quest_id])) {
+                    // Check if the question exists in the mapped questions
+                    if ($consult_questions_map->has($quest_id)) {
                         $user_result[] = [
                             'id' => $quest_id,
-                            'title' => $consult_questions[$quest_id]['title'],
-                            'desc' => $consult_questions[$quest_id]['desc'],
+                            'title' => $consult_questions_map[$quest_id]['title'],
+                            'desc' => $consult_questions_map[$quest_id]['desc'],
                             'answer' => $ans,
                         ];
                     }
@@ -1595,7 +1596,6 @@ class AdminDashboardController extends Controller
                 $data['order'] = Order::find($consultaion->order_id);
                 $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest()->first();
                 $data['user_profile_details'] = $data['order_user_detail'] ? User::find($data['order_user_detail']->user_id) : [];
-    
                 $data['order_detail_id'] = $consultaion->id;
     
                 // Check if either 607 or 800 is in the product consultation
@@ -1655,13 +1655,22 @@ class AdminDashboardController extends Controller
                         $answers['product'][800] = $imagePath_800;
                     }
     
-                    // Save updated answers back to the consultation
-                    $consultaion->generic_consultation = json_encode($answers['generic']);
+                    // Merge existing answers with the new ones
+                    $existing_generic_consultation = json_decode($consultaion->generic_consultation, true) ?? [];
+                    $updated_generic_consultation = array_merge($existing_generic_consultation, $answers['generic']);
+                    $consultaion->generic_consultation = json_encode($updated_generic_consultation);
+                    
+                    // Save product answers if available
                     $consultaion->product_consultation = json_encode($answers['product'] ?? []);
                     $consultaion->save();
     
+                    // After saving the consultation
+                    session()->flash('form_status', 'updated'); // Temporary status indicating form is updated
+                    session()->flash('order_id', $consultaion->order_id); // Corrected syntax for session flash
+                    session()->put('modal_open', true); // Set modal_open flag to true
+    
                     notify()->success('Consultation updated successfully.');
-                    return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
+                    return redirect()->route('admin.prescriptionOrders', ['odd_id' => base64_encode($odd_id)]);
                 }
     
                 return view('admin.pages.consultation_formedit', $data);
