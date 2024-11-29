@@ -1314,7 +1314,13 @@ class AdminDashboardController extends Controller
             ->where('id', '!=', $order->id)
             ->pluck('id')
             ->toArray();
-    
+
+            // Fetch Comments with User info (user_name, created_at)
+        $data['comments'] = Comment::where('comment_for_id', $order->id)
+        ->where('comment_for', 'Orders')
+        ->orderBy('created_at', 'desc') // Ordering comments by timestamp
+        ->get(['user_name', 'comment', 'created_at']);
+        
         // Prepare order data
         $data['order'] = $order->toArray();
         $data['order']['shipping_cost'] = $order->shippingDetail->cost ?? 0;
@@ -1332,29 +1338,56 @@ class AdminDashboardController extends Controller
          $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
         $detail->product_image = $detail->product->main_image ?? null;
           // Process variant information if variant_id exists
-    if ($detail->variant_id) {
-        $variant = ProductVariant::find($detail->variant_id);
-        if ($variant) {
-            $vart_type = explode(';', $variant->title);
-            $vart_value = explode(';', $variant->value);
-            $var_info = '';
+            if ($detail->variant_id) {
+                $variant = ProductVariant::find($detail->variant_id);
+                if ($variant) {
+                    $vart_type = explode(';', $variant->title);
+                    $vart_value = explode(';', $variant->value);
+                    $var_info = '';
 
-            foreach ($vart_type as $key => $type) {
-                $var_info .= "<b>$type:</b> {$vart_value[$key]}";
-                if ($key < count($vart_type) - 1) {
-                    $var_info .= ', ';
+                    foreach ($vart_type as $key => $type) {
+                        $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                        if ($key < count($vart_type) - 1) {
+                            $var_info .= ', ';
+                        }
+                    }
+                    $detail->variant_details = $var_info; // Store formatted variant info
+                } else {
+                    $detail->variant_details = 'N/A'; 
                 }
+            } else {
+                $detail->variant_details = 'N/A';
             }
-            $detail->variant_details = $var_info; // Store formatted variant info
-        } else {
-            $detail->variant_details = 'N/A'; 
-        }
-    } else {
-        $detail->variant_details = 'N/A';
-    }
 
-    return $detail;
-});
+            return $detail;
+        });
+
+            // Fetch roles for each user who commented
+            $comments = Comment::where('comment_for_id', $order->id)->get();
+            $comments->each(function ($comment) {
+                // Fetch the role_id from model_has_roles table
+                $role = \DB::table('model_has_roles')
+                    ->where('model_id', $comment->user_id)
+                    ->first();
+        
+                if ($role) {
+                    // Fetch the role name from roles table using the role_id
+                    $role_name = \DB::table('roles')
+                        ->where('id', $role->role_id)
+                        ->first();
+        
+                    if ($role_name) {
+                        $comment->role_name = $role_name->name; // Assign the role name to comment object
+                    } else {
+                        $comment->role_name = 'No role'; // Default if role name is not found
+                    }
+                } else {
+                    $comment->role_name = 'No role'; // Default if no role is found
+                }
+            });
+        
+
+            $data['comments'] = $comments;
     
         // Marked by user
         if ($order->approved_by) {
@@ -1655,11 +1688,14 @@ class AdminDashboardController extends Controller
                         $answers['product'][800] = $imagePath_800;
                     }
     
-                    // Merge existing answers with the new ones
+                 // Merge existing answers with the new ones
                     $existing_generic_consultation = json_decode($consultaion->generic_consultation, true) ?? [];
-                    $updated_generic_consultation = array_merge($existing_generic_consultation, $answers['generic']);
+                    $updated_generic_consultation = array_merge($existing_generic_consultation);
+
+                   
+                    // Ensure that you only pass the filtered answers
                     $consultaion->generic_consultation = json_encode($updated_generic_consultation);
-                    
+
                     // Save product answers if available
                     $consultaion->product_consultation = json_encode($answers['product'] ?? []);
                     $consultaion->save();
@@ -2813,16 +2849,31 @@ class AdminDashboardController extends Controller
 
     // comments
     public function comments(Request $request)
-    {
-        try {
-            $data = Comment::where(['comment_for' => 'Orders', 'comment_for_id' => $request->id])->get()->toArray();
-            $message = 'Comments retirved  successfully';
+        {
+            try {
+                // Fetch comments with the associated role name using a JOIN
+                $comments = Comment::where(['comment_for' => 'Orders', 'comment_for_id' => $request->id])
+                    ->leftJoin('model_has_roles', 'comments.user_id', '=', 'model_has_roles.model_id')
+                    ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+                    ->select('comments.*', 'roles.name as role_name') // Fetch comments and role name
+                    ->get();
 
-            return response()->json(['status' => 'success', 'message' => $message, 'data' => $data]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Error geting comments', 'error' => $e->getMessage()], 500);
+                // Return success response with comments and role names
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Comments retrieved successfully',
+                    'data' => $comments
+                ]);
+            } catch (\Exception $e) {
+                // Return error response if something goes wrong
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Error retrieving comments',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         }
-    }
+
 
     public function comment_store(Request $request): JsonResponse
     {
