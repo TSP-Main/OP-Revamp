@@ -654,58 +654,80 @@
             setInterval(comments, 10000);
             comments();
 
-            // get comments  data in through the api...
             function comments() {
-                var apiurl = @json(route('admin.comments', ['id' => $order['id']]));
-                var user_id = parseInt($('#user_id').val());
-                $.ajax({
-                    url: apiurl,
-                    type: 'GET',
-                    beforeSend: function () {
+    var apiurl = @json(route('admin.comments', ['id' => $order['id']]));
+    var user_id = parseInt($('#user_id').val());
 
-                    },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            var comment_html = '';
+    $.ajax({
+        url: apiurl,
+        type: 'GET',
+        beforeSend: function () {
+            // Any pre-requests actions, if needed
+        },
+        success: function (response) {
+            if (response.status === 'success') {
+                var comment_html = '';
 
-                            if (response.data && response.data.length > 0) {
-                                $('.no_comment').addClass('d-none');
-                                response.data.forEach(function (data) {
-                                    let createdDate = new Date(data.created_at);
-                                    let formattedDate = createdDate.toLocaleString();
-                                    formattedDate = formattedDate.replace(/\//g, '-');
-                                    let user_pic = data.user_pic ?? '/assets/admin/img/profile-img1.png';
-                                    let comment_data = '';
-                                    if (user_id == data.user_id) {
-                                        comment_data = `<div class="d-flex flex-row p-3">
-                                    <img class="img-fuild " src="${user_pic}" width="45" height="45" style="border-radius:50% !important">
-                                    <div class=" chat ml-2 p-3"><span class="text-muted">${data.comment}</span></div>
-                                    </div>`;
-                                    } else {
-                                        comment_data = `<div class="d-flex flex-row p-3">
-                                    <div class=" bg-white mr-2 p-3"><span class="text-muted">${data.comment}</span></div>
-                                    <img class="img-fuild " src="${user_pic}" width="45" height="45" style="border-radius:50% !important">
-                                    </div>`;
-                                    }
-                                    comment_html += comment_data;
-                                });
-                            } else {
-                                $('.no_comment').removeClass('d-none');
-                            }
-
-                            $('.comment_data').html(comment_html);
+                console.log(response);
+                if (response.data && response.data.length > 0) {
+                    $('.no_comment').addClass('d-none');
+                    response.data.forEach(function (data) {
+                        let createdDate = new Date(data.created_at);
+                        let formattedDate = createdDate.toLocaleString();
+                        formattedDate = formattedDate.replace(/\//g, '-');
+                        
+                        // Default user image if no user image is provided
+                        let user_pic = data.user_pic ?? '/assets/admin/img/profile-img1.png';
+                        
+                        // Start building the comment's HTML
+                        let comment_data = '';
+                        
+                        if (user_id == data.user_id) {
+                            // Displaying the comment from the logged-in user
+                            comment_data = `
+                                <div class="d-flex flex-row p-2">
+                                    <img class="img-fluid" src="${user_pic}" width="40" height="40" style="object-fit: cover;">
+                                    <div class="chat ml-2 p-2" style="max-width: 500px;">
+                                        <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span> <!-- Display role next to username -->
+                                        <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span> <!-- Timestamp -->
+                                        <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p> <!-- Comment text -->
+                                    </div>
+                                </div>
+                            `;
                         } else {
-                            // alert('contact to developer');
-                            console.log(response.message);
+                            // Displaying comments from other users
+                            comment_data = `
+                                <div class="d-flex flex-row p-2">
+                                    <div class="bg-light mr-2 p-2" style="max-width: 500px;">
+                                        <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span> <!-- Display role next to username -->
+                                        <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span> <!-- Timestamp -->
+                                        <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p> <!-- Comment text -->
+                                    </div>
+                                    <img class="img-fluid" src="${user_pic}" width="40" height="40" style="object-fit: cover;">
+                                </div>
+                            `;
                         }
-                    },
-                    error: function (xhr, status, error) {
-                        // alert('contact to developer');
-                        console.log(status);
-                        // showAlert("Error", 'Request Can not Proceed', 'Cannot proceed further');
-                    }
-                });
+
+                        // Add the comment HTML to the overall comment section
+                        comment_html += comment_data;
+                    });
+                } else {
+                    $('.no_comment').removeClass('d-none');
+                }
+
+                // Update the comment section in the DOM with the new HTML
+                $('.comment_data').html(comment_html);
+            } else {
+                console.log(response.message);
             }
+        },
+        error: function (xhr, status, error) {
+            console.log(status);
+        }
+    });
+}
+
+
 
             // Adding  comment in through the api...
             $('#commentform').on('submit', function (e) {
