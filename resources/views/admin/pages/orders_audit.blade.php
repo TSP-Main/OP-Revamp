@@ -84,7 +84,15 @@
             <div class="col-lg-12">
 
                 <div class="card">
-                    <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"><a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary me-1">Export CSV</a></div>
+                    <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"><a href="{{ route('admin.auditorders.exportCsv', [
+                        'startDate' => request('startDate'),
+                        'endDate' => request('endDate'),
+                        'address' => request('addresses'),
+                        'postalCode' => request('postal_codes'),
+                        'product' => request('products'),
+                        'status' => request('status')
+                    ]) }}" id="tbl_buttons" class="btn btn-primary me-1">Export CSV</a>
+                    </div>
                     {{-- <div class="card-header mt-3" id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                         <a href="{{ route('admin.auditorders.exportCsv') }}" id="tbl_buttons" class="btn btn-primary">Export CSV</a>
                     </div> --}}
@@ -127,7 +135,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3 d-block">
+                        {{-- <div class="col-md-3 d-block">
                             <label for="status" class="form-label fw-bold">Filter by Status</label>
                             <select id="status" class="form-select select2" data-placeholder="search status...">
                                 <option value="All">All</option>
@@ -135,7 +143,7 @@
                                 <option value="{{ $status }}">{{ $status }}</option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div> --}}
                         <div class="col-md-12 mt-3 text-center d-block">
                             <label for="search" class="form-label fw-bold">Search From Table </label>
                             <input type="text" id="search" placeholder="Search here..." class="form-control py-2">
