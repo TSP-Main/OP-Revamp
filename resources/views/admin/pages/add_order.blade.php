@@ -182,7 +182,11 @@
                                 <select id="user_id" name="user_id" class="form-select select2" data-placeholder="choose Users ...">
                                     <option value=""></option>
                                     @foreach ($users ?? [] as $key => $user)
-                                    <option {{ isset($order['user_id']) && $user['id'] == $order['user_id'] ? 'selected' : '' }} {{ $user['id'] == old('user_id') ? 'selected' : '' }} value="{{ $user['id'] }}">
+                                    <option 
+                                        {{ isset($order['user_id']) && $user['id'] == $order['user_id'] ? 'selected' : '' }} 
+                                        {{ $user['id'] == old('user_id') ? 'selected' : '' }} 
+                                        value="{{ $user['id'] }}"
+                                        data-name="{{ $user['name'] }}">
                                         {{ $user['name'] . ' (' . $user['email'] . ') ' ?? '' }}
                                     </option>
                                     @endforeach
@@ -204,19 +208,19 @@
                                                 Personal Information: </h5>
                                             <div class="row">
                                                 <div class="col-md-6 mt-2">
-                                                    <label for="firstName" class="form-label ">First Name: </label>
+                                                    <label for="firstName" class="form-label">First Name: </label>
                                                     <input type="text" name="firstName" value="{{ $order['firstName'] ?? old('firstName') }}" class="form-control" id="firstName" required>
                                                     <div class="invalid-feedback">Please enter first Name!</div>
                                                     @error('firstName')
-                                                    <div class="alert-danger text-danger ">{{ $message }}</div>
+                                                    <div class="alert-danger text-danger">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 mt-2">
-                                                    <label for="lastName" class="form-label ">Last Name: </label>
+                                                    <label for="lastName" class="form-label">Last Name: </label>
                                                     <input type="text" name="lastName" value="{{ $order['lastName'] ?? old('lastName') }}" class="form-control" id="lastName">
                                                     <div class="invalid-feedback">Please enter Last Name!</div>
                                                     @error('lastName')
-                                                    <div class="alert-danger text-danger ">{{ $message }}</div>
+                                                    <div class="alert-danger text-danger">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 mt-2">
@@ -536,7 +540,7 @@
         let user = $users[userId];
         
         // Populate the personal information fields
-        $('#firstName').val(user.name);
+        // $('#firstName').val(user.name);
         $('#email').val(user.email);
         $('#phone').val(user.phone);
 
@@ -749,6 +753,23 @@
         templateResult: formatState,
         templateSelection: formatState,
         width: '100%'
+    });
+    
+    $(document).ready(function() {
+        // When the user selects a user from the dropdown
+        $('#user_id').change(function() {
+            // Get the selected option
+            var selectedOption = $(this).find('option:selected');
+            var fullName = selectedOption.data('name');
+            var nameParts = fullName.split(' ');
+ 
+            var firstName = nameParts[0] || '';  // Handle case where no name exists
+  
+            var lastName = nameParts.slice(1).join(' ') || '';  // Join the rest of the name parts
+
+            $('#firstName').val(firstName).trigger('input');  // Set First Name field and trigger input event
+            $('#lastName').val(lastName).trigger('input');    // Set Last Name field and trigger input event
+        });
     });
 </script>
 @endPushOnce

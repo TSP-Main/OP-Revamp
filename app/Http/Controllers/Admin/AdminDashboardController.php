@@ -1314,7 +1314,13 @@ class AdminDashboardController extends Controller
             ->where('id', '!=', $order->id)
             ->pluck('id')
             ->toArray();
-    
+
+            // Fetch Comments with User info (user_name, created_at)
+        $data['comments'] = Comment::where('comment_for_id', $order->id)
+        ->where('comment_for', 'Orders')
+        ->orderBy('created_at', 'desc') // Ordering comments by timestamp
+        ->get(['user_name', 'comment', 'created_at']);
+        
         // Prepare order data
         $data['order'] = $order->toArray();
         $data['order']['shipping_cost'] = $order->shippingDetail->cost ?? 0;
@@ -1332,29 +1338,56 @@ class AdminDashboardController extends Controller
          $data['order']['orderdetails'] = $order->orderdetails->map(function ($detail) {
         $detail->product_image = $detail->product->main_image ?? null;
           // Process variant information if variant_id exists
-    if ($detail->variant_id) {
-        $variant = ProductVariant::find($detail->variant_id);
-        if ($variant) {
-            $vart_type = explode(';', $variant->title);
-            $vart_value = explode(';', $variant->value);
-            $var_info = '';
+            if ($detail->variant_id) {
+                $variant = ProductVariant::find($detail->variant_id);
+                if ($variant) {
+                    $vart_type = explode(';', $variant->title);
+                    $vart_value = explode(';', $variant->value);
+                    $var_info = '';
 
-            foreach ($vart_type as $key => $type) {
-                $var_info .= "<b>$type:</b> {$vart_value[$key]}";
-                if ($key < count($vart_type) - 1) {
-                    $var_info .= ', ';
+                    foreach ($vart_type as $key => $type) {
+                        $var_info .= "<b>$type:</b> {$vart_value[$key]}";
+                        if ($key < count($vart_type) - 1) {
+                            $var_info .= ', ';
+                        }
+                    }
+                    $detail->variant_details = $var_info; // Store formatted variant info
+                } else {
+                    $detail->variant_details = 'N/A'; 
                 }
+            } else {
+                $detail->variant_details = 'N/A';
             }
-            $detail->variant_details = $var_info; // Store formatted variant info
-        } else {
-            $detail->variant_details = 'N/A'; 
-        }
-    } else {
-        $detail->variant_details = 'N/A';
-    }
 
-    return $detail;
-});
+            return $detail;
+        });
+
+            // Fetch roles for each user who commented
+            $comments = Comment::where('comment_for_id', $order->id)->get();
+            $comments->each(function ($comment) {
+                // Fetch the role_id from model_has_roles table
+                $role = \DB::table('model_has_roles')
+                    ->where('model_id', $comment->user_id)
+                    ->first();
+        
+                if ($role) {
+                    // Fetch the role name from roles table using the role_id
+                    $role_name = \DB::table('roles')
+                        ->where('id', $role->role_id)
+                        ->first();
+        
+                    if ($role_name) {
+                        $comment->role_name = $role_name->name; // Assign the role name to comment object
+                    } else {
+                        $comment->role_name = 'No role'; // Default if role name is not found
+                    }
+                } else {
+                    $comment->role_name = 'No role'; // Default if no role is found
+                }
+            });
+        
+
+            $data['comments'] = $comments;
     
         // Marked by user
         if ($order->approved_by) {
@@ -1550,6 +1583,7 @@ class AdminDashboardController extends Controller
                 } else {
                     $consult_questions = PrescriptionMedGeneralQuestion::whereIn('id', $consult_quest_keys)->get(['id', 'title', 'desc'])->toArray();
     
+                    // Fetch the product consultation answers
                     $pro_quest_ans = json_decode($consultaion->product_consultation, true);
                     $pro_quest_ids = array_keys(array_filter($pro_quest_ans, fn($value) => $value !== null));
                     $product_consultation = Question::whereIn('id', $pro_quest_ids)
@@ -1557,10 +1591,12 @@ class AdminDashboardController extends Controller
                         ->get(['id', 'title', 'desc'])
                         ->toArray();
     
+                    // Map the product questions with keys
                     $product_consultation = collect($product_consultation)->mapWithKeys(function ($item) {
                         return [$item['id'] => $item];
                     });
     
+                    // Prepare the product consultation answers
                     foreach ($pro_quest_ans as $q_id => $answer) {
                         if (isset($product_consultation[$q_id])) {
                             $prod_result[] = [
@@ -1573,15 +1609,16 @@ class AdminDashboardController extends Controller
                         }
                     }
                 }
-    
-                // Prepare user results
+                $consult_questions_map = collect($consult_questions)->keyBy('id');
+         
                 $user_result = [];
                 foreach ($consutl_quest_ans as $quest_id => $ans) {
-                    if (isset($consult_questions[$quest_id])) {
+                    // Check if the question exists in the mapped questions
+                    if ($consult_questions_map->has($quest_id)) {
                         $user_result[] = [
                             'id' => $quest_id,
-                            'title' => $consult_questions[$quest_id]['title'],
-                            'desc' => $consult_questions[$quest_id]['desc'],
+                            'title' => $consult_questions_map[$quest_id]['title'],
+                            'desc' => $consult_questions_map[$quest_id]['desc'],
                             'answer' => $ans,
                         ];
                     }
@@ -1592,52 +1629,88 @@ class AdminDashboardController extends Controller
                 $data['order'] = Order::find($consultaion->order_id);
                 $data['order_user_detail'] = ShippingDetail::where(['order_id' => $consultaion->order_id, 'status' => 'Active'])->latest()->first();
                 $data['user_profile_details'] = $data['order_user_detail'] ? User::find($data['order_user_detail']->user_id) : [];
+                $data['order_detail_id'] = $consultaion->id;
     
-                $data['order_detail_id'] = $consultaion->id; // Add this line
-                    // Initialize the variable
-                $requires_image_upload = false; 
+                // Check if either 607 or 800 is in the product consultation
+                $requires_image_upload_607 = collect($prod_result)->contains(function ($value) {
+                    return $value['id'] == 607;
+                });
     
-                // Check if question #607 exists in product consultation
-                $requires_image_upload = false;
-                if (collect($prod_result)->contains('id', 607)) {
-                    $requires_image_upload = true;
+                $requires_image_upload_800 = collect($prod_result)->contains(function ($value) {
+                    return $value['id'] == 800;
+                });
+    
+                // Store flags for image upload requirements
+                $data['requires_image_upload_607'] = $requires_image_upload_607;
+                $data['requires_image_upload_800'] = $requires_image_upload_800;
+    
+                // Step 1: Fetch new questions for the product category
+                $category_id = $consultaion->product->question_category; // Assuming this is where category_id is stored
+                $new_product_questions = Question::where('category_id', $category_id)
+                    ->where('type', 'non_dependent') // Only non-dependent questions
+                    ->whereNotIn('id', array_keys($pro_quest_ans)) // Exclude already answered questions
+                    ->where('status', 'Active') // Only active questions
+                    ->get();
+    
+                // Pass new product questions to the view
+                $data['new_product_questions'] = $new_product_questions;
+    
+                // Handle form submission
+                if ($request->isMethod('post')) {
+                    $request->validate([
+                        'answers.generic' => 'required|array',
+                        'answers.product' => 'array',
+                        'image_607' => 'nullable|image|max:2048', // Validate image for 607 if provided
+                        'image_800' => 'nullable|image|max:2048', // Validate image for 800 if provided
+                    ]);
+    
+                    \Log::info('Request Method: ' . $request->method());
+                    \Log::info($request->all());
+    
+                    // Extract answers from request
+                    $answers = $request->input('answers');
+    
+                    // Handle image upload for 607 if provided
+                    if ($request->hasFile('image_607')) {
+                        $image_607 = $request->file('image_607');
+                        $imagePath_607 = $image_607->store('consultation/product', 'public'); // Store in the 'public' disk
+    
+                        // Replace the answer for question #607 with the image path
+                        $answers['product'][607] = $imagePath_607;
+                    }
+    
+                    // Handle image upload for 800 if provided
+                    if ($request->hasFile('image_800')) {
+                        $image_800 = $request->file('image_800');
+                        $imagePath_800 = $image_800->store('consultation/product', 'public'); // Store in the 'public' disk
+    
+                        // Replace the answer for question #800 with the image path
+                        $answers['product'][800] = $imagePath_800;
+                    }
+    
+                 // Merge existing answers with the new ones
+                    $existing_generic_consultation = json_decode($consultaion->generic_consultation, true) ?? [];
+                    $updated_generic_consultation = array_merge($existing_generic_consultation);
+
+                   
+                    // Ensure that you only pass the filtered answers
+                    $consultaion->generic_consultation = json_encode($updated_generic_consultation);
+
+                    // Save product answers if available
+                    $consultaion->product_consultation = json_encode($answers['product'] ?? []);
+                    $consultaion->save();
+    
+                    // After saving the consultation
+                    session()->flash('form_status', 'updated'); // Temporary status indicating form is updated
+                    session()->flash('order_id', $consultaion->order_id); // Corrected syntax for session flash
+                    session()->put('modal_open', true); // Set modal_open flag to true
+    
+                    notify()->success('Consultation updated successfully.');
+                    return redirect()->route('admin.prescriptionOrders', ['odd_id' => base64_encode($odd_id)]);
                 }
-                    // Pass the variable to the view
-            $data['requires_image_upload'] = $requires_image_upload;
     
-            if ($request->isMethod('post')) {
-                $request->validate([
-                    'answers.generic' => 'required|array',
-                    'answers.product' => 'array',
-                    'image' => 'nullable|image|max:2048', // Validate image if provided
-                ]);
-        
-                \Log::info('Request Method: ' . $request->method());
-                \Log::info($request->all());
-        
-                // Extract answers into a local variable
-                $answers = $request->input('answers');
-        
-                // Handle image upload if provided
-                if ($request->hasFile('image')) {
-                    $image = $request->file('image');
-                    $imagePath = $image->store('consultation/product', 'public'); // Store in the 'public' disk
-        
-                    // Replace the answer for question #607 with the image path
-                    $answers['product'][607] = $imagePath;
-                }
-        
-                // Save updated answers back to the consultation
-                $consultaion->generic_consultation = json_encode($answers['generic']);
-                $consultaion->product_consultation = json_encode($answers['product'] ?? []);
-                $consultaion->save();
-        
-                notify()->success('Consultation updated successfully.');
-                return redirect()->route('admin.consultationFormEdit', ['odd_id' => base64_encode($odd_id)]);
-            }
-        
-            return view('admin.pages.consultation_formedit', $data);
-        } else {
+                return view('admin.pages.consultation_formedit', $data);
+            } else {
                 notify()->error('Consultation Id not found. ⚡️');
                 return redirect()->back()->with('error', 'Transaction not found.');
             }
@@ -2776,16 +2849,31 @@ class AdminDashboardController extends Controller
 
     // comments
     public function comments(Request $request)
-    {
-        try {
-            $data = Comment::where(['comment_for' => 'Orders', 'comment_for_id' => $request->id])->get()->toArray();
-            $message = 'Comments retirved  successfully';
+        {
+            try {
+                // Fetch comments with the associated role name using a JOIN
+                $comments = Comment::where(['comment_for' => 'Orders', 'comment_for_id' => $request->id])
+                    ->leftJoin('model_has_roles', 'comments.user_id', '=', 'model_has_roles.model_id')
+                    ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+                    ->select('comments.*', 'roles.name as role_name') // Fetch comments and role name
+                    ->get();
 
-            return response()->json(['status' => 'success', 'message' => $message, 'data' => $data]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Error geting comments', 'error' => $e->getMessage()], 500);
+                // Return success response with comments and role names
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Comments retrieved successfully',
+                    'data' => $comments
+                ]);
+            } catch (\Exception $e) {
+                // Return error response if something goes wrong
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Error retrieving comments',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         }
-    }
+
 
     public function comment_store(Request $request): JsonResponse
     {
@@ -3233,20 +3321,59 @@ class AdminDashboardController extends Controller
             'Content-Disposition' => 'attachment; filename="orders.csv"',
         ]);
     }
-    
-
-    public function exportOrdersCSV()
+       
+    public function exportOrdersCSV(Request $request)
     {
-        // Fetch orders with related data
-        $orders = Order::with([
+        // Get the filters from the request
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $address = $request->input('address');
+        $postalCode = $request->input('postalCode');
+        $product = $request->input('product');
+        $status = $request->input('status');
+    
+        // Build the query
+        $query = Order::with([
             'user', 
             'shippingDetail:id,order_id,firstName,lastName,zip_code,email', 
             'orderdetails:id,order_id,product_id,product_qty', 
             'orderdetails.product:id,title', 
         ])
-        ->where(['payment_status' => 'Paid', 'status' => 'Shipped'])
-        ->latest('created_at')
-        ->get();
+        ->where(['payment_status' => 'Paid', 'status' => 'Shipped']);
+        
+        // Apply filters
+        if ($startDate) {
+            $query->where('created_at', '>=', $startDate);
+        }
+        
+        if ($endDate) {
+            $query->where('created_at', '<=', $endDate);
+        }
+    
+        if ($address && $address !== 'All') {
+            $query->whereHas('shippingDetail', function($q) use ($address) {
+                $q->where('address', 'like', '%' . $address . '%');
+            });
+        }
+    
+        if ($postalCode && $postalCode !== 'All') {
+            $query->whereHas('shippingDetail', function($q) use ($postalCode) {
+                $q->where('zip_code', 'like', '%' . $postalCode . '%');
+            });
+        }
+    
+        if ($product && $product !== 'All') {
+            $query->whereHas('orderdetails.product', function($q) use ($product) {
+                $q->where('title', 'like', '%' . $product . '%');
+            });
+        }
+    
+        if ($status && $status !== 'All') {
+            $query->where('status', $status);
+        }
+    
+        // Fetch filtered orders
+        $orders = $query->latest('created_at')->get();
     
         // Create CSV writer instance
         $csv = Writer::createFromFileObject(new SplTempFileObject());

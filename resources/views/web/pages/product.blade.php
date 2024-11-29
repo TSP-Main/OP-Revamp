@@ -165,7 +165,7 @@
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
                                         <li>
-                                            @if($product->stock_status == 'IN')
+                                            @if(true)
                                                 @if($product->high_risk == 2)
                                                     <input type="hidden" id="quantity-input" value="1" name="qtybutton">
                                                 @else
@@ -196,7 +196,7 @@
                                                 }
                                             @endphp
 
-                                            @if($product->stock_status == 'IN')
+                                            @if(true)
                                                 @if($product->high_risk == 2 && $hasHighRiskProduct)
                                                     <button type="button" class="btn btn-secondary"
                                                             data-bs-toggle="tooltip" data-bs-placement="top"
@@ -260,6 +260,18 @@
                                         </li>
                                     </ul>
                                 </div>
+                                <div id="out-of-stock-message" style="display:none;">
+                                    <form action="{{ route('notify.me', $product->id) }}" method="POST" class="d-inline-block" id="notify-form-{{ $product->id }}">
+                                        @csrf
+                                        <input type="hidden" name="email" value="{{ auth()->user()->email ?? '' }}" required>
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span>Out of Stock</span> <br>
+                                        <button type="button" class="theme-btn-1 btn btn-effect-1" title="Notify Me" onclick="notifyMe({{ auth()->check() ? 'true' : 'false' }}, '{{ route('notify.me', $product->id) }}')">
+                                            <span>Notify When in Stock</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                
                                 <div class="ltn__product-details-menu-3 ">
                                     <ul>
                                         @if(!$product['variants']->isEmpty())
@@ -435,72 +447,117 @@
 @stop
 @pushOnce('scripts')
 <script>
-    $(document).ready(function() {
-        function updateVariant() {
-            var variantData = @json($variants ?? []);
-            var variant_selector = $(this).data('selector');
-            $('.' + variant_selector).removeClass('variant_tag_active').addClass('variant_tag');
-            $(this).removeClass('variant_tag').addClass('variant_tag_active');
-            var combinedVariantVal = '';
-            $('.variant_tag_active').each(function() {
-                var variantValue = $(this).data('variant_val');
-                variantValue = String(variantValue).replace(/;/g, '').replace(/ /g, '_');
-                combinedVariantVal += variantValue;
-            });
-            var current_variant = variantData[combinedVariantVal];
+    // Function to handle variant updates
+  // Function to handle variant updates
+function updateVariant() {
+    var variantData = @json($variants ?? []);  // Variant data passed from backend
+    var variant_selector = $(this).data('selector');
 
-            // // update url according to variant start
-            var current_variant_slug = current_variant.slug;
-            var currentUrl = window.location.href;
-            var newUrl = updateUrlParameter(currentUrl, 'variant', current_variant_slug);
-            history.pushState({}, '', newUrl);
-            // // update url according to variant end
+    // Update the classes for the variant selector
+    $('.' + variant_selector).removeClass('variant_tag_active').addClass('variant_tag');
+    $(this).removeClass('variant_tag').addClass('variant_tag_active');
 
-            var mainImage = $(this).data('main_image');
-            var image_src = "{{ asset('storage/') }}";
-            $('#variant_id').val(current_variant.id);
+    var combinedVariantVal = '';
+    $('.variant_tag_active').each(function() {
+        var variantValue = $(this).data('variant_val');
+        variantValue = String(variantValue).replace(/;/g, '').replace(/ /g, '_');
+        combinedVariantVal += variantValue;
+    });
 
-            if (current_variant.image) {
-                $('#product_img').attr('src', image_src + '/' + current_variant.image);
-            } else {
-                $('#product_img').attr('src', image_src + '/' + mainImage);
-            }
-            $('#product_price').text('£ ' + current_variant.price);
+    var current_variant = variantData[combinedVariantVal];
 
-            if (current_variant.cut_price) {
-                $('#product_cut_price').text('£ ' + current_variant.cut_price);
-            } else {
-                $('#product_cut_price').text('');
-            }
+    // Update URL with variant information
+    var current_variant_slug = current_variant.slug;
+    var currentUrl = window.location.href;
+    var newUrl = updateUrlParameter(currentUrl, 'variant', current_variant_slug);
+    history.pushState({}, '', newUrl);
 
-            // Update quantity limits
-            $('#min_buy').val(current_variant.min_buy || 1);
-            $('#max_buy').val(current_variant.max_buy || 999);
+    // Update the product image and price
+    var mainImage = $(this).data('main_image');
+    var image_src = "{{ asset('storage/') }}";
+    $('#variant_id').val(current_variant.id);
+
+    if (current_variant.image) {
+        $('#product_img').attr('src', image_src + '/' + current_variant.image);
+    } else {
+        $('#product_img').attr('src', image_src + '/' + mainImage);
+    }
+
+    $('#product_price').text('£ ' + current_variant.price);
+
+    if (current_variant.cut_price) {
+        $('#product_cut_price').text('£ ' + current_variant.cut_price);
+    } else {
+        $('#product_cut_price').text('');
+    }
+
+    // Update quantity limits
+    $('#min_buy').val(current_variant.min_buy || 1);
+    $('#max_buy').val(current_variant.max_buy || 999);
+
+    // Check if the selected variant is out of stock
+    if (current_variant.stock_status == 'OUT') {
+        // Show out of stock message for variants
+        $('.ltn__product-details-menu-2').hide();
+        $('#out-of-stock-message').show();
+        $('#quantity-input').prop('disabled', true);  // Disable quantity input
+        $('#add-to-cart-button').prop('disabled', true);  // Disable add-to-cart button
+    } else {
+        // If variant is in stock, show the normal menu and enable buttons
+        $('.ltn__product-details-menu-2').show();
+        $('#out-of-stock-message').hide();
+        $('#quantity-input').prop('disabled', false);
+        $('#add-to-cart-button').prop('disabled', false);
+    }
+}
+
+// Trigger variant update on click
+$(document).on('click', '.variants', updateVariant);
+
+// Call the update function on page load for the default active variant
+var activeVariant = $('.variants.variant_tag_active').first();
+if (activeVariant.length) {
+    updateVariant.call(activeVariant);
+} else {
+    // If no variant is selected, check product stock status
+    if ("{{ $product->stock_status }}" === "OUT") {
+        $('#out-of-stock-message').show();
+        $('.ltn__product-details-menu-2').hide();
+        $('#quantity-input').prop('disabled', true);
+        $('#add-to-cart-button').prop('disabled', true);
+    } else {
+        $('#out-of-stock-message').hide();
+        $('.ltn__product-details-menu-2').show();
+        $('#quantity-input').prop('disabled', false);
+        $('#add-to-cart-button').prop('disabled', false);
+    }
+}
+
+    // Trigger variant update on click
+    $(document).on('click', '.variants', updateVariant);
+
+    // Call the update function on page load for the default active variant
+    var activeVariant = $('.variants.variant_tag_active').first();
+    if (activeVariant.length) {
+        updateVariant.call(activeVariant);
+    }
+
+    // Validate quantity input for minimum and maximum limits
+    $(document).on('input', '.cart-plus-minus-box', function() {
+        var minBuy = parseInt($('#min_buy').val());
+        var maxBuy = parseInt($('#max_buy').val());
+        var qty = parseInt($(this).val());
+
+        if (qty < minBuy) {
+            alert('Minimum quantity is ' + minBuy);
+            $(this).val(minBuy);
+        } else if (qty > maxBuy) {
+            alert('Maximum quantity is ' + maxBuy);
+            $(this).val(maxBuy);
         }
+    });
 
-        $(document).on('click', '.variants', updateVariant);
-
-        // Call the function on page load
-        var activeVariant = $('.variants.variant_tag_active').first();
-        if (activeVariant.length) {
-            updateVariant.call(activeVariant);
-        }
-
-        // Validate quantity
-        $(document).on('input', '.cart-plus-minus-box', function() {
-            var minBuy = parseInt($('#min_buy').val());
-            var maxBuy = parseInt($('#max_buy').val());
-            var qty = parseInt($(this).val());
-
-            if (qty < minBuy) {
-                alert('Minimum quantity is ' + minBuy);
-                $(this).val(minBuy);
-            } else if (qty > maxBuy) {
-                alert('Maximum quantity is ' + maxBuy);
-                $(this).val(maxBuy);
-            }
-        });
-
+    // Function to update URL parameters
     function updateUrlParameter(url, key, value) {
         var urlParts = url.split('?');
         if (urlParts.length >= 2) {
@@ -519,34 +576,36 @@
         }
         return url;
     }
-});
 
-$(document).ready(function() {
-    $('[data-bs-toggle="tooltip"]').tooltip({
-        trigger: 'manual' // Prevents it from hiding automatically
-    }).on('mouseenter', function() {
-        // Show the tooltip when mouse enters
-        $(this).tooltip('show');
-    }).on('mouseleave', function() {
-        // Hide the tooltip when mouse leaves, but only if the user hasn't clicked the button
-        if (!$(this).data('clicked')) {
-            $(this).tooltip('hide');
-        }
-    }).on('click', function() {
-        // Prevent the tooltip from hiding when clicked
-        $(this).data('clicked', true);
+    // Initialize tooltip functionality
+    $(document).ready(function() {
+        $('[data-bs-toggle="tooltip"]').tooltip({
+            trigger: 'manual' // Prevents tooltip from hiding automatically
+        }).on('mouseenter', function() {
+            // Show tooltip on mouse enter
+            $(this).tooltip('show');
+        }).on('mouseleave', function() {
+            // Hide tooltip on mouse leave, but only if not clicked
+            if (!$(this).data('clicked')) {
+                $(this).tooltip('hide');
+            }
+        }).on('click', function() {
+            // Prevent tooltip from hiding when clicked
+            $(this).data('clicked', true);
+        });
     });
-});
-function notifyMe(isLoggedIn, actionUrl) {
-    if (!isLoggedIn) {
-        // alert('You must be logged in to receive notifications.');
-        // Optionally redirect to login page
-        window.location.href = '/login';
-        return;
-    }
 
-    // If logged in, submit the form
-    document.getElementById('notify-form-' + actionUrl.split('/').pop()).submit();
-}
+    // Function for "Notify Me" functionality
+    function notifyMe(isLoggedIn, actionUrl) {
+        if (!isLoggedIn) {
+            // Redirect to login if not logged in
+            window.location.href = '/login';
+            return;
+        }
+
+        // If logged in, submit the notification form
+        document.getElementById('notify-form-' + actionUrl.split('/').pop()).submit();
+    }
 </script>
+
 @endPushOnce

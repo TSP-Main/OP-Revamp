@@ -420,7 +420,7 @@ class CartController extends Controller
             $full_name = $existingOrder->email; // Assuming email is used for full name
     
             // Get payment environment from .env file
-            $paymentEnv = env('PAYMENT_ENV');  // Default to 'Test' if not set
+            $paymentEnv = env('PAYMENT_ENV' , 'Live');  // Default to 'Test' if not set
     
             \Log::info("Payment Environment: " . $paymentEnv);  // Log the environment being used
     
