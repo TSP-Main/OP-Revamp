@@ -97,15 +97,17 @@
                     <a href="javascript:void(0);" onclick="window.history.back();"
                        class="btn btn-primary-outline fw-bold "><i class="bi bi-arrow-left"></i> Back</a> |
                     Order Detail
-                    <button type="submit" form="create_pdf_from"
-                            class=" btn fs-5 py-1  {{($order['print'] == 'Printed') ? 'btn-success bg-success ' : 'btn-primary bg-primary' }} fw-semibold"
-                            style="float:right;">{{$order['print'] ?? '' }}</button>
-                    @if((isset($user->role) && $user->role == user_roles('1')))
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#order_refund_mdl"
-                                class=" btn fs-5 py-1  mx-2 btn-danger  bg-danger fw-semibold" style="float:right;"><i
-                                class="bi-arrow-counterclockwise"></i>Refund
-                        </button>
-                    @endif
+                    @if(!$user->hasRole('user'))
+                        <button type="submit" form="create_pdf_from"
+                                class=" btn fs-5 py-1  {{($order['print'] == 'Printed') ? 'btn-success bg-success ' : 'btn-primary bg-primary' }} fw-semibold"
+                                style="float:right;">{{$order['print'] ?? '' }}</button>
+                        @if((isset($user->role) && $user->role == user_roles('1')))
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#order_refund_mdl"
+                                    class=" btn fs-5 py-1  mx-2 btn-danger  bg-danger fw-semibold" style="float:right;"><i
+                                    class="bi-arrow-counterclockwise"></i>Refund
+                            </button>
+                        @endif
+                    @endif    
                 </h1>
                 <nav>
                     <ol class="breadcrumb">
@@ -201,9 +203,11 @@
                                            value="{{(isset($order['shipping_details']['address2'])) ? $order['shipping_details']['address2'] :($order['user']['apartment'] ?? '') }}"
                                            placeholder="Change Address 2">
                                 </div>
+                                @if(!$user->hasRole('user'))
                                 <div class=" mt-4 text-end px-4 d-flex d-md-block">
                                     <button class="btn btn-primary bg-primary">Update</button>
                                 </div>
+                                @endif
                             </form>
                             <div class="text mt-2">
                                 <h5 class="fw-bold mb-0 ">Billing Address</h5>
@@ -237,9 +241,11 @@
                                     <div class="alert-danger text-danger ">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                @if(!$user->hasRole('user'))
                                 <div class=" mt-4 text-end px-4 d-flex d-md-block">
                                     <button class="btn btn-primary bg-primary">Update</button>
                                 </div>
+                                @endif
                             </form>
                         </div>
                     </div>
@@ -261,7 +267,7 @@
                                             <p>{{ \Carbon\Carbon::parse($order['created_at'])->format('M, d, Y - H:i') }}</p>
                                         </div>
                                         <!-- Download GPA Button -->
-                                        @if($order['status'] != 'Not_Approved' && $order['status'] != 'Received')
+                                        @if($order['status'] != 'Not_Approved' && $order['status'] != 'Received' && !$user->hasRole('user'))
                                         <button style="margin-right: 10px; background-color:#146c43;" type="button" data-id="{{ $order['id'] }}" class="btn btn-success rounded-pill text-center download_gpa">
                                             <i class="bi bi-download"></i> GPA Letter
                                         </button>
@@ -327,36 +333,39 @@
                                                     </div>
                                                 </div>
                                                 <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
-                                                @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd' || $val['consultation_type'] == 'premd/Reorder')
-                                                    <div class="row d-flex ">
-                                                        <div class="col-lg-12 text-center ">
-                                                            <a href="{{ route('admin.consultationView', ['odd_id' => base64_encode($val['id'])]) }}"
-                                                               class="btn btn-link fw-bold large">
-                                                                Approved / View Consultation
-                                                            </a>
+                                                @if(!$user->hasRole('user'))
+                                                    @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd' || $val['consultation_type'] == 'premd/Reorder')
+                                                        <div class="row d-flex ">
+                                                            <div class="col-lg-12 text-center ">
+                                                                <a href="{{ route('admin.consultationView', ['odd_id' => base64_encode($val['id'])]) }}"
+                                                                class="btn btn-link fw-bold large">
+                                                                    Approved / View Consultation
+                                                                </a>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
+                                                        <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
 
+                                                    @endif
                                                 @endif
                                             @endforeach
 
-                                            <div class="row">
-                                                <div class="col-md-12 gy-1">
-                                                    <h5 class="fw-bold underline">User Previous Orders History:</h5>
-                                                    <div class="button-container" style="display: flex; flex-wrap: wrap;">
-                                                        @forelse($userOrders as $index => $orderId)
-                                                            <a href="{{ route('admin.orderDetail', ['id' => base64_encode($orderId)]) }}"
-                                                               class="btn btn-primary bg-primary m-1">
-                                                                <b>{{ $index + 1 }}.</b> #{{ $orderId }}
-                                                            </a>
-                                                        @empty
-                                                            <p class="px-5">No Previous Orders Of that Customer.</p>
-                                                        @endforelse
+                                            @if(!$user->hasRole('user'))
+                                                <div class="row">
+                                                    <div class="col-md-12 gy-1">
+                                                        <h5 class="fw-bold underline">User Previous Orders History:</h5>
+                                                        <div class="button-container" style="display: flex; flex-wrap: wrap;">
+                                                            @forelse($userOrders as $index => $orderId)
+                                                                <a href="{{ route('admin.orderDetail', ['id' => base64_encode($orderId)]) }}"
+                                                                class="btn btn-primary bg-primary m-1">
+                                                                    <b>{{ $index + 1 }}.</b> #{{ $orderId }}
+                                                                </a>
+                                                            @empty
+                                                                <p class="px-5">No Previous Orders Of that Customer.</p>
+                                                            @endforelse
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            
+                                             @endif
                                         </div>
                                     </div>
                                     @if((!$user->hasRole('user')))
@@ -416,16 +425,19 @@
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Tracking Number:</p>
                                         @php
-                                            $trackingNumber = $order['shipping_details']['tracking_no'] ?? null; 
+                                            $trackingNumber = $order->shippingDetails->tracking_no ?? null; 
                                         @endphp
+                                    
                                         @if($trackingNumber)
                                             <a class="fw-bold mb-0"
-                                               href="https://www.royalmail.com/track-your-item#/tracking-results/{{$trackingNumber}}">{{$trackingNumber}} </a>
+                                               href="https://www.royalmail.com/track-your-item#/tracking-results/{{$trackingNumber}}">
+                                                {{$trackingNumber}}
+                                            </a>
                                         @else
-                                            <a class="btn btn-primary bg-primary fw-bold mb-0"
-                                               href="{{route('admin.getShippingOrder',['id'=>$order['id']])}}">Track</a>
+                                            <span class="text-muted">Tracking number not available yet.</span>
                                         @endif
                                     </div>
+                                    
                                 @endif
 
                                     @if($order['status'] != 'Received')
@@ -466,7 +478,7 @@
                                     </div>
                                 @endif
                                                                 
-                                    @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved' && $order['status'] != 'Received')
+                                    @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved' && $order['status'] != 'Received' && !$user->hasRole('user'))
                                         <form id="form_shiping_now" action="{{route('admin.createShippingOrder')}}"
                                               method="POST">
                                             @csrf
@@ -681,12 +693,14 @@
                         
                         // Start building the comment's HTML
                         let comment_data = '';
+
+                        
                         
                         if (user_id == data.user_id) {
                             // Displaying the comment from the logged-in user
                             comment_data = `
                                 <div class="d-flex flex-row p-2">
-                                    <img class="img-fluid" src="${user_pic}" width="40" height="40" style="object-fit: cover;">
+                                  
                                     <div class="chat ml-2 p-2" style="max-width: 500px;">
                                         <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span> <!-- Display role next to username -->
                                         <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span> <!-- Timestamp -->
@@ -696,6 +710,7 @@
                             `;
                         } else {
                             // Displaying comments from other users
+                             // <img class="img-fluid" src="${user_pic}" width="40" height="40" style="object-fit: cover;">
                             comment_data = `
                                 <div class="d-flex flex-row p-2">
                                     <div class="bg-light mr-2 p-2" style="max-width: 500px;">
@@ -703,7 +718,7 @@
                                         <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span> <!-- Timestamp -->
                                         <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p> <!-- Comment text -->
                                     </div>
-                                    <img class="img-fluid" src="${user_pic}" width="40" height="40" style="object-fit: cover;">
+                                   
                                 </div>
                             `;
                         }
