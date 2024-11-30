@@ -52,6 +52,11 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/storeAdmin', [AdminDashboardController::class, 'store_admin'])->name('admin.storeAdmin');
     Route::get('/users', [AdminDashboardController::class, 'users'])->name('admin.users');
 
+    //Pharmacy Role 
+    Route::get('/pharmacy', [AdminDashboardController::class, 'pharmacy'])->name('admin.pharmacy');
+    Route::match(['get', 'post'], '/addPharmacy',   [AdminDashboardController::class, 'add_pharmacy'])->name('admin.addPharmacy');
+    Route::match(['get', 'post'], '/storePharmacy', [AdminDashboardController::class, 'store_pharmacy'])->name('admin.storePharmacy');
+
     Route::get('/questionCategories', [AdminDashboardController::class, 'question_categories'])->name('admin.questionCategories');
     Route::match(['get', 'post'], '/addQuestionCategory', [AdminDashboardController::class, 'add_question_category'])->name('admin.addQuestionCategory');
     Route::post('/storeQuestionCategory', [AdminDashboardController::class, 'store_question_category'])->name('admin.storeQuestionCategory');

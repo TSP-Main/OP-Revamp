@@ -333,7 +333,7 @@
                                                     </div>
                                                 </div>
                                                 <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
-                                                @if(!$user->hasRole('user'))
+                                                @if(!$user->hasRole('user') && !$user->hasRole('dispensary'))
                                                     @if($val['consultation_type'] == 'premd' || $val['consultation_type'] == 'pmd' || $val['consultation_type'] == 'premd/Reorder')
                                                         <div class="row d-flex ">
                                                             <div class="col-lg-12 text-center ">
@@ -368,7 +368,7 @@
                                              @endif
                                         </div>
                                     </div>
-                                    @if((!$user->hasRole('user')))
+                                    @if(!$user->hasRole('user') && !$user->hasRole('dispensary'))
                                     <div class="card mt-4">
                                         <div class="card-body d-flex justify-content-center align-items-center py-3">
                                             <button class="btn btn-success rounded-pill px-5 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#doctor_remarks">
@@ -376,7 +376,8 @@
                                             </button>
                                         </div>
                                     </div>
-                                    @endif
+                                @endif
+                                
                         
                                     {{-- Modal Start --}}
                                     <div class="modal fade" id="doctor_remarks" tabindex="-1" aria-labelledby="doctor_remarksLabel" aria-hidden="true">
@@ -425,19 +426,16 @@
                                     <div class="d-flex justify-content-between pt-2">
                                         <p class="fw-bold mb-0">Tracking Number:</p>
                                         @php
-                                            $trackingNumber = $order->shippingDetails->tracking_no ?? null; 
+                                            $trackingNumber = $order['shipping_details']['tracking_no'] ?? null; 
                                         @endphp
-                                    
                                         @if($trackingNumber)
                                             <a class="fw-bold mb-0"
-                                               href="https://www.royalmail.com/track-your-item#/tracking-results/{{$trackingNumber}}">
-                                                {{$trackingNumber}}
-                                            </a>
+                                               href="https://www.royalmail.com/track-your-item#/tracking-results/{{$trackingNumber}}">{{$trackingNumber}} </a>
                                         @else
-                                            <span class="text-muted">Tracking number not available yet.</span>
+                                            <a class="btn btn-primary bg-primary fw-bold mb-0"
+                                               href="{{route('admin.getShippingOrder',['id'=>$order['id']])}}">Track</a>
                                         @endif
                                     </div>
-                                    
                                 @endif
 
                                     @if($order['status'] != 'Received')
@@ -478,7 +476,7 @@
                                     </div>
                                 @endif
                                                                 
-                                    @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved' && $order['status'] != 'Received' && !$user->hasRole('user'))
+                                    @if($order['status'] != 'Shipped' && $order['status'] != 'Not_Approved' && $order['status'] != 'Received' && !$user->hasRole('user') && !$user->hasRole('pharmacy'))
                                         <form id="form_shiping_now" action="{{route('admin.createShippingOrder')}}"
                                               method="POST">
                                             @csrf

@@ -1,51 +1,17 @@
 User-agent: *
-# Allow access to essential files
-Allow: /$
-Allow: /products/
-Allow: /category/
-Allow: /blog/
-Allow: /search/
-Allow: /assets/
-Allow: /images/
-
-# Disallow sensitive areas and areas that don’t need to be indexed
-Disallow: /admin/
-Disallow: /checkout/
 Disallow: /cart/
-Disallow: /account/
+Disallow: /checkout/
+Disallow: /my-account/
+Disallow: /order/
+Disallow: /user/
 Disallow: /login/
-Disallow: /register/
-Disallow: /orders/
-Disallow: /payment/
-Disallow: /thank-you/
+Disallow: /search/
 Disallow: /wishlist/
-Disallow: /profile/
+Disallow: /privacy-policy/
+Disallow: /terms-and-conditions/
 
-# Prevent duplicate content from being indexed
-Disallow: /?sort=
-Disallow: /?filter=
-Disallow: /?page=
-
-# Allow access to API endpoints (if necessary)
-Allow: /api/
-Allow: /ajax/
-
-# Prevent indexing of tracking or temporary pages
-Disallow: /tmp/
-Disallow: /logs/
-
-# Allow access to important files and folders needed for SEO
-Allow: /sitemap.xml
-Allow: /robots.txt
-
-# Disallow URL parameters that could create duplicate content
-Disallow: /*?sessionid=
-Disallow: /*?utm_source=
-Disallow: /*?utm_medium=
-Disallow: /*?utm_campaign=
-Disallow: /*?ref=
-
-# Sitemap location
+# Allow all other parts of the website to be crawled
+Allow: /wp-content/uploads/
+Allow: /wp-includes/
 Sitemap: https://onlinepharmacy-4u.co.uk/sitemap.xml
-
 

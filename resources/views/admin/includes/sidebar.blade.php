@@ -374,6 +374,32 @@
             </li>
         @endif
 
+        @if(auth()->user()->hasPermissionTo('dispensaries'))
+        <li class="nav-item">
+            <a class="nav-link {{(request()->routeIs(['admin.admins','admin.addAdmin'])) ? '' : 'collapsed'}} "
+               data-bs-target="#siderbar-admin" data-bs-toggle="collapse">
+                <i class="bi bi-person"></i><span>Pharmacy</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="siderbar-admin"
+                class="nav-content  {{(request()->routeIs(['admin.pharmacy','admin.addPharmacy'])) ? '' : 'collapse'}} "
+                data-bs-parent="#sidebar-nav">
+                <li>
+                    <a class="{{(request()->routeIs(['admin.pharmacy'])) ? 'nav-link ' : ''}} "
+                       href="{{route('admin.pharmacy')}}">
+                        <i class="bi bi-circle"></i><span>Pharmacy List</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="{{(request()->routeIs(['admin.addPharmacy'])) ? 'nav-link ' : ''}} "
+                       href="{{route('admin.addPharmacy')}}">
+                        <i class="bi bi-circle"></i><span>Enroll New</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    @endif
+
+
         @if(auth()->user()->hasPermissionTo('users'))
             <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs(['admin.users'])) ? '' : 'collapsed'}} "
