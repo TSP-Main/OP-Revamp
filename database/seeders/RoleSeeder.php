@@ -21,6 +21,7 @@ class RoleSeeder extends Seeder
         $dispensary = Role::firstOrCreate(['name' => 'dispensary']);
         $doctor = Role::firstOrCreate(['name' => 'doctor']);
         $user = Role::firstOrCreate(['name' => 'user']);
+        $pharmacy = Role::firstOrCreate(['name' => 'pharmacy']);
 
         // Create permissions
         $permissions = [
@@ -140,11 +141,17 @@ class RoleSeeder extends Seeder
             'store_query',
             'consultation_view',
             'prescription_orders',
+            'orders',
             'online_clinic_orders',
             'shop_orders',
+            'comment_store',
             'contact',
             'setting',
         ];
         $user->givePermissionTo($userPermissions);
+
+
+        // Assign the same permissions as dispensary to pharmacy role
+       $pharmacy->givePermissionTo($dispensaryPermissions);
     }
 }

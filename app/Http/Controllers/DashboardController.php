@@ -38,6 +38,8 @@ class DashboardController extends Controller
                 return view('admin.pages.dashboard', $data);
             } elseif ($user->hasRole('dispensary')) {
                 return view('admin.pages.dispensary_dashboard', $data);
+            } elseif ($user->hasRole('pharmacy')) {
+                return view('admin.pages.pharmacy_dashboard', $data);
             } elseif ($user->hasRole('doctor')) {
                 return view('admin.pages.doctor_dashboard', $data);
             } elseif ($user->hasRole('user')) {
@@ -128,6 +130,8 @@ class DashboardController extends Controller
             $orderFor = 'dispensary';
         } elseif ($user->hasRole('Doctor')) {
             $orderFor = 'Doctor';
+        } elseif ($user->hasRole('pharmacy')) {
+            $orderFor = 'dispensary';
         } else {
             // Handle case for Super Admin or User role
             return response()->json(['error' => 'Unauthorized access or no orders available for this role.'], 403);
