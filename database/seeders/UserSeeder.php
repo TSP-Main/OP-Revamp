@@ -65,7 +65,6 @@ class UserSeeder extends Seeder
             'user_id' => $dispensary->id,
             'speciality' => 'Dispensary',
             'phone' => '0987654321',
-//            'date_of_birth' => '1990-05-05',
             'short_bio' => 'all about dispensary'
         ]);
 
@@ -119,7 +118,7 @@ class UserSeeder extends Seeder
             'phone' => '5566778899',
             'gender' => 'male',
             'date_of_birth' => '2000-10-10',
-            'short_bio' => 'all about doctor'
+            'short_bio' => 'all about user'
         ]);
 
         $userAddress = UserAddress::create([
@@ -128,6 +127,30 @@ class UserSeeder extends Seeder
             'apartment' => 'green aid',
             'city' => 'User City',
             'state' => 'User City',
+            'country' => 'england',
+            'zip_code' => '12345',
+        ]);
+
+        $pharmacy = User::create([
+            'name' => 'Pharmacy User',
+            'email' => 'pharmacy@gmail.com',
+            'password' => Hash::make('password'),
+            'created_by'   => 1
+        ])->assignRole('pharmacy'); // Assign the 'pharmacy' role
+
+        $pharmacyProfile = UserProfile::create([
+            'user_id' => $pharmacy->id,
+            'speciality' => 'Pharmacy',
+            'phone' => '2233445566',
+            'short_bio' => 'all about pharmacy'
+        ]);
+
+        $pharmacyAddress = UserAddress::create([
+            'user_id' => $pharmacy->id,
+            'address' => '123 Admin Street',
+            'apartment' => 'green aid',
+            'city' => 'Pharmacy City',
+            'state' => 'Pharmacy City',
             'country' => 'england',
             'zip_code' => '12345',
         ]);

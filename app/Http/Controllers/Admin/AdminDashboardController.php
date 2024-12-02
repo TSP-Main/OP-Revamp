@@ -169,6 +169,71 @@ class AdminDashboardController extends Controller
         return redirect()->route('admin.admins')->with(['msg' => $message]);
     }
 
+    public function pharmacy()
+    {
+        $user = $this->getAuthUser();
+        $this->authorize('dispensaries');
+        $data['user'] = $user;
+
+        if ($user->hasRole('super_admin')) {
+            $data['admins'] = User::with('profile', 'address')->role('pharmacy')->latest('id')->get()->toArray();
+        }
+
+        return view('admin.pages.pharmacy', $data);
+    }
+
+    public function add_pharmacy(Request $request)
+    {
+        $data['user'] = $this->getAuthUser();
+        $this->authorize('add_dispensary');
+
+        $data['state_list'] = STATE_LIST();
+        if ($request->has('id')) {
+            $data['admin'] = User::with('profile', 'address')->findOrFail($request->id)->toArray();
+        }
+
+        return view('admin.pages.add_pharmacy', $data);
+    }
+
+    public function store_pharmacy(StoreAdminRequest $request)
+    {
+        $user = $this->getAuthUser();
+
+        // Prepare data for creating or updating the admin
+        $updateData = [
+            'name' => ucwords($request->name),
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'gender' => $request->gender,
+            'zip_code' => $request->zip_code,
+            'city' => $request->city,
+            'state' => $request->state,
+            'status' => $this->getUserStatus('Active'),
+            'created_by' => $user->id,
+        ];
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        // Create or update the user
+        $saved = User::updateOrCreate(
+            ['id' => $request->id ?? null],
+            $updateData
+        );
+
+        // Assign the role using Spatie's Role system
+        if ($saved) {
+            $saved->syncRoles($request->role);
+        }
+
+        $message = "pharmacy " . ($request->id ? "Updated" : "Saved") . " Successfully";
+
+        return redirect()->route('admin.pharmacy')->with(['msg' => $message]);
+    }
+
     // doctors managment ...
     public function doctors()
     {
