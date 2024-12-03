@@ -368,7 +368,7 @@
                                              @endif
                                         </div>
                                     </div>
-                                    @if(!$user->hasRole('user') && !$user->hasRole('dispensary'))
+                                    @if(!$user->hasRole('user'))
                                     <div class="card mt-4">
                                         <div class="card-body d-flex justify-content-center align-items-center py-3">
                                             <button class="btn btn-success rounded-pill px-5 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#doctor_remarks">
