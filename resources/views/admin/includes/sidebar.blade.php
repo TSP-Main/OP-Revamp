@@ -419,6 +419,14 @@
         @endif
         @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('prescription_orders'))
             <li class="nav-item">
+                <a class="nav-link {{(request()->routeIs('user.allOrders')) ? '' : 'collapsed'}}  "
+                   href="{{route('user.allOrders')}}">
+                    <i class="bi bi-bar-chart"></i><span>All Orders</span>
+                </a>
+            </li>
+        @endif
+        @if(auth()->user()->hasRole('user') && auth()->user()->hasPermissionTo('prescription_orders'))
+            <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs('admin.prescriptionOrders')) ? '' : 'collapsed'}}  "
                    href="{{route('admin.prescriptionOrders')}}">
                     <i class="bi bi-bar-chart"></i><span>Prescription Orders</span>

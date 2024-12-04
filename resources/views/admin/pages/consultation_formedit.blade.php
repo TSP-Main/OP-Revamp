@@ -128,28 +128,35 @@
                                 @endif
                             @endforeach
 
-                            <!-- Image Upload for Question #607 and #800 -->
-                            @if($requires_image_upload_607 || $requires_image_upload_800)
-                            <div class="form-section" style="background-color: #fff3f3;">
-                                <div class="section-header">
-                                    <h4><i class="bi bi-image-fill" style="color: #ff1744;"></i> Image Upload</h4>
-                                </div>
+                         <!-- Image Upload for Question #607 and #800 -->
+@if($requires_image_upload_607 || $requires_image_upload_800)
+<div class="form-section" style="background-color: #fff3f3;">
+    <div class="section-header">
+        <h4><i class="bi bi-image-fill" style="color: #ff1744;"></i> Image Upload</h4>
+    </div>
 
-                                @if($requires_image_upload_607)
-                                <div class="form-group" style="border: 2px solid #f44336; background-color: #fff0f0; padding: 10px;">
-                                    <label for="image_607" class="required" style="color: #f44336;">Please Upload The Picture (clearly Dispalying The Weight On The Scales)</label>
-                                    <input type="file" name="image_607" class="form-control" accept="image/*" required>
-                                </div>
-                                @endif
+    @if($requires_image_upload_607)
+    <div class="form-group" style="border: 2px solid #f44336; background-color: #fff0f0; padding: 10px; display: flex; justify-content: space-between;">
+        <label for="image_607" class="required" style="color: #f44336; width: 70%;">Please Upload The Picture (clearly Displaying The Weight On The Scales)</label>
+        <div style="width: 25%; display: flex; align-items: center; justify-content: center; padding-left: 10px;">
+            <input type="file" name="image_607" class="form-control image-upload" accept="image/*" required>
+            <div id="preview_607" style="max-width: 100px; margin-top: 10px;"></div>
+        </div>
+    </div>
+    @endif
 
-                                @if($requires_image_upload_800)
-                                <div class="form-group" style="border: 2px solid #f44336; background-color: #fff0f0; padding: 10px; margin-bottom:1rem">
-                                    <label for="image_800" class="required" style="color: #f44336;">Please Upload A Picture Of Your Torso To Verify Your Full Body Shot</label>
-                                    <input type="file" name="image_800" class="form-control" accept="image/*" required>
-                                </div>
-                                @endif
-                            </div>
-                            @endif
+    @if($requires_image_upload_800)
+    <div class="form-group" style="border: 2px solid #f44336; background-color: #fff0f0; padding: 10px; margin-bottom: 1rem; display: flex; justify-content: space-between;">
+        <label for="image_800" class="required" style="color: #f44336; width: 70%;">Please Upload A Picture Of Your Torso To Verify Your Full Body Shot</label>
+        <div style="width: 25%; display: flex; align-items: center; justify-content: center; padding-left: 10px;">
+            <input type="file" name="image_800" class="form-control image-upload" accept="image/*" required>
+            <div id="preview_800" style="max-width: 100px; margin-top: 10px;"></div>
+        </div>
+    </div>
+    @endif
+</div>
+@endif
+
 
                             <!-- Submit Button -->
                             <div class="form-section" style="padding: 10px 20px; background-color:#eff7ee; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer;">
@@ -166,6 +173,42 @@
 
 @pushOnce('scripts')
 <script>
+    @pushOnce('scripts')
+<script>
+    $(document).ready(function() {
+        // Image upload preview handler
+        function previewImage(input, previewId) {
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    preview.innerHTML = '';  // Clear previous preview
+                    preview.appendChild(img);
+                    img.style.maxWidth = '100%';  // Ensure the image fits the container
+                    img.style.border = '1px solid #ddd'; // Optional styling for preview
+                    img.style.marginTop = '10px'; // Add some margin
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Attach event listeners to file inputs for image preview
+        $('input[type="file"].image-upload').on('change', function() {
+            const inputId = $(this).attr('name');
+            if (inputId === 'image_607') {
+                previewImage(this, 'preview_607');
+            } else if (inputId === 'image_800') {
+                previewImage(this, 'preview_800');
+            }
+        });
+    });
+</script>
+@endpushOnce
+
     $(document).ready(function() {
         $('.read-more-btn').click(function() {
             var $descriptionPreview = $(this).siblings('.description-preview');
