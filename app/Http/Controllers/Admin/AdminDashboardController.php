@@ -1813,6 +1813,33 @@ class AdminDashboardController extends Controller
     
         return view('admin.pages.order_all', $data);
     }
+
+    public function user_all_orders(Request $request)
+    {
+        // Get the authenticated user
+        $data['user'] = $this->getAuthUser();
+    
+        // Authorize the user for the specific action
+        $this->authorize('prescription_orders');
+    
+        // Get orders related to the authenticated user, with the 'payment_status' of 'Paid'
+        $orders = Order::with(['user', 'shippingDetails:id,order_id,firstName,lastName,email', 'orderdetails:id,order_id,consultation_type'])
+            ->where('user_id', $data['user']->id) 
+            ->where('payment_status', 'Paid')      
+            ->latest('created_at')                 
+            ->get()
+            ->toArray();
+    
+        // If there are any orders, process them
+        if ($orders) {
+            $data['order_history'] = $this->get_prev_orders($orders);
+            $data['orders'] = $this->assign_order_types($orders);
+        }
+    
+        // Return the view with the necessary data
+        return view('admin.pages.user_allorders', $data);
+    }
+    
     
     
     public function otc_orders()

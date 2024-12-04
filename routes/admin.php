@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 
@@ -108,6 +109,7 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
 
     Route::get('/ordersReceived', [AdminDashboardController::class, 'ordersReceived'])->name('admin.ordersRecieved');
     Route::get('/ordersAll', [AdminDashboardController::class, 'all_orders'])->name('admin.allOrders');
+    Route::get('/ordersAllUser', [AdminDashboardController::class, 'user_all_orders'])->name('user.allOrders');
     Route::get('/orderOtc', [AdminDashboardController::class,'otc_orders'])->name('admin.otcorders');
     Route::get('/ordersUnpaid', [AdminDashboardController::class, 'unpaid_orders'])->name('admin.unpaidOrders');
     Route::get('/ordersCreated', [AdminDashboardController::class, 'orders_created'])->name('admin.ordersCreated');
@@ -153,5 +155,9 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/VetPrescriptions', [AdminDashboardController::class, 'vet_prescriptions'])->name('admin.VetPrescriptions');
     Route::match(['get', 'post'], '/deleteHumanForm', [AdminDashboardController::class, 'delete_human_form'])->name('admin.deleteHumanForm');
 
+    Route::match(['get', 'post'], '/addDiscount', [DiscountController::class, 'add_discount'])->name('admin.addDiscount');
+    Route::match(['get', 'post'], '/storeDiscount', [DiscountController::class, 'store_discount'])->name('admin.storeDiscount');
+    Route::get('/SubCategoryDiscount', [DiscountController::class, 'getSubCategories'])->name('admin.getSubCategories');
+    Route::get('/ChildCategoryDiscount', [DiscountController::class, 'getChildCategories'])->name('admin.getChildCategories');
 
 });
