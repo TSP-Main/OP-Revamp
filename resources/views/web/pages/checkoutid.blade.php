@@ -157,7 +157,8 @@
                     </div>
 
                     <div class="col-lg-6">
-                        <!-- Shiping Method Here -->
+                        <input type="hidden" name="shipping_method" id="shipping_method">
+                        <input type="hidden" name="shipping" id="shipping">
                     </div>
                     
                     <div class="col-lg-6">
@@ -275,24 +276,37 @@
     </script>
     <script>
       $(document).ready(function() {
-   // Function to update the shipping cost and totals when a shipping method is selected
-   var updateTotals = function() {
+    // Function to update the shipping cost, method, and totals when a shipping method is selected
+    var updateTotals = function() {
         // Get the shipping cost from the data-shipping attribute in the HTML
-        var shippingCost = parseFloat($('.shipping_cost').data('shipping')) || 0; // Default to 0 if not available
+        var shipping = parseFloat($('.shipping_cost').data('shipping')) || 0; // Default to 0 if not available
         
+        // Determine the shipping method based on the cost
+        var shipping_method = '';
+        if (shipping === 4.95) {
+            shipping_method = 'fast';
+        } else if (shipping === 3.95) {
+            shipping_method = 'express';
+        } else if (shipping === 15.00) {
+            shipping_method = 'International';
+        } else if (shipping === 0.00) {
+            shipping_method = 'free';
+        }
+
         // Get the subtotal value (from a PHP variable or elsewhere in the page)
         var subTotal = parseFloat('{{ $subtotal }}') || 0; // Ensure this is set properly in your Blade template
         
         // Calculate the grand total
-        var grandTotal = (shippingCost + subTotal).toFixed(2);
+        var grandTotal = (shipping + subTotal).toFixed(2);
 
         // Update the UI with the new shipping cost and grand total
-        $('.shipping_cost').text('£' + shippingCost.toFixed(2)); // Show shipping cost in £
+        $('.shipping_cost').text('£' + shipping.toFixed(2)); // Show shipping cost in £
         $('.order_total strong').text('£' + grandTotal); // Show grand total in £
-        
+
         // Set hidden fields with the updated values
         $('#total_ammount').val(grandTotal); // Update hidden field for grand total
-        $('#shipping_cost').val(shippingCost.toFixed(2)); // Update hidden field for shipping cost
+        $('#shipping').val(shipping.toFixed(2)); // Update hidden field for shipping cost
+        $('#shipping_method').val(shipping_method); // Update hidden field for shipping method (new field)
     };
 
     // Initial call to update the totals
@@ -410,6 +424,5 @@ $('#placeOrderBtn').on('click', function() {
     }
 });
 
-});
 </script>
 @endPushOnce
