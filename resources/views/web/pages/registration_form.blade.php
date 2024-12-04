@@ -185,16 +185,23 @@
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <input type="text" name="apartment" placeholder="apartment, suite, etc(optional)" value="{{ old('address') }}">
+                            @error('apartment')
+                            <div class="text-danger "> &nbsp; * {{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
                             <input type="text" name="address" placeholder="address" value="{{ old('address') }}">
                             <div class="invalid-feedback">Please enter your address!</div>
                             @error('address')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-6">
-                            <input type="text" name="apartment" placeholder="apartment, suite, etc(optional)" value="{{ old('address') }}">
 
-                            @error('apartment')
+                        <div class="col-md-6">
+                            <input type="text" name="state" placeholder="Town" value="{{ old('state') }}">
+                            <div class="invalid-feedback">Please enter your state!</div>
+                            @error('state')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
                         </div>
@@ -202,13 +209,6 @@
                             <input type="text" name="city" placeholder="city" value="{{ old('city') }}">
                             <div class="invalid-feedback">Please enter your city!</div>
                             @error('city')
-                            <div class="text-danger "> &nbsp; * {{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" name="state" placeholder="state" value="{{ old('state') }}">
-                            <div class="invalid-feedback">Please enter your state!</div>
-                            @error('state')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
                         </div>
