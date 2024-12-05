@@ -109,7 +109,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="reorderModalLabel">Update Quantities</h5>
+                <h5 class="modal-title" id="reorderModalLabel">Update Your Order Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -117,7 +117,7 @@
                     <input type="hidden" id="orderId" name="order_id">
                     <div id="quantityFields"></div>
                     <div id="fileUploadAlert" class="alert alert-danger d-none" role="alert">
-                        Please upload the required files on the consultation edit page before reordering any product from the Weight Loss category.<strong>Failure to do so may result in your order being rejected</strong>
+                        Please fill the required consultation questions before reordering. <strong>Failure to do so may result in order rejection.</strong>
                     </div>
                 </form>
             </div>
@@ -145,12 +145,11 @@
 
         let requiresFileUpload = false;
 
-        // Check if the modal_open session value is set and matches the order_id
         let showAlert = true;  // Default behavior is to show the alert
         @if(session('modal_open') && session('order_id'))
             let modalOpenOrderId = '{{ session('order_id') }}';
             if (modalOpenOrderId == orderId) {
-                showAlert = false; // Do not show alert if this order has the session set
+                showAlert = false; 
             }
         @endif
 
@@ -181,14 +180,21 @@
             }
 
             $('#quantityFields').append(`
-                <div class="mb-3">
-                    <input type="checkbox" id="product-${detail.id}" checked>
-                    <label for="product-${detail.id}">
-                        ${detail.product.title}<br>
-                        ${variantValue ? ` - <strong>Variant:</strong> ${variantValue}` : ''}
-                    </label>
+        
+           <input type="checkbox" id="product-${detail.id}" checked style="transform: scale(1.5); margin-bottom: 7px;">
+               <div class="mb-3">
+                    <div style="background-color: #C0D1EC; padding: 10px; border-radius: 5px;">
+                        <label for="product-${detail.id}">
+                            <p style="color: #4A4A4A; font-size: 20px;">${detail.product.title}</p>
+                            ${variantValue ? ` <strong style="color: #4A4A4A;">Variant:</strong> ${variantValue}` : ''}
+                        </label>
+                    </div>
+<br>
                     ${variantSelect}
-                    <input type="number" class="form-control mt-3" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" style="width: 70px;">
+                    <div class="d-flex align-items-center mt-3">
+                        <label for="qty-${detail.id}" style="font-size: 16px; margin-right: 10px;">Quantity:</label>
+                        <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" id="qty-${detail.id}" style="width: 70px;">
+                    </div>
                     ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
                 </div>
             `);

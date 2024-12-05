@@ -599,7 +599,7 @@ if (activeVariant.length) {
     function notifyMe(isLoggedIn, actionUrl) {
         if (!isLoggedIn) {
             // Redirect to login if not logged in
-            window.location.href = '/login';
+            window.location.href = '/sign-up';
             return;
         }
 

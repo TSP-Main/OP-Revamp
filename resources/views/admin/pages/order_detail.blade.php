@@ -547,48 +547,50 @@
                         color: #C4C4C4;
                     }
                 </style>
-                <div class="col-lg-12">
-                    <div class="w-100 ">
-                        <div class="card mt-3 ">
-                            <div class="d-flex flex-row justify-content-center pt-2 adiv text-white">
-                                <span class=" fw-bold ">Comment Here</span>
-                            </div>
-                            <div class="comment_data px-2 py-4">
-                                <!-- <div class="d-flex flex-row p-3">
-                                    <div class="bg-white mr-2 p-3">Hello and thankyou for visiting birdlymind. Please click the video above</div>
-                                    <img src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png" width="50" height="50">
-                                </div> -->
-                            </div>
-
-                            <div class="no_comment px-2 py-4">
-                                <div class="d-flex flex-row p-3">
-                                    <div class="bg-white mx-auto pt-2 pb-1 px-3">
-                                        <h4 class="text-center"> No comment yet! Against that order</h4>
+                    @if(!$user->hasRole('user'))
+                        <div class="col-lg-12">
+                            <div class="w-100 ">
+                                <div class="card mt-3 ">
+                                    <div class="d-flex flex-row justify-content-center pt-2 adiv text-white">
+                                        <span class=" fw-bold ">Comment Here</span>
                                     </div>
+                                    <div class="comment_data px-2 py-4">
+                                        <!-- <div class="d-flex flex-row p-3">
+                                            <div class="bg-white mr-2 p-3">Hello and thankyou for visiting birdlymind. Please click the video above</div>
+                                            <img src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png" width="50" height="50">
+                                        </div> -->
+                                    </div>
+
+                                    <div class="no_comment px-2 py-4">
+                                        <div class="d-flex flex-row p-3">
+                                            <div class="bg-white mx-auto pt-2 pb-1 px-3">
+                                                <h4 class="text-center"> No comment yet! Against that order</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <form class="row px-2  needs-validation" action="{{ route('admin.commentStore') }}"
+                                        id="commentform" method="POST" novalidate>
+                                        @csrf
+                                        <input type="hidden" id="comment_for_id" name="comment_for_id" value="{{$order['id']}}">
+                                        <input type="hidden" id="comment_for" name="comment_for" value="Orders">
+                                        <div class="form-group px-3 mb-2">
+                                            <textarea class="form-control tinymce-editor" rows="4" id="comment" name="comment"
+                                                    placeholder="Type your message" required></textarea>
+                                        </div>
+                                        <div class="form-group  mb-4 d-flex flex-row justify-content-end px-3">
+                                            <button type="submit" id="btn_comment" class="btn btn-primary bg-primary fw-bold">
+                                                <div class="spinner-border spinner-border-sm text-white d-none"
+                                                    id="spinner_coment"></div>
+                                                <span id="coment_btn">Add Comment </span>
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
 
-                            <form class="row px-2  needs-validation" action="{{ route('admin.commentStore') }}"
-                                  id="commentform" method="POST" novalidate>
-                                @csrf
-                                <input type="hidden" id="comment_for_id" name="comment_for_id" value="{{$order['id']}}">
-                                <input type="hidden" id="comment_for" name="comment_for" value="Orders">
-                                <div class="form-group px-3 mb-2">
-                                    <textarea class="form-control tinymce-editor" rows="4" id="comment" name="comment"
-                                              placeholder="Type your message" required></textarea>
-                                </div>
-                                <div class="form-group  mb-4 d-flex flex-row justify-content-end px-3">
-                                    <button type="submit" id="btn_comment" class="btn btn-primary bg-primary fw-bold">
-                                        <div class="spinner-border spinner-border-sm text-white d-none"
-                                             id="spinner_coment"></div>
-                                        <span id="coment_btn">Add Comment </span>
-                                    </button>
-                                </div>
-                            </form>
                         </div>
-                    </div>
-
-                </div>
+                    @endif
             </div>
         </section>
         <input type="hidden" id="user_id" value="{{auth()->user()->id}}">

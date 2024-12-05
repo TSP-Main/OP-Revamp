@@ -1,5 +1,5 @@
 @extends('admin.layouts.default')
-@section('title', 'Despensory Orders')
+@section('title', 'P.Med Orders')
 @section('content')
 <!-- main stated -->
 <main id="main" class="main">
@@ -338,12 +338,12 @@
     </style>
 
     <div class="pagetitle">
-        <h1><a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary-outline fw-bold "><i class="bi bi-arrow-left"></i> Back</a> | Despensory Orders</h1>
+        <h1><a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary-outline fw-bold "><i class="bi bi-arrow-left"></i> Back</a> | P.Med Orders</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item">Pages</li>
-                <li class="breadcrumb-item active">Despensory Orders</li>
+                <li class="breadcrumb-item active">P.Med Orders</li>
             </ol>
         </nav>
     </div>
@@ -354,7 +354,11 @@
 
                 <div class="card">
                     <div class="card-header mt-3 d-flex justify-content-between align-items-center">
-                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;"></div>
+                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
+                            <button id="batch-shipping" class="btn btn-primary" disabled>Batch Shipping</button>
+                            {{-- <button><a href="{{ route('admin.POMorders.exportCsv') }}" class="btn btn-primary me-1">Export CSV</a></button> --}}
+                        </div>
+                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
                         </div>
                         <div class="p-2">
                             <div id="container">
@@ -368,7 +372,8 @@
                                         <div>
                                             <ul>
                                                 <li><a href="#" class="link" id="select-all">Select All</a></li>
-                                                <li><a href="#" class="link" id="print-slips">Print Slips</a></li>
+                                                <li><a href="#" class="link" id="print-slips">Print Slips</a>
+                                                </li>
                                                 <li><a href="#" class="link" id="deselect-all">Unselect</a></li>
                                             </ul>
                                         </div>
@@ -567,6 +572,41 @@
             $('#shiping_order').val(order_id);
             $('#form_shiping_now').submit();
         });
+        // Enable/disable the batch shipping button based on checkbox selection
+    $(document).on('change', '.custom-checkbox', function() {
+        let isChecked = $('.custom-checkbox:checked').length > 0;
+        $('#batch-shipping').prop('disabled', !isChecked);
+    });
+
+    // Handle batch shipping button click
+    $(document).on('click', '#batch-shipping', function() {
+        let selectedIds = [];
+        $('.custom-checkbox:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length > 0) {
+            // Make an AJAX request to the batch shipping endpoint
+            $.ajax({
+                url: "{{ route('admin.batchShipping') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    order_ids: selectedIds
+                },
+                success: function(response) {
+                    alert('Batch shipping request successful!');
+                    window.location.reload(); // Reload to reflect changes
+                },
+                error: function(xhr, status, error) {
+                    alert('Error processing batch shipping.');
+                    console.error(error);
+                }
+            });
+        } else {
+            alert('Please select at least one order.');
+        }
+    });
     });
 </script>
 @endPushOnce

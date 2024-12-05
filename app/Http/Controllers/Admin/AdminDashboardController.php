@@ -2612,13 +2612,20 @@ class AdminDashboardController extends Controller
         
             if ($order) {
                 try {
-                    $order = $order->toArray();
-                    
-                    // Calculate weight and quantity
-                    $weightSum = array_sum(array_column($order['orderdetails'], 'weight'));
+
+                     $order = $order->toArray();
+                    $weightSum = 0;
+            
+                    // Calculate total weight using the product weight from the product table
+                    foreach ($order['orderdetails'] as $orderDetail) {
+                        $product = $orderDetail['product']; // Accessing the 'product' relation
+                        $weightSum += ($product['weight'] ?? 0) * $orderDetail['product_qty']; // Multiply by quantity
+                    }
+            
+                    // Update weight and quantity for the order
                     $order['weight'] = $weightSum !== 0 ? floatval($weightSum) : 1;
                     $order['quantity'] = array_sum(array_column($order['orderdetails'], 'product_qty'));
-        
+                    
                     // Prepare the payload for shipping
                     $payload = $this->make_shiping_payload($order);
                     $apiKey = env('ROYAL_MAIL_API_KEY');
