@@ -334,7 +334,7 @@
             </form>
             <h1 class="w-100">
                 <a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary-outline fw-bold ">
-                    <i class="bi bi-arrow-left"></i> Back</a> | All Orders
+                    <i class="bi bi-arrow-left"></i> Back</a> | OTC Order
                 <a href="{{ route('admin.addOrder') }}" class="btn fs-5 py-1 mx-2 btn-secondary fw-semibold bg-dark" style="float:right;"> <i class="bi bi-plus"></i>Create Order</a>
             </h1>
             <nav>
@@ -353,9 +353,13 @@
             <div class="col-12">
                 <div class="card w-100">
                     <div class="card-header mt-3 d-flex justify-content-between align-items-center">
-                        {{-- <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
-                        </div> --}}
-                        {{-- <div class="p-2">
+                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
+                            <button id="batch-shipping" class="btn btn-primary" disabled>Batch Shipping</button>
+                            {{-- <button><a href="{{ route('admin.POMorders.exportCsv') }}" class="btn btn-primary me-1">Export CSV</a></button> --}}
+                        </div>
+                        <div id="tbl_buttons" style="border: 0 !important; border-color: transparent !important;">
+                        </div>
+                        <div class="p-2">
                             <div id="container">
                                 <input type="text" class="text" placeholder="More Actions" disabled>
                                 <div id="menu-wrap">
@@ -375,7 +379,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div> --}}
+                        </div>
                     </div>
                     <div class="row mb-3 px-4">
                         <!-- Search Input Column -->
@@ -559,6 +563,41 @@
                 alert('Please select at least one order.');
             }
         });
+        // Enable/disable the batch shipping button based on checkbox selection
+    $(document).on('change', '.custom-checkbox', function() {
+        let isChecked = $('.custom-checkbox:checked').length > 0;
+        $('#batch-shipping').prop('disabled', !isChecked);
+    });
+
+    // Handle batch shipping button click
+    $(document).on('click', '#batch-shipping', function() {
+        let selectedIds = [];
+        $('.custom-checkbox:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length > 0) {
+            // Make an AJAX request to the batch shipping endpoint
+            $.ajax({
+                url: "{{ route('admin.batchShipping') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    order_ids: selectedIds
+                },
+                success: function(response) {
+                    alert('Batch shipping request successful!');
+                    window.location.reload(); // Reload to reflect changes
+                },
+                error: function(xhr, status, error) {
+                    alert('Error processing batch shipping.');
+                    console.error(error);
+                }
+            });
+        } else {
+            alert('Please select at least one order.');
+        }
+    });
     });
 </script>
 @endPushOnce

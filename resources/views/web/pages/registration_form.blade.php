@@ -88,21 +88,21 @@
                     @csrf
                     <div class="row">
                         <div class="col-lg-6">
-                            <input type="text" name="name" placeholder="Full Name" value="{{ old('name') }}">
+                            <input type="text" name="name" placeholder="Full Name" value="{{ old('name') }}" required>
                             <div class="invalid-feedback">Please enter your name!</div>
                             @error('name')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
 
                             <input type="number" id="phone" name="phone" placeholder="Phone Number"
-                            value="{{ old('phone') }}" minlength="10" maxlength="15">
+                            value="{{ old('phone') }}" minlength="10" maxlength="15" required>
 
 
                             <div class="invalid-feedback">Please enter Phone Number!</div>
                             @error('phone')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
-                            <select name="gender" id="gender" class="form-select">
+                            <select name="gender" id="gender" class="form-select" required>
                                 <option value=""> Select Gender</option>
                                 <option {{ old('gender') == 'male' ? 'selected' : ''}} value="male"> Male</option>
                                 <option {{ old('gender') == 'female' ? 'selected' : ''}} value="female"> Female</option>
@@ -113,7 +113,7 @@
                             @enderror
                         </div>
                         <div class="col-lg-6">
-                            <input type="email" name="email" placeholder="Email*" value="{{ old('email') }}">
+                            <input type="email" name="email" placeholder="Email*" value="{{ old('email') }}" required>
                             <div class="invalid-feedback">Please enter your email!</div>
                             @error('email')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
@@ -160,7 +160,7 @@
                                 <p style="color: #3d7de8 ;">* Make a strong password</p>
                             </div>
                             <div class="input-container">
-                                <input type="password" id="password" name="password" placeholder="Password*" value="{{ old('password') }}">
+                                <input type="password" id="password" name="password" placeholder="Password*" value="{{ old('password') }}" required>
                                 <span class="toggle-password" id="togglePassword">
                                     <i class="fas fa-eye" id="eyeIcon"></i>
                                 </span>
@@ -169,7 +169,7 @@
                                 <p style="color: #3d7de8 ;">* Confirm password</p>
                             </div>
                             <div class="input-container">
-                                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Confirm Password*" value="{{ old('password') }}">
+                                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Confirm Password*" value="{{ old('password') }}" required>
                                 <span class="toggle-password" id="toggleConfirmPassword">
                                     <i class="fas fa-eye" id="confirmEyeIcon"></i>
                                 </span>
@@ -191,7 +191,7 @@
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <input type="text" name="address" placeholder="address" value="{{ old('address') }}">
+                            <input type="text" name="address" placeholder="address" value="{{ old('address') }}" required>
                             <div class="invalid-feedback">Please enter your address!</div>
                             @error('address')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
@@ -199,28 +199,28 @@
                         </div>
 
                         <div class="col-md-6">
-                            <input type="text" name="state" placeholder="Town" value="{{ old('state') }}">
+                            <input type="text" name="state" placeholder="Town" value="{{ old('state') }}" required>
                             <div class="invalid-feedback">Please enter your state!</div>
                             @error('state')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <input type="text" name="city" placeholder="city" value="{{ old('city') }}">
+                            <input type="text" name="city" placeholder="city" value="{{ old('city') }}" required>
                             <div class="invalid-feedback">Please enter your city!</div>
                             @error('city')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <input type="text" name="zip_code" placeholder="Postal Code" value="{{ old('zip_code') }}">
+                            <input type="text" name="zip_code" placeholder="Postal Code" value="{{ old('zip_code') }}" required>
                             <div class="invalid-feedback">Please enter your postal code!</div>
                             @error('zip_code')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <input type="text" name="country" placeholder="country" value="{{ old('country') }}">
+                            <input type="text" name="country" placeholder="country" value="{{ old('country') }}" required>
                             <div class="invalid-feedback">Please enter your country!</div>
                             @error('country')
                             <div class="text-danger "> &nbsp; * {{ $message }}</div>
@@ -276,22 +276,43 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
 <script>
-    document.getElementById('togglePassword').addEventListener('click', function () {
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        eyeIcon.classList.toggle('fa-eye');
-        eyeIcon.classList.toggle('fa-eye-slash');
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+    })();
+
+    document.getElementById("togglePassword").addEventListener("click", function() {
+        var password = document.getElementById("password");
+        var icon = document.getElementById("eyeIcon");
+        if (password.type === "password") {
+            password.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            password.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
+        }
     });
 
-    document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
-        const confirmPasswordInput = document.getElementById('password_confirmation');
-        const confirmEyeIcon = document.getElementById('confirmEyeIcon');
-        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmPasswordInput.setAttribute('type', type);
-        confirmEyeIcon.classList.toggle('fa-eye');
-        confirmEyeIcon.classList.toggle('fa-eye-slash');
+    document.getElementById("toggleConfirmPassword").addEventListener("click", function() {
+        var confirmPassword = document.getElementById("password_confirmation");
+        var icon = document.getElementById("confirmEyeIcon");
+        if (confirmPassword.type === "password") {
+            confirmPassword.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            confirmPassword.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
+        }
     });
 </script>
 @endPushOnce
