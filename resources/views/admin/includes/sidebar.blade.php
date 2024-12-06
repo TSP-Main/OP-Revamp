@@ -232,7 +232,7 @@
                             </a>
                         </li>
                     @endif
-                    @if(!$user->hasRole('pharmacy'))
+                    @if(!auth()->user()->hasRole('pharmacy'))
                         @if(auth()->user()->hasPermissionTo('doctors_approval'))
                             <li>
                                 <a class="{{(request()->routeIs(['admin.doctorsApproval'])) ? 'nav-link ' : ''}}"
@@ -258,7 +258,7 @@
                             </a>
                         </li>
                     @endif
-                    @if(!$user->hasRole('pharmacy'))
+                    @if(!auth()->user()->hasRole('pharmacy'))
                         @if(auth()->user()->hasPermissionTo('dispensary_approval'))
                         <li>
                             <a class="{{(request()->routeIs(['admin.otcorders'])) ? 'nav-link ' : ''}}"
@@ -276,7 +276,7 @@
                             </a>
                         </li>
                     @endif
-                    @if(!$user->hasRole('pharmacy'))
+                    @if(!auth()->user()->hasRole('pharmacy'))
                         @if(auth()->user()->hasPermissionTo('orders_unshipped'))
                             <li>
                                 <a class="{{(request()->routeIs(['admin.ordersShippingFail'])) ? 'nav-link ' : ''}}"
@@ -499,7 +499,7 @@
         @endif
 
         <!-------------------------- SOP tabs work start ------------------------------->
-        @if(!$user->hasRole('user'))    
+        @if(auth()->user()->hasRole('user'))
           <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapsed'}} "
                 data-bs-target="#siderbar-users" data-bs-toggle="collapse">
