@@ -140,7 +140,7 @@
 <script>
   let formUpdated = false; // Flag to track if the form has been updated
 
-function openReorderModal(orderId, orderDetails) {
+  function openReorderModal(orderId, orderDetails) {
     $('#orderId').val(orderId);
     $('#quantityFields').empty(); // Clear previous quantity fields
     $('#fileUploadAlert').addClass('d-none'); // Hide the alert initially
@@ -175,18 +175,27 @@ function openReorderModal(orderId, orderDetails) {
         let selectedVariantId = detail.variant_id;  // Track the selected variant ID
         let selectedVariantName = ''; // To store the name of the selected variant
 
-        if (detail.product.variants.length > 0) {
-            variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
-            variantSelect = `<label for="variant-${detail.id}"><strong>Select Variant</strong></label>` + variantSelect;
+                if (detail.product.variants.length > 0) {
+                    variantSelect = `<div class="form-group">
+                                    <label for="variant-${detail.id}" class="form-label"><strong>Select Variant</strong></label>
+                                    <div class="dropdown">
+                                    <!-- Custom styled select -->
+                                    <select class="form-control custom-select-dropdown" id="variant-${detail.id}">
+                                        <option value="" disabled ${selectedVariantId ? '' : 'selected'}>Please Select the Variant</option>`;
 
-            detail.product.variants.forEach(function(variant) {
-                let selectedAttribute = (variant.id == selectedVariantId) ? 'selected' : '';
-                variantSelect += `<option value="${variant.id}" data-price="${variant.price}" ${selectedAttribute}>${variant.value} - £${variant.price}</option>`;
-                if (variant.id == selectedVariantId) {
-                    selectedVariantName = variant.value; 
-                }
-            });
-            variantSelect += `</select>`;
+                                detail.product.variants.forEach(function(variant) {
+                                    let selectedAttribute = (variant.id == selectedVariantId) ? 'selected' : '';
+                                    variantSelect += `<option value="${variant.id}" data-price="${variant.price}" ${selectedAttribute}>${variant.value} - £${variant.price}</option>`;
+                                    if (variant.id == selectedVariantId) {
+                                        selectedVariantName = variant.value; 
+                                    }
+                                });
+
+                              variantSelect += `</select>
+                                <!-- Arrow icon for visual dropdown -->
+                                <span class="dropdown-arrow">&#9660;</span>
+                                      </div>
+                                  </div>`;
         }
 
         $('#quantityFields').append(`
@@ -205,7 +214,7 @@ function openReorderModal(orderId, orderDetails) {
                     <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" id="qty-${detail.id}" style="width: 70px;">
                 </div>
                 <label>Counsultancy:</label>
-                ${consultationLink ? `<button onclick="window.location.href='${consultationLink}'; return false;" class="btn btn-danger fw-bold small" style="margin-left: 10px;">Update</button>` : ''}
+                ${consultationLink ? `<button id= "updatebtn" onclick="window.location.href='${consultationLink}'; return false;" class="btn fw-bold small" style="margin-left: 10px;"></button>` : ''}
             </div>
         `);
     });
@@ -223,16 +232,23 @@ function openReorderModal(orderId, orderDetails) {
     reorderModal.show();
 }
 
+
 function updateReorderButtonState(childCategory19Products) {
     const reorderButton = $('#reorderBtn');
-
+    const updateButton = $('#updatebtn')
     // Disable the button if any product belongs to child category 19 and the form hasn't been updated
     const isAnyCategory19ProductChecked = childCategory19Products.some(productId => $(`#product-${productId}`).is(':checked'));
 
     if (isAnyCategory19ProductChecked && !formUpdated) {
         reorderButton.css('background-color', 'red').prop('disabled', true); // Disable button for category 19 products
+        updateButton.css('background-color', 'red'); // Disable button for category 19 products
+        updateButton.text('Update'); 
+        updateButton.css('color', 'white'); 
     } else {
         reorderButton.css('background-color', 'green').prop('disabled', false); // Enable button when form is updated
+        updateButton.css('background-color', 'green');
+        updateButton.text('Updated');  // Enable button when form is updated
+        updateButton.css('color', 'white'); 
     }
 }
 
