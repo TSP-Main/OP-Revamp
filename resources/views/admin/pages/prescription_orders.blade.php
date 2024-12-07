@@ -175,31 +175,32 @@
         let selectedVariantId = detail.variant_id;  // Track the selected variant ID
         let selectedVariantName = ''; // To store the name of the selected variant
 
-                if (detail.product.variants.length > 0) {
-                    variantSelect = `<div class="form-group">
-                                    <label for="variant-${detail.id}" class="form-label"><strong>Select Variant</strong></label>
-                                    <div class="dropdown">
-                                    <!-- Custom styled select -->
-                                    <select class="form-control custom-select-dropdown" id="variant-${detail.id}">
-                                        <option value="" disabled ${selectedVariantId ? '' : 'selected'}>Please Select the Variant</option>`;
+        if (detail.product.variants.length > 0) {
+    variantSelect = `<div class="form-group">
+                        <label for="variant-${detail.id}" class="form-label"><strong>Select Variant</strong></label>
+                        <div class="dropdown">
+                        <!-- Custom styled select -->
+                        <select class="form-control custom-select-dropdown" id="variant-${detail.id}">
+                            <!-- Default "Please Select the Variant" option -->
+                            <option value="" disabled selected>Please Select the Variant</option>`;
 
-                                detail.product.variants.forEach(function(variant) {
-                                    let selectedAttribute = (variant.id == selectedVariantId) ? 'selected' : '';
-                                    variantSelect += `<option value="${variant.id}" data-price="${variant.price}" ${selectedAttribute}>${variant.value} - £${variant.price}</option>`;
-                                    if (variant.id == selectedVariantId) {
-                                        selectedVariantName = variant.value; 
-                                    }
-                                });
+    detail.product.variants.forEach(function(variant) {
+        // Add each variant as an option in the dropdown
+        variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.value} - £${variant.price}</option>`;
+    });
 
-                              variantSelect += `</select>
-                                <!-- Arrow icon for visual dropdown -->
-                                <span class="dropdown-arrow">&#9660;</span>
-                                      </div>
-                                  </div>`;
-        }
+    variantSelect += `</select>
+                    <!-- Arrow icon for visual dropdown -->
+                    <span class="dropdown-arrow">&#9660;</span>
+                    </div>
+                </div>`;
+
+
+}
+
 
         $('#quantityFields').append(`
-            <input type="checkbox" id="product-${detail.id}" checked style="transform: scale(1.5); margin-bottom: 7px;">
+            <input type="checkbox" id="product-${detail.id}" style="transform: scale(1.5); margin-bottom: 7px;">
             <div class="mb-3">
                 <div style="background-color: #C0D1EC; padding: 10px; border-radius: 5px;">
                     <label for="product-${detail.id}">
@@ -237,7 +238,7 @@ function updateReorderButtonState(childCategory19Products) {
     const reorderButton = $('#reorderBtn');
     const updateButton = $('#updatebtn')
     // Disable the button if any product belongs to child category 19 and the form hasn't been updated
-    const isAnyCategory19ProductChecked = childCategory19Products.some(productId => $(`#product-${productId}`).is(':checked'));
+    const isAnyCategory19ProductChecked = childCategory19Products.some(productId => $(`#product-${productId}`));
 
     if (isAnyCategory19ProductChecked && !formUpdated) {
         reorderButton.css('background-color', 'red').prop('disabled', true); // Disable button for category 19 products
@@ -322,4 +323,3 @@ function confirmReorder() {
 }
 </script>
 @endPushOnce
-
