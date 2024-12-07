@@ -123,7 +123,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn" style="background-color: blue; color: white;" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn" style="background-color: green; color: white;" id="reorderBtn" onclick="confirmReorder()">Reorder</button>
+                <button type="button" class="btn" style="color: white;" id="reorderBtn" onclick="confirmReorder()">Reorder</button>
             </div>
         </div>
     </div>
@@ -138,145 +138,172 @@
 
 @pushOnce('scripts')
 <script>
-    function openReorderModal(orderId, orderDetails) {
-        $('#orderId').val(orderId);
-        $('#quantityFields').empty(); // Clear previous quantity fields
-        $('#fileUploadAlert').addClass('d-none'); // Hide the alert initially
+  let formUpdated = false; // Flag to track if the form has been updated
 
-        let requiresFileUpload = false;
+function openReorderModal(orderId, orderDetails) {
+    $('#orderId').val(orderId);
+    $('#quantityFields').empty(); // Clear previous quantity fields
+    $('#fileUploadAlert').addClass('d-none'); // Hide the alert initially
 
-        let showAlert = true;  // Default behavior is to show the alert
-        @if(session('modal_open') && session('order_id'))
-            let modalOpenOrderId = '{{ session('order_id') }}';
-            if (modalOpenOrderId == orderId) {
-                showAlert = false; 
+    let requiresFileUpload = false;
+    let showAlert = true;  // Default behavior is to show the alert
+
+    @if(session('modal_open') && session('order_id'))
+        let modalOpenOrderId = '{{ session('order_id') }}';
+        if (modalOpenOrderId == orderId) {
+            showAlert = false;
+            // If session indicates form status is 'updated', change button color and enable it
+            if ('{{ session('form_status') }}' === 'updated') {
+                formUpdated = true; // Set formUpdated to true based on session
             }
-        @endif
+        }
+    @endif
 
-        orderDetails.forEach(function(detail) {
-            // Check if the product belongs to child category 19
-            if (detail.product.child_category === 19) {
-                requiresFileUpload = true; // Set flag if file upload is required
-            }
+    let childCategory19Products = [];
 
-            const consultationLink = (detail.consultation_type === 'premd' || detail.consultation_type === 'pmd' || detail.consultation_type === 'premd/Reorder') ? 
-                `{{ route('admin.consultationFormEdit', ['odd_id' => '__id__']) }}`.replace('__id__', btoa(detail.id)) : '';
+    orderDetails.forEach(function(detail) {
+        // Check if the product belongs to child category 19
+        if (detail.product.child_category === 19) {
+            requiresFileUpload = true; // Set flag if file upload is required
+            childCategory19Products.push(detail.id); // Add product ID to list for category 19
+        }
 
-            // Handle variants
-            let variantSelect = '';
-            let variantValue = '';  // This will store the variant value
+        const consultationLink = (detail.consultation_type === 'premd' || detail.consultation_type === 'pmd' || detail.consultation_type === 'premd/Reorder') ? 
+            `{{ route('admin.consultationFormEdit', ['odd_id' => '__id__']) }}`.replace('__id__', btoa(detail.id)) : '';
 
-            if (detail.product.variants.length > 0) {
-                variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
-                variantSelect = `<label for="variant-${detail.id}"><strong>Select Variant</strong></label>` + variantSelect;
+        let variantSelect = '';
+        let selectedVariantId = detail.variant_id;  // Track the selected variant ID
+        let selectedVariantName = ''; // To store the name of the selected variant
 
-                detail.product.variants.forEach(function(variant) {
-                    variantSelect += `<option value="${variant.id}" data-price="${variant.price}">${variant.value} - £${variant.price}</option>`;
-                    if (!variantValue) {  // Set the value for the first variant
-                        variantValue = variant.value;
-                    }
-                });
-                variantSelect += `</select>`;
-            }
+        if (detail.product.variants.length > 0) {
+            variantSelect = `<select class="form-control" id="variant-${detail.id}">`;
+            variantSelect = `<label for="variant-${detail.id}"><strong>Select Variant</strong></label>` + variantSelect;
 
-            $('#quantityFields').append(`
-        
-           <input type="checkbox" id="product-${detail.id}" checked style="transform: scale(1.5); margin-bottom: 7px;">
-               <div class="mb-3">
-                    <div style="background-color: #C0D1EC; padding: 10px; border-radius: 5px;">
-                        <label for="product-${detail.id}">
-                            <p style="color: #4A4A4A; font-size: 20px;">${detail.product.title}</p>
-                            ${variantValue ? ` <strong style="color: #4A4A4A;">Variant:</strong> ${variantValue}` : ''}
-                        </label>
-                    </div>
-<br>
-                    ${variantSelect}
-                    <div class="d-flex align-items-center mt-3">
-                        <label for="qty-${detail.id}" style="font-size: 16px; margin-right: 10px;">Quantity:</label>
-                        <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" id="qty-${detail.id}" style="width: 70px;">
-                    </div>
-                    ${consultationLink ? `<a href="${consultationLink}" class="btn btn-link fw-bold small" style="margin-left: 10px;">Consultation Edit</a>` : ''}
+            detail.product.variants.forEach(function(variant) {
+                let selectedAttribute = (variant.id == selectedVariantId) ? 'selected' : '';
+                variantSelect += `<option value="${variant.id}" data-price="${variant.price}" ${selectedAttribute}>${variant.value} - £${variant.price}</option>`;
+                if (variant.id == selectedVariantId) {
+                    selectedVariantName = variant.value; 
+                }
+            });
+            variantSelect += `</select>`;
+        }
+
+        $('#quantityFields').append(`
+            <input type="checkbox" id="product-${detail.id}" checked style="transform: scale(1.5); margin-bottom: 7px;">
+            <div class="mb-3">
+                <div style="background-color: #C0D1EC; padding: 10px; border-radius: 5px;">
+                    <label for="product-${detail.id}">
+                        <p style="color: #4A4A4A; font-size: 20px;">${detail.product.title}</p>
+                        ${selectedVariantName ? `<strong style="color: #4A4A4A;">Previously Selected Variant:</strong> ${selectedVariantName}` : ''}
+                    </label>
                 </div>
-            `);
-        });
+                <br>
+                ${variantSelect}
+                <div class="d-flex align-items-center mt-3">
+                    <label for="qty-${detail.id}" style="font-size: 16px; margin-right: 10px;">Quantity:</label>
+                    <input type="number" class="form-control" name="qty[${detail.id}]" value="${detail.product_qty}" min="1" id="qty-${detail.id}" style="width: 70px;">
+                </div>
+                <label>Counsultancy:</label>
+                ${consultationLink ? `<button onclick="window.location.href='${consultationLink}'; return false;" class="btn btn-danger fw-bold small" style="margin-left: 10px;">Update</button>` : ''}
+            </div>
+        `);
+    });
 
-        // If any product requires file upload (category 19), show the warning alert and disable the reorder button
-        if (requiresFileUpload && showAlert) {
-            $('#fileUploadAlert').removeClass('d-none'); // Show the alert
-        }
-
-        // Show the modal with Bootstrap's modal API
-        const reorderModal = new bootstrap.Modal(document.getElementById('reorderModal'));
-        reorderModal.show();
+    // If any product requires file upload (category 19), show the warning alert
+    if (requiresFileUpload && showAlert) {
+        $('#fileUploadAlert').removeClass('d-none'); // Show the alert
     }
-    function confirmReorder() {
-        const orderId = $('#orderId').val();
-        const formData = $('#reorderForm').serializeArray();
-        const quantities = {};
-        const selectedProducts = [];
 
-        formData.forEach(field => {
-            if (field.name.startsWith('qty')) {
-                const productId = field.name.split('[')[1].slice(0, -1);
-                const isChecked = $(`#product-${productId}`).is(':checked');
-                if (isChecked) {
-                    quantities[productId] = {
-                        qty: field.value,
-                        variant_id: $(`#variant-${productId}`).val() // Get the selected variant ID
-                    };
-                    selectedProducts.push(productId);
-                }
-            }
-        });
+    // Update the reorder button's state based on the session data
+    updateReorderButtonState(childCategory19Products);
 
-        if (selectedProducts.length === 0) {
-            alert('Please select at least one product to reorder.');
-            return;
-        }
+    // Show the modal with Bootstrap's modal API
+    const reorderModal = new bootstrap.Modal(document.getElementById('reorderModal'));
+    reorderModal.show();
+}
 
-        // Disable the button to prevent duplicate submissions
-        const reorderButton = $('.modal-footer button:last-child'); // Assuming this is the reorder button
-        reorderButton.prop('disabled', true).text('Processing...');
+function updateReorderButtonState(childCategory19Products) {
+    const reorderButton = $('#reorderBtn');
 
-        $.ajax({
-            url: '{{ route('cart.reorder') }}',
-            type: 'POST',
-            data: {
-                order_id: orderId,
-                quantities: quantities,
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            dataType: 'json',
-            success: function(response) {
-                if (response.status) {
-                    $('#tbl_data').hide(); // Hide the table
+    // Disable the button if any product belongs to child category 19 and the form hasn't been updated
+    const isAnyCategory19ProductChecked = childCategory19Products.some(productId => $(`#product-${productId}`).is(':checked'));
 
-                    const iframe = $('<iframe>', {
-                        src: response.redirect,
-                        frameborder: '0',
-                        style: 'border: none; width: 100%; height: 100vh;' 
-                    });
-                    
-                    $('#reorderModal').modal('hide'); // Hide the modal
-                    $('#iframeContainer').html(iframe); // Display iframe in the container
-                    
-                    // Scroll to iframe
-                    $('html, body').animate({
-                        scrollTop: $('#iframeContainer').offset().top
-                    }, 'slow');
-                } else {
-                    alert('Failed to reorder. ' + response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                alert('An error occurred. Please try again.');
-            },
-            complete: function() {
-                // Re-enable the button after the request completes
-                reorderButton.prop('disabled', false).text('Reorder');
-            }
-        });
+    if (isAnyCategory19ProductChecked && !formUpdated) {
+        reorderButton.css('background-color', 'red').prop('disabled', true); // Disable button for category 19 products
+    } else {
+        reorderButton.css('background-color', 'green').prop('disabled', false); // Enable button when form is updated
     }
+}
+
+function confirmReorder() {
+    const orderId = $('#orderId').val();
+    const formData = $('#reorderForm').serializeArray();
+    const quantities = {};
+    const selectedProducts = [];
+
+    formData.forEach(field => {
+        if (field.name.startsWith('qty')) {
+            const productId = field.name.split('[')[1].slice(0, -1);
+            const isChecked = $(`#product-${productId}`).is(':checked');
+            if (isChecked) {
+                quantities[productId] = {
+                    qty: field.value,
+                    variant_id: $(`#variant-${productId}`).val() // Get the selected variant ID
+                };
+                selectedProducts.push(productId);
+            }
+        }
+    });
+
+    if (selectedProducts.length === 0) {
+        alert('Please select at least one product to reorder.');
+        return;
+    }
+
+    // Disable the button to prevent duplicate submissions
+    const reorderButton = $('.modal-footer button:last-child');
+    reorderButton.prop('disabled', true).text('Processing...');
+
+    $.ajax({
+        url: '{{ route('cart.reorder') }}',
+        type: 'POST',
+        data: {
+            order_id: orderId,
+            quantities: quantities,
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.status) {
+                $('#tbl_data').hide(); // Hide the table
+
+                const iframe = $('<iframe>', {
+                    src: response.redirect,
+                    frameborder: '0',
+                    style: 'border: none; width: 100%; height: 100vh;' 
+                });
+
+                $('#reorderModal').modal('hide'); // Hide the modal
+                $('#iframeContainer').html(iframe); // Display iframe in the container
+
+                // Scroll to iframe
+                $('html, body').animate({
+                    scrollTop: $('#iframeContainer').offset().top
+                }, 'slow');
+            } else {
+                alert('Failed to reorder. ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('An error occurred. Please try again.');
+        },
+        complete: function() {
+            // Re-enable the button after the request completes
+            reorderButton.prop('disabled', false).text('Reorder');
+        }
+    });
+}
 </script>
 @endPushOnce
 
