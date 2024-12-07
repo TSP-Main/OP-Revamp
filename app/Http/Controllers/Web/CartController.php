@@ -108,6 +108,7 @@ class CartController extends Controller
                 'high_risk' => $product->high_risk,
                 'max_buy' => $product->max_buy,
                 'min_buy' => $product->min_buy,
+               // 'product_template' => $product->product_template,
 
             ]);
         } else {
@@ -117,6 +118,7 @@ class CartController extends Controller
                 'high_risk' => $product->high_risk,
                 'max_buy' => $product->max_buy,
                 'min_buy' => $product->min_buy,
+                //'product_template' => $product->product_template,
             ]);
         }
 
@@ -126,6 +128,7 @@ class CartController extends Controller
             //     'product_title' => $product->title,
             //     'quantity' => $quantity,
             //     'high_risk' => $product->high_risk,
+            //     'product_template' => $product->product_template,
             //     'cart_content' => Cart::content()
             // ]);
         
@@ -374,11 +377,20 @@ class CartController extends Controller
                         $variant = ProductVariant::find($variantId);
                         $variantPrice = $variant ? $variant->price : null;
                     }
-    
+            
                     // Calculate total amount using the variant price or the product's price
                     $priceToUse = $variantPrice ?? $detail->product->price;
                     $totalAmount += $priceToUse * $quantities[$detail->id]['qty'];
-    
+            
+                    // Check the previous consultation type
+                    $previousConsultationType = $detail->consultation_type;
+            
+                    // If the previous consultation type is 'premd' or 'premd/Reorder', set it to 'premd/Reorder'
+                    $consultationType = (in_array($previousConsultationType, ['premd', 'premd/Reorder'])) 
+                        ? 'premd/Reorder' 
+                        : $previousConsultationType;
+            
+                    // Create the new order detail
                     OrderDetail::create([
                         'order_id' => $newOrder->id,
                         'product_id' => $detail->product_id,
@@ -386,14 +398,14 @@ class CartController extends Controller
                         'weight' => $detail->weight,
                         'product_qty' => $quantities[$detail->id]['qty'], // Use the selected quantity
                         'generic_consultation' => $detail->generic_consultation ?? null,
-                        'product_consultation' => $detail->product_consultation ?? null,
-                        'consultation_type' => 'premd/Reorder',
+                        'product_consultation' => $detail->product_consultation ?? null, // Keep the same as before
+                        'consultation_type' => $consultationType, // Set the consultation type based on the check
                         'status' => '1',
                         'created_by' => auth()->id(),
                     ]);
                 }
             }
-    
+            
         
                 $shippingCost = $existingOrder->shippingdetails->cost;
             

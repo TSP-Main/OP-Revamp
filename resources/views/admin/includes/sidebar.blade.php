@@ -499,7 +499,7 @@
         @endif
 
         <!-------------------------- SOP tabs work start ------------------------------->
-        @if(auth()->user()->hasRole('user'))
+        @if(!auth()->user()->hasRole('user'))
           <li class="nav-item">
                 <a class="nav-link {{(request()->routeIs(['admin.sops','admin.addSOP'])) ? '' : 'collapsed'}} "
                 data-bs-target="#siderbar-users" data-bs-toggle="collapse">
