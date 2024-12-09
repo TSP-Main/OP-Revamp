@@ -1,54 +1,82 @@
-<!doctype html>
-<html class="no-js" lang="eng">
+@extends('web.layouts.default')
+@section('title', 'Thank You')
+@section('content')
 
-<head>
-    <!-- Include any necessary head elements here -->
-    <title>Thank You | Online Pharmacy 4U</title>
-    <!-- Include other necessary CSS/JS here -->
-</head>
+<div class="container" style="max-width: 1000px; margin: auto; font-family: Arial, sans-serif; padding: 20px; color: #333;">
+    <!-- Order Confirmation Header -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #577BBF;">Thank you, {{ $name }}!</h1>
+        <p>Your order <strong style="color: #577BBF;">#{{ $order->id }}</strong> is confirmed.</p>
+        <p>You’ll receive a confirmation email shortly.</p>
+    </div>
 
-<body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N89QLBLT"
-        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <!-- Main Section (Flex Layout) -->
+    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+        <!-- Left Section: Order Summary -->
+        <div style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #F9FAFD;">
+            <h3 style="color: #577BBF;">Order Summary</h3>
+            <p><strong>Total Amount:</strong> ${{ $order->total_ammount }}</p>
+            <h3 style="color: #577BBF;">Shipping Information</h3>
+            <p><strong>Name:</strong> {{ $shippingDetails['firstName'] }} {{ $shippingDetails['lastName'] }}</p>
+            <p><strong>Email:</strong> {{ $shippingDetails['email'] }}</p>
+            <p><strong>Phone:</strong> {{ $shippingDetails['phone'] }}</p>
+            <p><strong>Address:</strong> {{ $shippingDetails['address'] }} {{ $shippingDetails['address2'] }}</p>
+            <p><strong>City:</strong> {{ $shippingDetails['city'] }}</p>
+            <p><strong>State:</strong> {{ $shippingDetails['state'] }}</p>
+            <p><strong>Zip Code:</strong> {{ $shippingDetails['zip_code'] }}</p>
+            <p><strong>Shipping Method:</strong> {{ $shippingDetails['method'] }}</p>
+            <p><strong>Shipping Cost:</strong> ${{ $shippingDetails['cost'] }}</p>
+        </div>
 
-    <!-- Body content -->
-    <div class="d-none fifththanks">
-        <div class="content">
-            <div class="wrapper-1">
-                <div class="wrapper-2">
-                    <h1 class="text-thank">Thank you!</h1>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Magnam earum molestiae natus architecto! Nam, eaque.</p>
-                    <button class="go-home">Go home</button>
+        <!-- Right Section: Shipping Information -->
+        <div style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #F9FAFD;">
+            <div style="margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #FFFFFF;">
+                <h3 style="margin-bottom: 20px; color: #1AA7C0;">Products in Your Order</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    @foreach ($orderDetails as $detail)
+                    <!-- Product Card -->
+                    <div style="flex: 1 1 calc(50% - 20px); display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #F9FAFD;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <!-- Product Image -->
+                            <img src="/storage/{{ $detail['product']['main_image'] }}" alt="{{ $detail['product']['title'] }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+                            
+                            <!-- Product Details -->
+                            <div>
+                                <p style="margin: 0; font-size: 16px; font-weight: bold; color: #577BBF;">{{ $detail['product']['title'] }}</p>
+                                <p style="margin: 5px 0 0; font-size: 14px;">Quantity: x{{ $detail['product_qty'] }}</p>
+                                <p style="margin: 5px 0 0; font-size: 14px;">Price: ${{ $detail['variant']['price'] ?? $detail['product']['price'] }}</p>
+                                
+                                @if (isset($detail['variant']))
+                                <p style="margin: 5px 0 0; font-size: 14px;">Variant: {{ $detail['variant']['title'] }} - {{ $detail['variant']['value'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+        
+                        <!-- Individual Product Total -->
+                        <p style="margin: 0; font-size: 16px; font-weight: bold; text-align: right; color: #1AA7C0;">${{ $detail['product_qty'] * $detail['variant']['price'] ?? $detail['product']['price']  }}</p>
+                    </div>
+                    @endforeach
                 </div>
-                <div class="footer-like">
-                    <p>Email not received? <a href="#">Click here to send again</a></p>
+        
+                <!-- Order Totals -->
+                <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px; text-align: right;">
+                    {{-- <p style="margin: 5px 0; font-size: 16px;"><strong>Subtotal:</strong> ${{ $order->subtotal }}</p> --}}
+                    <p style="margin: 5px 0; font-size: 16px;"><strong>Shipping:</strong> ${{ $shippingDetails['cost'] }}</p>
+                    {{-- <p style="margin: 5px 0; font-size: 16px;"><strong>Estimated Taxes:</strong> ${{ $order->taxes }}</p> --}}
+                    <h3 style="margin: 10px 0; font-size: 18px; font-weight: bold; color: #577BBF;"><strong>Total:</strong> ${{ $order->total_ammount }}</h3>
                 </div>
             </div>
         </div>
     </div>
+    <a href="/" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background-color: #1AA7C0; color: #fff; font-size: 14px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        Continue Shopping
+    </a>
+</div>
 
-    <!-- Include scripts -->
-    @include('web.includes.script')
+@stop
 
-    <!-- Push transaction data to dataLayer -->
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            'ecommerce': {
-                'purchase': {
-                    'actionField': {
-                        'id': '{{ $transactionId }}', // This is the transaction ID from the controller
-                        'revenue': '{{ $transactionTotal }}', // This is the total transaction value
-                        'currency': '{{ $currency }}' // The currency of the transaction
-                    }
-                }
-            }
-        });
-    </script>
-
-    @stack('scripts')
-</body>
-
-</html>
+@pushOnce('scripts')
+<script>
+    // Additional interactive functionalities (if needed)
+</script>
+@endPushOnce
