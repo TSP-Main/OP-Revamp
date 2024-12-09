@@ -267,9 +267,9 @@
                                             <p>{{ \Carbon\Carbon::parse($order['created_at'])->format('M, d, Y - H:i') }}</p>
                                         </div>
                                         <!-- Download GPA Button -->
-                                        @if($order['status'] != 'Not_Approved' && $order['status'] != 'Received' && !$user->hasRole('user') && $order['order_for'] != 'desponsory')
+                                        @if($order['status'] != 'Not_Approved' && $order['status'] != 'Received' && !$user->hasRole('user') && $order['order_for'] != 'despensory')
                                         <button style="margin-right: 10px; background-color:#146c43;" type="button" data-id="{{ $order['id'] }}" class="btn btn-success rounded-pill text-center download_gpa">
-                                            <i class="bi bi-download"></i> GPA Letter
+                                            <i class="bi bi-download"></i> GP Letter
                                         </button>
                                         @endif
                                     </div>

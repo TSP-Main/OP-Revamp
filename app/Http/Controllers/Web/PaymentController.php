@@ -186,6 +186,18 @@ class PaymentController extends Controller
                                 ],
                         ];
 
+                        // Check if all products in the order have product_template = 3
+                        $allProductsAreTemplate3 = true;
+                        foreach ($request->order_details['product_template'] as $template) {
+                            if ($template != '3') {
+                                $allProductsAreTemplate3 = false;
+                                break;
+                            }
+                        }
+
+                        // Update order status based on product_template values
+                        $orderStatus = $allProductsAreTemplate3 ? 'Approved' : 'Received';
+
                         $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
                         $responseData = json_decode($response, true);
 
@@ -204,7 +216,7 @@ class PaymentController extends Controller
                             Order::where('id', $order->id)->update([
                                 'payment_id' => $payment_init->id,
                                 'payment_status' => 'Paid',
-                                'status' =>         'Received',
+                                'status' =>         $orderStatus ,
                             ]);
                             if ($payment_init) {
                                 $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
@@ -415,82 +427,103 @@ class PaymentController extends Controller
     }
 
     // response example  url : https://onlinepharmacy-4u.co.uk/Completed-order?t=8cbe1c22-08bf-46f7-815a-b4edf9c76c22&s=7217646205950618&lang=en-GB&eventId=0&eci=1
-    public function completedOrder(Request $request)
-    {
-        $transetion_id = $request->query('t');
-        $orderCode = $request->query('s');
-        $payment_detail = PaymentDetail::where('orderCode', $orderCode)->firstOrFail();
-        if ($payment_detail) {
-            if ($this->ENV == 'Live') {
-                $accessToken = $this->getAccessToken();
-                $url = "https://api.vivapayments.com/checkout/v2/transactions/{$transetion_id}";
-
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $accessToken,
-                    'Content-Type'  => 'application/json',
-                ])->get($url);
-
-                $responseData = json_decode($response, true);
-                $update_payment = [
-                    'transactionId' => $transetion_id,
-                    'fullName' => $responseData['fullName'],
-                    'email' => $responseData['email'],
-                    'cardNumber' => $responseData['cardNumber'],
-                    'statusId' => $responseData['statusId'],
-                    'insDate' => $responseData['insDate'],
-                    'amount' => $responseData['amount'],
-                ];
-            } else {
-                $update_payment = [
-                    'transactionId' => $transetion_id,
-                    'fullName' => 'test',
-                    'email' => 'testing@gmail.com',
-                    'cardNumber' => '34234test34234',
-                    'statusId' => 'F',
-                    'insDate' => now(),
-                ];
-            }
-            $payment =   PaymentDetail::where('id', $payment_detail->id)->update($update_payment);
-
-            $payment_detail = PaymentDetail::find($payment_detail->id);
-            $order = Order::with('orderdetails', 'orderdetails.product')->where('id', $payment_detail->order_id)->latest('created_at')->first();
-
-            if ($order) {
-                $user = auth()->user() ?? [];
-                $order->update(['payment_status' => 'Paid']);
-                $name = $order->shippingDetails->firstName;
-//                $order_for = [$user->hasRole('super_admin'), ($order->order_for == 'doctor') ? $user->hasRole('doctor') : $user->hasRole('dispensary')];
-//                $users = User::where('status', 1)->WhereIn('role', $order_for)->get();
-                $rolesToCheck = ['super_admin'];
-                if ($order->order_for == 'doctor') {
-                    $rolesToCheck[] = 'doctor';
-                } else {
-                    $rolesToCheck[] = 'dispensary';
-                }
-                // Get users with these roles using Spatie's role handling
-                $users = User::role($rolesToCheck)->where('status', 1)->get();
-                Notification::send($users, new UserOrderNotification($order));
-                Mail::to($order->shippingDetails->email)->send(new OrderConfirmation($order));
-                Session::flush();
-                if ($user) {
-                    Auth::logout();
-                    Auth::login($user);
-                }
-                echo "<script>
-                if (window.self !== window.top) {
-                    window.top.location.href = '" . route('thankYou', ['n' => $name]) . "';
-                } else {
-                    window.location.href = '" . route('thankYou', ['n' => $name]) . "';
-                }
-                </script>";
-                exit;
-            } else {
-                return $response->json('Order could not developer');
-            }
-        } else {
-            dd('No Payment details found.');
-        }
-    }
+  
+ public function completedOrder(Request $request)
+ {
+     $transetion_id = $request->query('t');
+     $orderCode = $request->query('s');
+     $payment_detail = PaymentDetail::where('orderCode', $orderCode)->firstOrFail();
+ 
+     if ($payment_detail) {
+         if ($this->ENV == 'Live') {
+             $accessToken = $this->getAccessToken();
+             $url = "https://api.vivapayments.com/checkout/v2/transactions/{$transetion_id}";
+ 
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $accessToken,
+                 'Content-Type'  => 'application/json',
+             ])->get($url);
+ 
+             $responseData = json_decode($response, true);
+             $update_payment = [
+                 'transactionId' => $transetion_id,
+                 'fullName' => $responseData['fullName'],
+                 'email' => $responseData['email'],
+                 'cardNumber' => $responseData['cardNumber'],
+                 'statusId' => $responseData['statusId'],
+                 'insDate' => $responseData['insDate'],
+                 'amount' => $responseData['amount'],
+             ];
+         } else {
+             $update_payment = [
+                 'transactionId' => $transetion_id,
+                 'fullName' => 'test',
+                 'email' => 'testing@gmail.com',
+                 'cardNumber' => '34234test34234',
+                 'statusId' => 'F',
+                 'insDate' => now(),
+             ];
+         }
+ 
+         // Update the payment details in the database
+         $payment = PaymentDetail::where('id', $payment_detail->id)->update($update_payment);
+ 
+         // Retrieve the updated payment and order details
+         $payment_detail = PaymentDetail::find($payment_detail->id);
+         $order = Order::with('orderdetails', 'orderdetails.product')->where('id', $payment_detail->order_id)->latest('created_at')->first();
+ 
+         if ($order) {
+             // Get the user and name for the thank you page
+             $user = auth()->user() ?? [];
+             $order->update(['payment_status' => 'Paid']);
+             $name = $order->shippingDetails->firstName;
+ 
+             // Determine the roles to check based on the order type
+             $rolesToCheck = ['super_admin'];
+             if ($order->order_for == 'doctor') {
+                 $rolesToCheck[] = 'doctor';
+             } else {
+                 $rolesToCheck[] = 'dispensary';
+             }
+ 
+             // Notify users and send email
+             $users = User::role($rolesToCheck)->where('status', 1)->get();
+             Notification::send($users, new UserOrderNotification($order));
+             Mail::to($order->shippingDetails->email)->send(new OrderConfirmation($order));
+ 
+             // Clear the session and re-login the user if logged in
+             Session::flush();
+             if ($user) {
+                 Auth::logout();
+                 Auth::login($user);
+             }
+ 
+             // Redirect to the Thank You page with the relevant data (name, order, and shipping details)
+             echo "<script>
+             if (window.self !== window.top) {
+                 window.top.location.href = '" . route('thankYou', [
+                     'n' => $name,
+                     'order' => $order->id,
+                     'shippingDetails' => json_encode($order->shippingDetails),
+                     'orderDetails' => json_encode($order->orderdetails)
+                 ]) . "';
+             } else {
+                 window.location.href = '" . route('thankYou', [
+                     'n' => $name,
+                     'order' => $order->id,
+                     'shippingDetails' => json_encode($order->shippingDetails),
+                     'orderDetails' => json_encode($order->orderdetails)
+                 ]) . "';
+             }
+             </script>";
+             exit;
+         } else {
+             return $response->json('Order could not be developed');
+         }
+     } else {
+         dd('No Payment details found.');
+     }
+ }
 
     public function unsuccessfulOrder(Request $request)
     {
@@ -566,29 +599,26 @@ class PaymentController extends Controller
         $this->shareMenuCategories();
         return view('web.pages.404');
     }
-    public function thankYou(Request $request)
-    {
-        // Retrieve user information if available
-        $data['user'] = auth()->user() ?? [];
-
-        // Retrieve other query parameters
-        $name = $request->query('n');
-        $data['name'] = $name ?? 'Guest';
-
-        // Example of fetching or setting transaction details
-        // These should be replaced with actual data retrieval logic
-        $transactionId = ''; // Replace with the actual transaction ID
-        $transactionTotal = ''; // Replace with the actual transaction total
-        $currency = 'GBP'; // Replace with the actual currency
-
-        // Add transaction details to the data array
-        $data['transactionId'] = $transactionId;
-        $data['transactionTotal'] = $transactionTotal;
-        $data['currency'] = $currency;
-
-        // Return the view with the data
-        return view('web.pages.thankyou', $data);
-    }
+   
+ public function thankYou(Request $request)
+ {
+      $this->shareMenuCategories();
+     // Get order, shipping, and product details from the query string
+     $order = Order::find($request->query('order'));
+     $shippingDetails = json_decode($request->query('shippingDetails'), true);
+     $orderDetails = json_decode($request->query('orderDetails'), true);
+ 
+     // You can also get the user's name if you need
+     $name = $request->query('n');
+     
+     return view('web.pages.thankyou', [
+         'order' => $order,
+         'shippingDetails' => $shippingDetails,
+         'orderDetails' => $orderDetails,
+         'name' => $name,
+     ]);
+ }
+ 
 
     public function transectionFail(Request $request)
     {
