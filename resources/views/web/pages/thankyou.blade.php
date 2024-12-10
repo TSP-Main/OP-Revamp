@@ -5,7 +5,7 @@
 <div class="container" style="max-width: 1000px; margin: auto; font-family: Arial, sans-serif; padding: 20px; color: #333;">
     <!-- Order Confirmation Header -->
     <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #577BBF;">Thank you, {{ $name }}!</h1>
+        <h1 style="color: #577BBF;">Thank You, {{ $name }}!</h1>
         <p>Your order <strong style="color: #577BBF;">#{{ $order->id }}</strong> is confirmed.</p>
         <p>You’ll receive a confirmation email shortly.</p>
     </div>
@@ -21,9 +21,9 @@
             <p><strong>Email:</strong> {{ $shippingDetails['email'] }}</p>
             <p><strong>Phone:</strong> {{ $shippingDetails['phone'] }}</p>
             <p><strong>Address:</strong> {{ $shippingDetails['address'] }} {{ $shippingDetails['address2'] }}</p>
+            <p><strong>Town:</strong> {{ $shippingDetails['state'] }}</p>
             <p><strong>City:</strong> {{ $shippingDetails['city'] }}</p>
-            <p><strong>State:</strong> {{ $shippingDetails['state'] }}</p>
-            <p><strong>Zip Code:</strong> {{ $shippingDetails['zip_code'] }}</p>
+            <p><strong>Postal Code:</strong> {{ $shippingDetails['zip_code'] }}</p>
             <p><strong>Shipping Method:</strong> {{ $shippingDetails['method'] }}</p>
             <p><strong>Shipping Cost:</strong> ${{ $shippingDetails['cost'] }}</p>
         </div>
@@ -38,7 +38,10 @@
                     <div style="flex: 1 1 calc(50% - 20px); display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #F9FAFD;">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <!-- Product Image -->
-                            <img src="/storage/{{ $detail['product']['main_image'] }}" alt="{{ $detail['product']['title'] }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+                            <img 
+                            src="/storage/{{ $detail['variant']['image'] ?? $detail['product']['main_image'] }}" 
+                            alt="{{ $detail['variant']['title'] ?? $detail['product']['title'] }}" 
+                            style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
                             
                             <!-- Product Details -->
                             <div>
