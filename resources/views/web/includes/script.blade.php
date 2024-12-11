@@ -37,7 +37,6 @@
     }
 
     function deleteItem(rowId, isMini){
-        if(confirm("Are you sure you want to delete?")){
             $.ajax({
                 url: '{{ route("web.cart.delete") }}',
                 type: 'post',
@@ -55,7 +54,6 @@
                 }
             });
         }
-    }
 
     function updateMiniCart(cartItems) {
         var miniCartProductArea = $('.mini-cart-product-area');
