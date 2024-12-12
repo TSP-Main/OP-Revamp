@@ -189,7 +189,7 @@ class PaymentController extends Controller
                         // Check if all products in the order have product_template = 3
                         $allProductsAreTemplate3 = true;
                         foreach ($request->order_details['product_template'] as $template) {
-                            if ($template != '3') {
+                            if ($template !== "3"){
                                 $allProductsAreTemplate3 = false;
                                 break;
                             }
@@ -377,6 +377,10 @@ class PaymentController extends Controller
                             Order::where('id', $order->id)->update(['payment_id' => $payment_init->id]);
                             if ($payment_init) {
                                 $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
+                                   
+                                session()->forget('cart');  // Clear cart session
+                                session()->forget('consultations');  // Clear consultation session
+                                session()->forget('order_details'); 
                                 return response()->json(['redirectUrl' => $redirectUrl]);
                             }
                         }
