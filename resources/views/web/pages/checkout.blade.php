@@ -135,7 +135,7 @@
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <div class="custom-control" style="display: flex; align-items:center;">
-                                        <input class="form-check-input" type="radio" name="shipping_method" id="fast_delivery" value="fast" data-ship="3.95" required >
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="fast_delivery" value="fast" data-ship="3.95" required checked>
                                         <label class="form-check-label" for="fast_delivery"><img src="{{ url('img/48-hours.jpg') }}" alt="" style="max-width:140px !important; margin-left:10px;"></label>
                                     </div>
                                     <span class="float-right">Royal Mail Tracked 48</span>
