@@ -9,9 +9,14 @@ Disallow: /search/
 Disallow: /wishlist/
 Disallow: /privacy-policy/
 Disallow: /terms-and-conditions/
+Disallow: /forgotPassword
+Disallow: /shop?sort=price_high_low
+Disallow: /shop?sort=price_high_low&page=*
+Disallow: /general-health/children-babies?*
+Disallow: /pharmacy-shop?sort=price_high_low
+Disallow: /pharmacy-shop?sort=price_high_low&page=*
 
 # Allow all other parts of the website to be crawled
 Allow: /wp-content/uploads/
 Allow: /wp-includes/
 Sitemap: https://onlinepharmacy-4u.co.uk/sitemap.xml
-
