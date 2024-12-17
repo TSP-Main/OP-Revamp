@@ -14,9 +14,11 @@ use Illuminate\Support\Facades\Http;
 use App\Models\ShippingDetail;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Discount;
 use App\Models\User;
 use App\Models\PaymentDetail;
 use App\Traits\MenuCategoriesTrait;
+use Carbon\Carbon;
 use App\Notifications\UserOrderNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -108,17 +110,22 @@ class CartController extends Controller
                 'high_risk' => $product->high_risk,
                 'max_buy' => $product->max_buy,
                 'min_buy' => $product->min_buy,
-               // 'product_template' => $product->product_template,
-
+                'product_template' => $product->product_template,
+                'category_id' => $product->category_id,
+                'sub_category' => $product->sub_category,
+                'child_category' => $product->child_category,
             ]);
         } else {
-            Cart::add($product->id, $product->title, $quantity, $product->price,[
+            Cart::add($product->id, $product->title, $quantity, $product->price, [
                 'productImage' => (!empty($product->main_image)) ? $product->main_image : '',
                 'slug' => $product->slug,
                 'high_risk' => $product->high_risk,
                 'max_buy' => $product->max_buy,
                 'min_buy' => $product->min_buy,
-                //'product_template' => $product->product_template,
+                'product_template' => $product->product_template,
+                'category_id' => $product->category_id,
+                'sub_category' => $product->sub_category,
+                'child_category' => $product->child_category,
             ]);
         }
 
@@ -135,7 +142,7 @@ class CartController extends Controller
         $status = true;
         $message = $product->title . " added to cart.";
         
-       // dd(Cart::content());
+    //    dd(Cart::content());
         return response()->json([
             'status'    => $status,
             'message'   => $message,
@@ -200,17 +207,148 @@ class CartController extends Controller
     public function checkout()
     {
         $this->shareMenuCategories();
+        
+        // Check if the cart is empty
         if (Cart::count() == 0) {
             return redirect()->route('web.view.cart');
         } else {
+            // Retrieve active discounts that are valid
+            $discounts = Discount::where('is_active', 1)
+            ->where('start_date', '<=', now())
+            // ->where('end_date', '>=', now())
+            ->get();
 
+    
+            $eligibleDiscounts = [];
+           // dd($discounts);
+            // Check the cart items against the discounts
+            $cartItems = Cart::content();
+            //dd($cartItems);
+            foreach ($discounts as $discount) {
+                foreach ($cartItems as $item) {
+                    // Extract product_id and variant_id from cart item ID (e.g., "3140_2928")
+                    $ids = explode('_', $item->id);
+            
+                    // Check if the result contains two parts (productId and variantId)
+                    if (count($ids) == 2) {
+                        list($productId, $variantId) = $ids;
+                    } else {
+                        // Handle the case when the ID doesn't have an underscore (e.g., no variant)
+                        $productId = $ids[0];
+                        $variantId = null; // No variant ID
+                    }
+            
+                    // Check if any discount condition is met
+                    $matchesDiscount = 
+                        ($discount->product_id && $discount->product_id == $productId) ||
+                        ($discount->variant_id && $discount->variant_id == $variantId) ||
+                        ($discount->category_id && $discount->category_id == $item->options->category_id) ||
+                        ($discount->sub_category_id && $discount->sub_category_id == $item->options->sub_category) ||
+                        ($discount->child_category_id && $discount->child_category_id == $item->options->child_category) ||
+                        (
+                            $discount->category_id && 
+                            $discount->sub_category_id && 
+                            $discount->category_id == $item->options->category_id && 
+                            $discount->sub_category_id == $item->options->sub_category
+                        ) ||
+                        (
+                            $discount->category_id && 
+                            $discount->sub_category_id && 
+                            $discount->child_category_id &&
+                            $discount->category_id == $item->options->category_id && 
+                            $discount->sub_category_id == $item->options->sub_category && 
+                            $discount->child_category_id == $item->options->child_category
+                        );
+            
+                    // If a match is found, add the discount to eligible discounts
+                    if ($matchesDiscount) {
+                        $eligibleDiscounts[] = $discount;
+                        break;
+                    }
+                }
+            }
+            
+    
+            // Data to be shared with the view
             $ukCities = config('constants.ukCities');
             $ukPostalcode = config('constants.ukPostalcode');
             $ukAddress = Config('constants.ukAddress');
-
-            return view('web.pages.checkout', compact('ukCities','ukPostalcode', 'ukAddress'));
+    
+            // Pass eligible discounts to the checkout view
+            return view('web.pages.checkout', compact('ukCities', 'ukPostalcode', 'ukAddress', 'eligibleDiscounts'));
         }
     }
+
+    public function validateDiscount(Request $request)
+    {
+        $code = $request->input('code');
+        
+        // Fetch discount from the database
+        $discount = Discount::where('code', $code)
+                            ->where('is_active', 1)
+                            ->where('start_date', '<=', now())
+                            // ->where('end_date', '>=', now())
+                            ->first();
+    
+        // If no discount found
+        if (!$discount) {
+            return response()->json(['success' => false, 'message' => 'Invalid or expired discount code.']);
+        }
+    
+        // Check if the discount applies to the cart products
+        $cartItems = Cart::content();
+        $isValidForCart = false;
+    
+        foreach ($cartItems as $item) {
+            // Extract product_id and variant_id from cart item ID (e.g., "3140_2928")
+            list($productId, $variantId) = explode('_', $item->id);
+    
+            // Check if any discount condition is met
+            $matchesDiscount = 
+                ($discount->product_id && $discount->product_id == $productId) ||
+                ($discount->variant_id && $discount->variant_id == $variantId) ||
+                ($discount->category_id && $discount->category_id == $item->options->category_id) ||
+                ($discount->sub_category_id && $discount->sub_category_id == $item->options->sub_category) ||
+                ($discount->child_category_id && $discount->child_category_id == $item->options->child_category) ||
+                (
+                    $discount->category_id && 
+                    $discount->sub_category_id && 
+                    $discount->category_id == $item->options->category_id && 
+                    $discount->sub_category_id == $item->options->sub_category
+                ) ||
+                (
+                    $discount->category_id && 
+                    $discount->sub_category_id && 
+                    $discount->child_category_id &&
+                    $discount->category_id == $item->options->category_id && 
+                    $discount->sub_category_id == $item->options->sub_category && 
+                    $discount->child_category_id == $item->options->child_category
+                );
+    
+            if ($matchesDiscount) {
+                $isValidForCart = true;
+                break; // Stop checking further if a match is found
+            }
+        }
+    
+        if (!$isValidForCart) {
+            return response()->json(['success' => false, 'message' => 'This discount is not applicable to your cart.']);
+        }
+    
+        // Check for minimum purchase amount
+        $subTotal = Cart::subTotal();
+        if ($discount->min_purchase_amount && $subTotal < $discount->min_purchase_amount) {
+            return response()->json(['success' => false, 'message' => 'Minimum purchase amount not reached.']);
+        }
+    
+        // Return the discount details
+        return response()->json([
+            'success' => true,
+            'discount' => $discount
+        ]);
+    }
+    
+
 
     public function destroy()
     {

@@ -62,7 +62,7 @@
             <p><strong>Town:</strong> {{ $shippingDetails['state'] ?? 'N/A' }}</p>
             <p><strong>City:</strong> {{ $shippingDetails['city'] ?? 'N/A' }}</p>
             <p><strong>Postal Code:</strong> {{ $shippingDetails['zip_code'] ?? 'N/A' }}</p>
-            <p><strong>Shipping Method:</strong> {{ $shippingDetails['method'] ?? 'N/A' }}</p>
+            {{-- <p><strong>Shipping Method:</strong> {{ $shippingDetails['method'] ?? 'N/A' }}</p> --}}
             <p><strong>Shipping Cost:</strong> £{{ $shippingDetails['cost'] ?? '0.00' }}</p>
         </div>
 

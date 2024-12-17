@@ -20,6 +20,7 @@ use App\Http\Requests\AdminDashboard\StoreSopRequest;
 use App\Http\Requests\AdminDashboard\UpdateAdditionalNoteRequest;
 use App\Models\ShippingDetail;
 use App\Mail\RejectionEmail;
+use App\Mail\ShippedEmail;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Mail\otpVerifcation;
@@ -2568,6 +2569,25 @@ class AdminDashboardController extends Controller
                     $orderModel = Order::findOrFail($order['id']);
                     $orderModel->status = $shipped[0]->shipping_status;
                     $orderModel->save();
+
+                      
+                // Send email notification to the user about shipment
+                $recipientEmail = $order['user']['email']; // Assuming the order has a user with an email
+                
+                if (!empty($recipientEmail) && filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+                    $email = new ShippedEmail($order, $shipped[0]); // Assuming ShipmentEmail class is available
+                    \Mail::to($recipientEmail)->send($email);
+    
+                    // Log the email sending action
+                    EmailLog::create([
+                        'order_id' => $order['id'],
+                        'email_to' => $recipientEmail,
+                        'subject' => 'Shipment Email',
+                        'body' => 'Your order has been shipped',
+                    ]);
+                } else {
+                    Log::error('Invalid email address for order ID ' . $order['id']);
+                }
                     
                     // Return success message
                     $msg = ($shipped[0]->shipping_status == 'Shipped') ? 'Order is shipped' : 'Order shipping failed';

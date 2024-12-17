@@ -7,6 +7,7 @@ use App\Http\Requests\Payment\StoreHumanFormRequest;
 use App\Mail\OrderConfirmation;
 use App\Models\HumanRequestForm;
 use App\Models\Order;
+use App\Models\EmailLog;
 use App\Models\OrderDetail;
 use App\Models\PaymentDetail;
 use App\Models\Product;
@@ -31,6 +32,7 @@ class PaymentController extends Controller
         $this->shareMenuCategories();
         $user = auth()->user() ?? [];
         $data = $request->all();
+      //  dd($data);
         $order_ids = $request->input('order_id.order_id', []);
 
         if (!empty($order_ids)) {
@@ -119,7 +121,7 @@ class PaymentController extends Controller
                 Order::where(['id' => $order->id])->latest('created_at')->first()
                     ->update(['order_for' => $order_for]);
 
-
+            
                 // $inserted =  OrderDetail::insert($order_details);
                 if ($inserted) {
                    // dd($request);
@@ -186,17 +188,32 @@ class PaymentController extends Controller
                                 ],
                         ];
 
-                        // Check if all products in the order have product_template = 3
+
+                       // Initialize flag to track if all products have product_template = 3
                         $allProductsAreTemplate3 = true;
+
+                        // Log the values to debug
+                        \Log::info("Product Templates: " . json_encode($request->order_details['product_template']));
+
+                        // Loop through the product_template array to check if they all match "3"
                         foreach ($request->order_details['product_template'] as $template) {
-                            if ($template !== "3"){
+                            if ((string)$template !== '3') { // Ensure we're checking as strings
                                 $allProductsAreTemplate3 = false;
-                                break;
+                                break; // If any product is not template 3, stop checking
                             }
                         }
 
+                        // Log the result of the check
+                        \Log::info("All Products Are Template 3: " . ($allProductsAreTemplate3 ? 'Yes' : 'No'));
+
+
+
                         // Update order status based on product_template values
                         $orderStatus = $allProductsAreTemplate3 ? 'Approved' : 'Received';
+
+                        \Log::info("Order Status Updated to: " . $orderStatus);
+                   
+
 
                         $response = $this->sendHttpRequest('https://api.vivapayments.com/checkout/v2/orders', $postFields, $accessToken);
                         $responseData = json_decode($response, true);
@@ -207,16 +224,16 @@ class PaymentController extends Controller
                             $temp_code = random_int(00000, 99999); //tesitng ..
                             $temp_transetion = 'testing'; // testing purspose
                             $payment_detials = [
-                                'order_id' => $order->id,
-                                'orderCode' => ($this->ENV == 'Live') ?  $orderCode : $temp_code,
-                                'amount' => $request->total_ammount
+                                'order_id'   => $order->id,
+                                'orderCode'  => ($this->ENV == 'Live') ?  $orderCode : $temp_code,
+                                'amount'     => $request->total_ammount
                             ];
 
                             $payment_init =  PaymentDetail::create($payment_detials);
                             Order::where('id', $order->id)->update([
-                                'payment_id' => $payment_init->id,
+                                'payment_id'     => $payment_init->id,
                                 'payment_status' => 'Paid',
-                                'status' =>         $orderStatus ,
+                                'status'         => $orderStatus,
                             ]);
                             if ($payment_init) {
                                 $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
@@ -379,8 +396,6 @@ class PaymentController extends Controller
                                 $redirectUrl = ($this->ENV == 'Live') ? "https://www.vivapayments.com/web/checkout?ref={$orderCode}" : url("/Completed-order?t=$temp_transetion&s=$temp_code&lang=en-GB&eventId=0&eci=1");
                                    
                                 session()->forget('cart');  // Clear cart session
-                                session()->forget('consultations');  // Clear consultation session
-                                session()->forget('order_details'); 
                                 return response()->json(['redirectUrl' => $redirectUrl]);
                             }
                         }
@@ -490,10 +505,35 @@ class PaymentController extends Controller
                  $rolesToCheck[] = 'dispensary';
              }
  
-             // Notify users and send email
-             $users = User::role($rolesToCheck)->where('status', 1)->get();
-             Notification::send($users, new UserOrderNotification($order));
-             Mail::to($order->shippingDetails->email)->send(new OrderConfirmation($order));
+            
+            // Notify users and send email
+            $users = User::role($rolesToCheck)->where('status', 1)->get();
+            Notification::send($users, new UserOrderNotification($order));
+
+            // Send the order confirmation email to the user
+            try {
+                Mail::to($order->shippingDetails->email)->send(new OrderConfirmation($order));
+
+                // Log email in the email_logs table
+                EmailLog::create([
+                    'order_id' => $order->id,
+                    'email_to' => $order->shippingDetails->email,
+                    'subject'  => 'Order Confirmation',
+                    'body'     => 'Your Order Placed Successfully',
+                    'status'   => 'sent',
+                ]);
+            } catch (\Exception $e) {
+                // If there's an error sending the email, log it as failed
+                EmailLog::create([
+                    'order_id' => $order->id,
+                    'email_to' => $order->shippingDetails->email,
+                    'subject'  => 'Order Confirmation',
+                    'body'     => 'Your Order Placed Successfully',
+                    'status'   => 'failed',
+                ]);
+            }
+
+             
  
              // Clear the session and re-login the user if logged in
              Session::flush();

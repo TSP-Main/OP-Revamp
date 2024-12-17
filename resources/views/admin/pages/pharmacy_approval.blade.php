@@ -459,9 +459,9 @@
                                     <td><span class="btn fw-bold rounded-pill btn-success"> {{$val['payment_status'] ?? ''}}</span></td>
                                     <td><span class="btn fw-bold {{ $val['status'] == 'Not_Approved' ?  'btn-danger' :'' }} {{ $val['status'] == 'Approved' ?  'btn-success' :'' }} {{ $val['status'] == 'Received' ?  'btn-primary' :'' }} rounded-pill">{{ $val['status'] ?? '' }}</span></td>
                                     <td style="display: inline-block;">
-                                        @if($val['status'] == 'Approved')
+                                        {{-- @if($val['status'] == 'Approved' || !$user->hasRole('pharmacy'))
                                         <span data-order_id="{{$val['id']}}" class="btn ship_now fw-bold btn-primary no-wrap rounded-pill">Ship Now</span>
-                                        @endif
+                                        @endif --}}
                                         @if($val['status'] == 'Shipped')
                                         <span class="btn fw-bold btn-success no-wrap rounded-pill">Shipped</span>
                                         @endif
@@ -562,11 +562,11 @@
             }
         });
 
-        $(document).on('click', ".ship_now", function() {
-            let order_id = $(this).data('order_id');
-            $('#shiping_order').val(order_id);
-            $('#form_shiping_now').submit();
-        });
+        // $(document).on('click', ".ship_now", function() {
+        //     let order_id = $(this).data('order_id');
+        //     $('#shiping_order').val(order_id);
+        //     $('#form_shiping_now').submit();
+        // });
     });
 </script>
 @endPushOnce

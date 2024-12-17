@@ -191,142 +191,172 @@
             </li>
         @endif
 
-        @if(auth()->user()->hasPermissionTo('orders'))
-            <li class="nav-item">
-                <a class="nav-link {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval','admin.ordersConfrimed','admin.ordersShiped' , 'admin.otcorders','admin.dispensaryApproval', 'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated','admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail'])) ? '' : 'collapsed'}} "
-                   data-bs-target="#charts-nav" data-bs-toggle="collapse">
-                    <i class="bi bi-bar-chart"></i><span>Orders</span><i class="bi bi-chevron-down ms-auto"></i>
-                </a>
-                <ul id="charts-nav"
-                    class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved', 'admin.otcorders', 'admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  "
-                    data-bs-parent="#sidebar-nav">
-                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('dispensary') || auth()->user()->hasRole('doctor') || auth()->user()->hasRole('pharmacy'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.allOrders'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.allOrders')}}">
-                                <i class="bi bi-circle"></i><span>All Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('orders_received'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.ordersRecieved'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.ordersRecieved')}}">
-                                <i class="bi bi-circle"></i><span>Received Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('orders_created'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.ordersCreated'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.ordersCreated')}}">
-                                <i class="bi bi-circle"></i><span>Created Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('orders_refunded'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.ordersRefunded'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.ordersRefunded')}}">
-                                <i class="bi bi-circle"></i><span>Refunded Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(!auth()->user()->hasRole('pharmacy'))
-                        @if(auth()->user()->hasPermissionTo('doctors_approval'))
+        @if(!auth()->user()->hasRole('user'))
+            @if(auth()->user()->hasPermissionTo('orders'))
+                <li class="nav-item">
+                    <a class="nav-link {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved','admin.doctorsApproval','admin.ordersConfrimed','admin.ordersShiped' , 'admin.otcorders','admin.dispensaryApproval', 'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated','admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail'])) ? '' : 'collapsed'}} "
+                    data-bs-target="#charts-nav" data-bs-toggle="collapse">
+                        <i class="bi bi-bar-chart"></i><span>Orders</span><i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul id="charts-nav"
+                        class="nav-content {{ (request()->routeIs(['admin.consultationView','admin.orderDetail','admin.ordersRecieved', 'admin.otcorders', 'admin.doctorsApproval', 'admin.unpaidOrders', 'admin.ordersConfrimed','admin.ordersShiped' ,'admin.dispensaryApproval' ,'admin.ordersAudit', 'admin.gpaLeters','admin.ordersRefunded', 'admin.ordersCreated', 'admin.gpLocations','admin.VetPrescriptions','admin.ordersShippingFail', 'admin.allOrders' ])) ? '' : 'collapse'}}  "
+                        data-bs-parent="#sidebar-nav">
+                        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('dispensary') || auth()->user()->hasRole('doctor') || auth()->user()->hasRole('pharmacy'))
                             <li>
-                                <a class="{{(request()->routeIs(['admin.doctorsApproval'])) ? 'nav-link ' : ''}}"
-                                href="{{route('admin.doctorsApproval')}}">
-                                    <i class="bi bi-circle"></i>
-                                    {{-- <span>{{ (isset($user) && $user->role == user_roles('2')) ? 'POM Orders Approved' : 'POM Orders'}}</span> --}}
-                                    <span>
-                                @if(isset($user) && isset($user->role) && $user->role == user_roles('2'))
-                                            POM Orders Approved
-                                        @else
-                                            POM Orders
-                                        @endif
-                            </span>
+                                <a class="{{(request()->routeIs(['admin.allOrders'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.allOrders')}}">
+                                    <i class="bi bi-circle"></i><span>All Orders</span>
                                 </a>
                             </li>
                         @endif
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('dispensary_approval'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.dispensaryApproval'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.dispensaryApproval')}}">
-                                <i class="bi bi-circle"></i><span>P.Med Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(!auth()->user()->hasRole('pharmacy'))
+                        @if(auth()->user()->hasPermissionTo('orders_received'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.ordersRecieved'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.ordersRecieved')}}">
+                                    <i class="bi bi-circle"></i><span>Received Orders</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('orders_created'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.ordersCreated'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.ordersCreated')}}">
+                                    <i class="bi bi-circle"></i><span>Created Orders</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('orders_refunded'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.ordersRefunded'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.ordersRefunded')}}">
+                                    <i class="bi bi-circle"></i><span>Refunded Orders</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(!auth()->user()->hasRole('pharmacy'))
+                            @if(auth()->user()->hasPermissionTo('doctors_approval'))
+                                <li>
+                                    <a class="{{(request()->routeIs(['admin.doctorsApproval'])) ? 'nav-link ' : ''}}"
+                                    href="{{route('admin.doctorsApproval')}}">
+                                        <i class="bi bi-circle"></i>
+                                        {{-- <span>{{ (isset($user) && $user->role == user_roles('2')) ? 'POM Orders Approved' : 'POM Orders'}}</span> --}}
+                                        <span>
+                                    @if(isset($user) && isset($user->role) && $user->role == user_roles('2'))
+                                                POM Orders Approved
+                                            @else
+                                                POM Orders
+                                            @endif
+                                </span>
+                                    </a>
+                                </li>
+                            @endif
+                        @endif
                         @if(auth()->user()->hasPermissionTo('dispensary_approval'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.otcorders'])) ? 'nav-link ' : ''}}"
-                            href="{{route('admin.otcorders')}}">
-                                <i class="bi bi-circle"></i><span>OTC Orders</span>
-                            </a>
-                        </li>
-                        @endif
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('orders_shipped'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.ordersShiped'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.ordersShiped')}}">
-                                <i class="bi bi-circle"></i><span>Shiped Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(!auth()->user()->hasRole('pharmacy'))
-                        @if(auth()->user()->hasPermissionTo('orders_unshipped'))
                             <li>
-                                <a class="{{(request()->routeIs(['admin.ordersShippingFail'])) ? 'nav-link ' : ''}}"
-                                href="{{route('admin.ordersShippingFail')}}">
-                                    <i class="bi bi-circle"></i><span>ShippingFail Orders</span>
+                                <a class="{{(request()->routeIs(['admin.dispensaryApproval'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.dispensaryApproval')}}">
+                                    <i class="bi bi-circle"></i><span>P.Med Orders</span>
                                 </a>
                             </li>
                         @endif
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('admin.unpaidOrders'))
-                        {{-- <li>
-                            <a class="{{(request()->routeIs(['admin.unpaidOrders'])) ? 'nav-link ' : ''}}" href="{{route('admin.unpaidOrders')}}">
-                                <i class="bi bi-circle"></i><span>Unpaid Orders</span>
-                            </a>
-                        </li> --}}
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('gpa_letters'))
+                        @if(!auth()->user()->hasRole('pharmacy'))
+                            @if(auth()->user()->hasPermissionTo('dispensary_approval'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.otcorders'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.otcorders')}}">
+                                    <i class="bi bi-circle"></i><span>OTC Orders</span>
+                                </a>
+                            </li>
+                            @endif
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('orders_shipped'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.ordersShiped'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.ordersShiped')}}">
+                                    <i class="bi bi-circle"></i><span>Shiped Orders</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(!auth()->user()->hasRole('pharmacy'))
+                            @if(auth()->user()->hasPermissionTo('orders_unshipped'))
+                                <li>
+                                    <a class="{{(request()->routeIs(['admin.ordersShippingFail'])) ? 'nav-link ' : ''}}"
+                                    href="{{route('admin.ordersShippingFail')}}">
+                                        <i class="bi bi-circle"></i><span>ShippingFail Orders</span>
+                                    </a>
+                                </li>
+                            @endif
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.unpaidOrders'))
+                            {{-- <li>
+                                <a class="{{(request()->routeIs(['admin.unpaidOrders'])) ? 'nav-link ' : ''}}" href="{{route('admin.unpaidOrders')}}">
+                                    <i class="bi bi-circle"></i><span>Unpaid Orders</span>
+                                </a>
+                            </li> --}}
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('gpa_letters'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.gpaLeters'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.gpaLeters')}}">
+                                    <i class="bi bi-circle"></i><span>GP Letters</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('gp_locations'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.gpLocations'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.gpLocations')}}">
+                                    <i class="bi bi-circle"></i><span>GP Locations</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('orders_audit'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.ordersAudit'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.ordersAudit')}}">
+                                    <i class="bi bi-circle"></i><span>Audit Orders</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('vet_prescription'))
+                            <li>
+                                <a class="{{(request()->routeIs(['admin.VetPrescriptions'])) ? 'nav-link ' : ''}}"
+                                href="{{route('admin.VetPrescriptions')}}">
+                                    <i class="bi bi-circle"></i><span>Vet Prescription</span>
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </li>
+            @endif
+        @endif
+        
+        @if(!auth()->user()->hasRole('user'))
+            @if(auth()->user()->hasPermissionTo('orders'))
+                <li class="nav-item">
+                    <a class="nav-link {{(request()->routeIs(['admin.addDiscount','admin.Discount'])) ? '' : 'collapsed'}} "
+                    data-bs-target="#tables-nav" data-bs-toggle="collapse">
+                        <i class="bi bi-bar-chart"></i><span>Discounts</span><i
+                            class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul id="tables-nav"
+                        class="nav-content {{(request()->routeIs(['admin.addDiscount','admin.Discount'])) ? '' : 'collapse'}} "
+                        data-bs-parent="#sidebar-nav">
                         <li>
-                            <a class="{{(request()->routeIs(['admin.gpaLeters'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.gpaLeters')}}">
-                                <i class="bi bi-circle"></i><span>GP Letters</span>
+                            <a class="{{(request()->routeIs(['admin.Discount'])) ? 'nav-link ' : ''}} "
+                            href="{{route('admin.Discount')}}">
+                                <i class="bi bi-person"></i><span>Discounts</span>
                             </a>
                         </li>
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('gp_locations'))
                         <li>
-                            <a class="{{(request()->routeIs(['admin.gpLocations'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.gpLocations')}}">
-                                <i class="bi bi-circle"></i><span>GP Locations</span>
+                            <a class="{{(request()->routeIs(['admin.addDiscount'])) ? 'nav-link ' : ''}} "
+                            href="{{route('admin.addDiscount')}}">
+                                <i class="bi bi-circle"></i><span>Add Discount</span>
                             </a>
                         </li>
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('orders_audit'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.ordersAudit'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.ordersAudit')}}">
-                                <i class="bi bi-circle"></i><span>Audit Orders</span>
-                            </a>
-                        </li>
-                    @endif
-                    @if(auth()->user()->hasPermissionTo('vet_prescription'))
-                        <li>
-                            <a class="{{(request()->routeIs(['admin.VetPrescriptions'])) ? 'nav-link ' : ''}}"
-                               href="{{route('admin.VetPrescriptions')}}">
-                                <i class="bi bi-circle"></i><span>Vet Prescription</span>
-                            </a>
-                        </li>
-                    @endif
-                </ul>
-            </li>
+                    </ul>
+                </li>
+            @endif
         @endif
 
         @if(auth()->user()->hasPermissionTo('doctors'))

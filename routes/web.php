@@ -98,6 +98,8 @@ Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('web.car
 Route::post('/update-cart', [CartController::class, 'updateCart'])->name('web.cart.update');
 Route::post('/delete-item', [CartController::class, 'deleteItem'])->name('web.cart.delete');
 Route::get('/checkout/{id}', [CartController::class, 'checkout_id'])->name('web.checkout.id');
+Route::post('/validate-discount', [CartController::class, 'validateDiscount'])->name('validate.discount');
+
 
 //Home Controller
 Route::get('/questions_preview', [HomeController::class, 'questions_preview'])->name('web.questions_preview');

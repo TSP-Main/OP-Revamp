@@ -4,165 +4,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmations</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Order Confirmation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f0f4f8;
             margin: 0;
             padding: 0;
+            background-color: #f8f9fc;
             color: #333;
         }
 
         .container {
             width: 90%;
-            margin: 40px auto;
-            max-width: 1100px;
+            max-width: 1200px;
+            margin: 0 auto;
             background-color: #ffffff;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            border-radius: 10px;
-        }
-
-        .main-content {
-            max-width: 800px;
-            margin: auto;
-        }
-
-        .order {
-            float: right;
-            font-weight: bold;
-            color: #666;
-        }
-
-        .button-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 40px 0;
-        }
-
-        table {
-            font-family: 'Roboto', sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 40px 30px;
             overflow: hidden;
         }
 
-        th, td {
-            border: none;
-            border-bottom: 1px solid #e0e0e0;
-            text-align: left;
-            padding: 12px 15px;
+        .header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #e6e9f2;
+            margin-bottom: 30px;
         }
 
-        td ul {
-            padding-left: 0;
+        .header h1 {
+            font-size: 32px;
+            color: #1a73e8;
+            font-weight: 700;
+            margin: 0;
         }
 
-        td ul li {
-            list-style: none;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        .button-container .button {
-            padding: 14px 28px;
-            background-color: #2D90D5;
-            color: #ffffff;
-            border: none;
-            border-radius: 15px;
+        .order-info {
+            float: right;
+            font-weight: bold;
+            color: #1a73e8;
             font-size: 18px;
-            text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .order-status {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .order-status h2 {
+            font-size: 26px;
+            color: #1a73e8;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .order-status p {
+            font-size: 18px;
+            color: #555;
+            margin: 20px 0;
+        }
+
+        .button-container {
             display: inline-block;
-            margin: 0 10px;
-        }
-
-        .button-container .button:hover {
-            background-color: #1a5f8a;
-            transform: translateY(-2px);
-        }
-
-        .button-container span {
-            margin: 0 20px;
-            color: #666;
+            justify-content: center;
+            margin-top: 25px;
         }
 
         .button-container a {
-            color: #2D90D5;
+            background: linear-gradient(135deg, #1a73e8, #4285f4);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
             font-size: 18px;
-            cursor: pointer;
             text-decoration: none;
-            transition: color 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+            transition: all 0.3s ease;
         }
 
         .button-container a:hover {
-            color: #1a2232;
+            background: linear-gradient(135deg, #4285f4, #1a73e8);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
         }
 
-        .your-order {
-            margin-top: 60px;
-            text-align: center;
+        table {
+            width: 100%;
+            margin-top: 40px;
+            border-collapse: collapse;
+            font-size: 16px;
         }
 
-        .your-order h2 {
-            color: #2D90D5;
+        table th,
+        table td {
+            padding: 16px;
+            text-align: left;
+            font-size: 16px;
         }
 
-        .your-order p {
+        table th {
+            background-color: #f9f9f9;
+            color: #1a73e8;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f6f9fc;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-details ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .item-details ul li {
+            font-size: 15px;
             color: #555;
+            margin: 5px 0;
         }
 
-        @media (max-width: 500px) {
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 16px;
+            color: #888;
+        }
+
+        .footer .email {
+            color: #1a73e8;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
             .container {
-                width: 100%;
-                padding: 10px;
+                padding: 20px;
             }
 
-            .order {
+            .order-info {
                 float: none;
                 text-align: center;
-                display: block;
-                margin: 10px 0;
+                margin-top: 20px;
             }
 
             .button-container {
+                display: flex;
                 flex-direction: column;
+                gap: 15px;
                 align-items: center;
-            }
-
-            .button-container .button {
-                font-size: 16px;
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-
-            .button-container span {
-                display: none;
+                margin-top: 25px;
             }
 
             .button-container a {
-                font-size: 16px;
-            }
-
-            table {
-                font-size: 14px;
-            }
-
-            td ul li {
-                font-size: 14px;
-            }
-
-            .your-order h2,
-            .your-order p {
+                width: 100%;
                 text-align: center;
+                padding: 15px;
+            }
+
+            .item-image {
+                width: 70px;
+                height: 70px;
+            }
+
+            table th, table td {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .footer {
+                font-size: 14px;
             }
         }
     </style>
@@ -170,40 +192,42 @@
 
 <body>
     <div class="container">
-        <div class="main-content">
-        <h2>Dear {{ $order->shipingdetails->firstName ?? ''}}</h2>
-        <p class="order">Order #{{$order->id ?? '' }}</p>
-
-            <div class="your-order">
-                <h2>Your order has been successfully placed!</h2>
-                <p>Great news, your order is currently being reviewed by our dispensary & prescribing team. We’ll send you tracking notifications once it’s been approved, dispensed & shipped!</p>
-                <div class="button-container">
-                    <a href="{{url('/admin')}}" class="button">Visit your order</a>
-                    <span style="font-size: 20px; padding-top: 13px;">or</span>
-                    <a style="padding-top: 15px;" href="{{url('/')}}">Visit our store</a>
-                </div>
+        <div class="header">
+            <h1>Order Confirmation</h1>
+            <div class="order-info">
+                Order #{{$order->id ?? ''}}
             </div>
+        </div>
 
-            <h2 style="margin-top: 40px;">Items in this shipment</h2>
-            <table>
-                @foreach($order->orderdetails ?? [] as $key => $val)
-                <tr>
-                    @php
-                    $src = isset($val->variant) ? $val->variant->image : $val->product->main_image;
-                    @endphp
-                    <td>
-                        <img style="height:55px; margin:0 !important; padding:0 !important;" src="{{ public_path('storage/'.$src) }} " alt="Product Image">
-                    </td>
-                    <td>
-                        <ul>
-                            <li>{{ $val->product_name ?? $val->product->title }} x {{ $val->product_qty }}</li>
-                            <li>{!! $val->variant_details ?? '' !!}</li>
-                            <li>{{ $val->variant->barcode ?? $val->product->barcode }}</li>
-                        </ul>
-                    </td>
-                </tr>
-                @endforeach
-            </table>
+        <div class="order-status">
+            <h2>Thank you for your order, {{ $order->shipingdetails->firstName ?? ''}}!</h2>
+            <p>Your order is currently being processed by our team. We’ll notify you once it’s shipped and ready for tracking!</p>
+
+            <div class="button-container">
+                <a href="{{url('/dashboard')}}">View Your Order</a>
+                <a href="{{url('/')}}">Return to Store</a>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 50px; text-align: center;">Items in Your Order</h2>
+
+        <table>
+            @foreach($order->orderdetails ?? [] as $key => $val)
+            <tr>
+                <td><img class="item-image" src="{{ public_path('storage/'.$val->product->main_image ?? $val->variant->image) }}" alt="Product Image"></td>
+                <td class="item-details">
+                    <ul>
+                        <li><strong>{{ $val->product_name ?? $val->product->title }}</strong> x {{ $val->product_qty }}</li>
+                        <li>{!! $val->variant_details ?? '' !!}</li>
+                        <li>{{ $val->variant->barcode ?? $val->product->barcode }}</li>
+                    </ul>
+                </td>
+            </tr>
+            @endforeach
+        </table>
+
+        <div class="footer">
+            <p>If you have any questions, feel free to reach out to us at <span class="email">info@online-pharmacy4u.co.uk</span>.</p>
         </div>
     </div>
 </body>

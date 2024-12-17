@@ -9,7 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.index');
-Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
+Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(callback: function () {
     //Auth
     Route::match(['get', 'post'], '/passwordChange', [AuthController::class, 'password_change'])->name('admin.passwordChange');
 
@@ -156,8 +156,12 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
     Route::match(['get', 'post'], '/deleteHumanForm', [AdminDashboardController::class, 'delete_human_form'])->name('admin.deleteHumanForm');
 
     Route::match(['get', 'post'], '/addDiscount', [DiscountController::class, 'add_discount'])->name('admin.addDiscount');
-    Route::match(['get', 'post'], '/storeDiscount', [DiscountController::class, 'store_discount'])->name('admin.storeDiscount');
+    Route::match(['get', 'post'], '/discounts', [DiscountController::class, 'discount'])->name('admin.Discount');
+    Route::post( '/storeDiscount', [DiscountController::class, 'store'])->name('admin.storeDiscount');
+    Route::get('/discounts/{discount?}', [DiscountController::class, 'edit'])->name('admin.editDiscount');
     Route::get('/SubCategoryDiscount', [DiscountController::class, 'getSubCategories'])->name('admin.getSubCategories');
     Route::get('/ChildCategoryDiscount', [DiscountController::class, 'getChildCategories'])->name('admin.getChildCategories');
+    Route::get('/VariantsDiscount', [DiscountController::class, 'getProductVariants']);
+
 
 });

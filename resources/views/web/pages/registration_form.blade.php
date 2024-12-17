@@ -120,6 +120,9 @@
                             @enderror
 
                             <div class="row ">
+                                <div class="mt-0">
+                                    <p style="color: #3d7de8 ;">*Date of Birth</p>
+                                </div>
                                 <div class="col-4">
                                     <select name="day" class="form-select">
                                         <option value="" disabled selected>Day</option>
