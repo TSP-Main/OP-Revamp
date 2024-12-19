@@ -217,6 +217,14 @@
                                                             <i class="fas fa-shopping-cart"></i>
                                                             <span>ADD TO CART</span>
                                                         </a>
+                                                        @elseif( $product->product_template == 1 && $product->question_risk == "2")
+                                                         <form action="{{ route('category.products', ['main_category' => $product->category->slug ?? NULL, 'sub_category' => $product->sub_cat->slug ?? NULL, 'child_category' => $product->child_cat->slug ?? NULL]) }}" method="POST">
+                                                            @csrf
+                                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                            <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Start Consultation">
+                                                                <span>Start Consultation</span>
+                                                            </button>
+                                                        </form>
                                                     @elseif($product->product_template == 1)
                                                         <form action="{{ route('web.consultationForm') }}" method="POST">
                                                             @csrf
@@ -242,16 +250,29 @@
                                                     @endif
                                                 @endif
                                                 @else
-                                                 <!-- Notify Me Button -->
-                                                 <form action="{{ route('notify.me', $product->id) }}" method="POST" class="d-inline-block" id="notify-form-{{ $product->id }}">
+                                                <!-- Notify Me Button -->
+                                                <form action="{{ route('notify.me', $product->id) }}" method="POST" class="d-inline-block" id="notify-form-{{ $product->id }}">
                                                     @csrf
-                                                    <input type="hidden" name="email" value="{{ auth()->user()->email ?? '' }}" required>
+
+                                                    <!-- Check if the user is logged in or not -->
+                                                    @if(auth()->check())
+                                                        <!-- If logged in, show the email as readonly, pre-filled with the user's email -->
+                                                        <input type="email" name="email" value="{{ auth()->user()->email }}" readonly required>
+                                                    @else
+                                                        <!-- If not logged in, provide an empty field for the user to enter their email -->
+                                                        <input type="email" name="email" placeholder="Enter your email" required>
+                                                    @endif
+
                                                     <i class="fas fa-exclamation-circle"></i>
                                                     <span>Out of Stock</span> <br>
+                                                    
+                                                    <!-- Button to trigger the form submission -->
                                                     <button type="button" class="theme-btn-1 btn btn-effect-1" title="Notify Me" onclick="notifyMe({{ auth()->check() ? 'true' : 'false' }}, '{{ route('notify.me', $product->id) }}')">
                                                         <span>Notify When in Stock</span>
                                                     </button>
                                                 </form>
+
+
                                                 {{-- <a class="btn btn-secondary disabled" title="Out of Stock" aria-disabled="true">
                                                     <i class="fas fa-exclamation-circle"></i>
                                                     <span>Out of Stock</span>
@@ -263,15 +284,25 @@
                                 <div id="out-of-stock-message" style="display:none;">
                                     <form action="{{ route('notify.me', $product->id) }}" method="POST" class="d-inline-block" id="notify-form-{{ $product->id }}">
                                         @csrf
-                                        <input type="hidden" name="email" value="{{ auth()->user()->email ?? '' }}" required>
+
+                                        <!-- Check if the user is logged in or not -->
+                                        @if(auth()->check())
+                                            <!-- If logged in, show the email as readonly, pre-filled with the user's email -->
+                                            <input type="email" name="email" value="{{ auth()->user()->email }}" readonly required>
+                                        @else
+                                            <!-- If not logged in, provide an empty field for the user to enter their email -->
+                                            <input type="email" name="email" placeholder="Enter your email" required>
+                                        @endif
+
                                         <i class="fas fa-exclamation-circle"></i>
                                         <span>Out of Stock</span> <br>
+                                        
+                                        <!-- Button to trigger the form submission -->
                                         <button type="button" class="theme-btn-1 btn btn-effect-1" title="Notify Me" onclick="notifyMe({{ auth()->check() ? 'true' : 'false' }}, '{{ route('notify.me', $product->id) }}')">
                                             <span>Notify When in Stock</span>
                                         </button>
                                     </form>
                                 </div>
-                                
                                 <div class="ltn__product-details-menu-3 ">
                                     <ul>
                                         @if(!$product['variants']->isEmpty())
@@ -447,14 +478,17 @@
 @stop
 @pushOnce('scripts')
 <script>
-    // Function to handle variant updates
   // Function to handle variant updates
+   // Function to handle variant updates
 function updateVariant() {
     var variantData = @json($variants ?? []);  // Variant data passed from backend
-    var variant_selector = $(this).data('selector');
+    var variant_selector = $(this).data('selector'); // Use data attribute
+
+    // Escape special characters if necessary (but avoid direct use in selectors)
+    var escapedSelector = variant_selector.replace(/([:#.,?+\*&\^%$@!])/g, '\\$1');
 
     // Update the classes for the variant selector
-    $('.' + variant_selector).removeClass('variant_tag_active').addClass('variant_tag');
+    $('[data-selector="'+escapedSelector+'"]').removeClass('variant_tag_active').addClass('variant_tag');
     $(this).removeClass('variant_tag').addClass('variant_tag_active');
 
     var combinedVariantVal = '';
@@ -506,28 +540,6 @@ function updateVariant() {
         // If variant is in stock, show the normal menu and enable buttons
         $('.ltn__product-details-menu-2').show();
         $('#out-of-stock-message').hide();
-        $('#quantity-input').prop('disabled', false);
-        $('#add-to-cart-button').prop('disabled', false);
-    }
-}
-
-// Trigger variant update on click
-$(document).on('click', '.variants', updateVariant);
-
-// Call the update function on page load for the default active variant
-var activeVariant = $('.variants.variant_tag_active').first();
-if (activeVariant.length) {
-    updateVariant.call(activeVariant);
-} else {
-    // If no variant is selected, check product stock status
-    if ("{{ $product->stock_status }}" === "OUT") {
-        $('#out-of-stock-message').show();
-        $('.ltn__product-details-menu-2').hide();
-        $('#quantity-input').prop('disabled', true);
-        $('#add-to-cart-button').prop('disabled', true);
-    } else {
-        $('#out-of-stock-message').hide();
-        $('.ltn__product-details-menu-2').show();
         $('#quantity-input').prop('disabled', false);
         $('#add-to-cart-button').prop('disabled', false);
     }
@@ -595,17 +607,18 @@ if (activeVariant.length) {
         });
     });
 
-    // Function for "Notify Me" functionality
+  // Function for "Notify Me" functionality
     function notifyMe(isLoggedIn, actionUrl) {
-        if (!isLoggedIn) {
-            // Redirect to login if not logged in
-            window.location.href = '/sign-up';
-            return;
-        }
+        // if (!isLoggedIn) {
+        //     // Redirect to login if not logged in
+        //     window.location.href = '/sign-in';
+        //     return;
+        // }
 
         // If logged in, submit the notification form
         document.getElementById('notify-form-' + actionUrl.split('/').pop()).submit();
     }
+
 </script>
 
 @endPushOnce

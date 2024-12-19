@@ -512,9 +512,9 @@
 
                     .chat {
                         border: none;
-                        background: #E2FFE8;
+                        background: #fde5e5;
                         font-size: 1rem;
-                        border-radius: 20px;
+                        border-radius: 10px;
                     }
 
                     .bg-white {
@@ -546,51 +546,45 @@
                         font-size: 1rem;
                         color: #C4C4C4;
                     }
-                </style>
+                </style> 
                     @if(!$user->hasRole('user'))
-                        <div class="col-lg-12">
-                            <div class="w-100 ">
-                                <div class="card mt-3 ">
-                                    <div class="d-flex flex-row justify-content-center pt-2 adiv text-white">
-                                        <span class=" fw-bold ">Comment Here</span>
-                                    </div>
-                                    <div class="comment_data px-2 py-4">
-                                        <!-- <div class="d-flex flex-row p-3">
-                                            <div class="bg-white mr-2 p-3">Hello and thankyou for visiting birdlymind. Please click the video above</div>
-                                            <img src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png" width="50" height="50">
-                                        </div> -->
-                                    </div>
-
-                                    <div class="no_comment px-2 py-4">
-                                        <div class="d-flex flex-row p-3">
-                                            <div class="bg-white mx-auto pt-2 pb-1 px-3">
-                                                <h4 class="text-center"> No comment yet! Against that order</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <form class="row px-2  needs-validation" action="{{ route('admin.commentStore') }}"
-                                        id="commentform" method="POST" novalidate>
-                                        @csrf
-                                        <input type="hidden" id="comment_for_id" name="comment_for_id" value="{{$order['id']}}">
-                                        <input type="hidden" id="comment_for" name="comment_for" value="Orders">
-                                        <div class="form-group px-3 mb-2">
-                                            <textarea class="form-control tinymce-editor" rows="4" id="comment" name="comment"
-                                                    placeholder="Type your message" required></textarea>
-                                        </div>
-                                        <div class="form-group  mb-4 d-flex flex-row justify-content-end px-3">
-                                            <button type="submit" id="btn_comment" class="btn btn-primary bg-primary fw-bold">
-                                                <div class="spinner-border spinner-border-sm text-white d-none"
-                                                    id="spinner_coment"></div>
-                                                <span id="coment_btn">Add Comment </span>
-                                            </button>
-                                        </div>
-                                    </form>
+                    <div class="col-lg-12">
+                        <div class="w-100 ">
+                            <div class="card mt-3 ">
+                                <div class="d-flex flex-row justify-content-center pt-2 adiv text-white">
+                                    <span class="fw-bold">Comment Here</span>
                                 </div>
+                                <div class="comment_data px-2 py-4">
+                                    <!-- Dynamic comments will appear here -->
+                                </div>
+                
+                                <div class="no_comment px-2 py-4">
+                                    <div class="d-flex flex-row p-3">
+                                        <div class="bg-white mx-auto pt-2 pb-1 px-3">
+                                            <h4 class="text-center"> No comment yet! Against that order</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <form class="row px-2 needs-validation" action="{{ route('admin.commentStore') }}" id="commentform" method="POST" novalidate>
+                                    @csrf
+                                    <input type="hidden" id="comment_for_id" name="comment_for_id" value="{{$order['id']}}">
+                                    <input type="hidden" id="comment_for" name="comment_for" value="Orders">
+                                    <div class="form-group px-3 mb-2">
+                                        <textarea class="form-control tinymce-editor" rows="4" id="comment" name="comment" placeholder="Type your message" required></textarea>
+                                    </div>
+                                    <div class="form-group mb-4 d-flex flex-row justify-content-end px-3">
+                                        <button type="submit" id="btn_comment" class="btn btn-primary bg-primary fw-bold">
+                                            <div class="spinner-border spinner-border-sm text-white d-none" id="spinner_coment"></div>
+                                            <span id="coment_btn">Add Comment </span>
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-
                         </div>
-                    @endif
+                    </div>
+                @endif
+                
             </div>
         </section>
         <input type="hidden" id="user_id" value="{{auth()->user()->id}}">
@@ -636,162 +630,189 @@
 @stop
 
 @pushOnce('scripts')
-    <script>
-        $(function () {
-            $("#tbl_data").DataTable({
-                "paging": true,
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "pageLength": 50,
-                "pageLength": 50,
-                "buttons": [{
+<script>
+    // Document ready function
+    $(function () {
+        // Initialize DataTable
+        $("#tbl_data").DataTable({
+            "paging": true,
+            "responsive": true,
+            "lengthChange": false,
+            "autoWidth": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "pageLength": 50,
+            "buttons": [
+                {
                     extend: 'pdf',
-                    text: 'Download PDF ',
+                    text: 'Download PDF',
                     className: 'btn-blue',
                 },
-                    {
-                        extend: 'print',
-                        text: 'Print Out',
-                        className: 'btn-blue',
-                    }
-                ]
-            }).buttons().container().appendTo('#tbl_buttons');
-        });
-
-        $(document).ready(function () {
-            setInterval(comments, 10000);
-            comments();
-
-            function comments() {
-    var apiurl = @json(route('admin.comments', ['id' => $order['id']]));
-    var user_id = parseInt($('#user_id').val());
-
-    $.ajax({
-        url: apiurl,
-        type: 'GET',
-        beforeSend: function () {
-            // Any pre-requests actions, if needed
-        },
-        success: function (response) {
-            if (response.status === 'success') {
-                var comment_html = '';
-
-                console.log(response);
-                if (response.data && response.data.length > 0) {
-                    $('.no_comment').addClass('d-none');
-                    response.data.forEach(function (data) {
-                        let createdDate = new Date(data.created_at);
-                        let formattedDate = createdDate.toLocaleString();
-                        formattedDate = formattedDate.replace(/\//g, '-');
-                        
-                        // Default user image if no user image is provided
-                        let user_pic = data.user_pic ?? '/assets/admin/img/profile-img1.png';
-                        
-                        // Start building the comment's HTML
-                        let comment_data = '';
-
-                        
-                        
-                        if (user_id == data.user_id) {
-                            // Displaying the comment from the logged-in user
-                            comment_data = `
-                                <div class="d-flex flex-row p-2">
-                                  
-                                    <div class="chat ml-2 p-2" style="max-width: 500px;">
-                                        <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span> <!-- Display role next to username -->
-                                        <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span> <!-- Timestamp -->
-                                        <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p> <!-- Comment text -->
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            // Displaying comments from other users
-                             // <img class="img-fluid" src="${user_pic}" width="40" height="40" style="object-fit: cover;">
-                            comment_data = `
-                                <div class="d-flex flex-row p-2">
-                                    <div class="bg-light mr-2 p-2" style="max-width: 500px;">
-                                        <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span> <!-- Display role next to username -->
-                                        <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span> <!-- Timestamp -->
-                                        <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p> <!-- Comment text -->
-                                    </div>
-                                   
-                                </div>
-                            `;
-                        }
-
-                        // Add the comment HTML to the overall comment section
-                        comment_html += comment_data;
-                    });
-                } else {
-                    $('.no_comment').removeClass('d-none');
+                {
+                    extend: 'print',
+                    text: 'Print Out',
+                    className: 'btn-blue',
                 }
+            ]
+        }).buttons().container().appendTo('#tbl_buttons');
 
-                // Update the comment section in the DOM with the new HTML
-                $('.comment_data').html(comment_html);
-            } else {
-                console.log(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.log(status);
-        }
-    });
-}
+        // Fetch and update comments periodically
+        setInterval(comments, 10000);
+        comments();
 
-
-
-            // Adding  comment in through the api...
-            $('#commentform').on('submit', function (e) {
-                e.preventDefault();
-                var apiname = $(this).attr('action');
-                var apiurl = apiname;
-                var formData = new FormData(this);
-                var comment = formData.get('comment');
-                var user_pic = "{{ ($user->user_pic ?? '') ? asset('storage/'.$user->user_pic) : asset('assets/admin/img/profile-img1.png') }}";
-                if (comment) {
-                    $.ajax({
-                        url: apiurl,
-                        type: 'POST',
-                        data: formData,
-                        contentType: false,
-                        processData: false,
-                        beforeSend: function () {
-                            $('#spinner_coment').removeClass('d-none');
-                            $('#coment_btn').addClass('d-none');
-                        },
-                        success: function (response) {
-                            if (response.status === 'success') {
-                                $('.no_comment').addClass('d-none');
-                                comments();
-                                $('#comment').val('');
-                                $('#spinner_coment').addClass('d-none');
-                                $('#coment_btn').removeClass('d-none').prop('disabled', false);
-                            } else if (response.status === 'error') {
-                                // alert('contact to developer');
-                                console.log(response.message);
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            // alert('contact to developer');
-                            console.log(status);
-                            $('#spinner_coment').addClass('d-none');
-                            $('#coment_btn').removeClass('d-none').prop('disabled', false);
-                        }
-                    });
+        // Fetch comments function
+        function comments() {
+            // Include CSRF token in all AJAX requests globally
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
 
-            
+            var apiurl = @json(route('admin.comments', ['id' => $order['id']])); // dynamically set the route
+            var user_id = parseInt($('#user_id').val());
+            var is_super_admin = @json($user->hasRole('super_admin')); // Check if user has 'super_admin' role
+
+            $.ajax({
+                url: apiurl,
+                type: 'GET',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        var comment_html = '';
+                        if (response.data && response.data.length > 0) {
+                            $('.no_comment').addClass('d-none');
+                            response.data.forEach(function (data) {
+                                let createdDate = new Date(data.created_at);
+                                let formattedDate = createdDate.toLocaleString().replace(/\//g, '-');
+                                let comment_data = buildCommentHTML(data, formattedDate, user_id, is_super_admin);
+                                comment_html += comment_data;
+                            });
+                        } else {
+                            $('.no_comment').removeClass('d-none');
+                        }
+                        // Update the comment section in the DOM
+                        $('.comment_data').html(comment_html);
+                    } else {
+                        console.log(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(status);
+                }
+            });
+        }
+
+        // Build HTML for each comment
+        function buildCommentHTML(data, formattedDate, user_id, is_super_admin) {
+            let comment_data = '';
+            let user_pic = data.user_pic ?? '/assets/admin/img/profile-img1.png';
+
+            if (is_super_admin) {
+                // Only show delete button if the  user has 'super_admin' role
+                comment_data = `
+                    <div class="d-flex flex-row p-2 position-relative" data-comment-id="${data.id}">
+                       
+                        <div class="chat ml-2 p-2" style="max-width: 500px;">
+                            <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span>
+                            <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span>
+                              <button class="btn btn-sm btn-danger position" 
+                                style="top: 5px; left: 5px; padding: 0.2rem 0.5rem; font-size: 0.75rem;" 
+                                onclick="deleteComment(${data.id})">
+                            <i class="fa fa-trash"></i> <!-- Trash icon -->
+                        </button>
+                            <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                comment_data = `
+                    <div class="d-flex flex-row p-2">
+                        <div class="chat mr-2 p-2" style="max-width: 500px;">
+                            <span class="fw-bold" style="font-size: 0.95rem;">${data.user_name} (${data.role_name})</span>
+                            <span class="text-muted" style="font-size: 0.8rem;">${formattedDate}</span>
+                            <p class="mt-2 text-muted" style="font-size: 0.9rem; word-wrap: break-word;">${data.comment}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            return comment_data;
+        }
+
+        // Delete comment function
+        window.deleteComment = function(commentId) {
+            var deleteUrl = @json(route('admin.commentdelete', ['id' => '__comment_id__']));
+            deleteUrl = deleteUrl.replace('__comment_id__', commentId);
+
+            $.ajax({
+                url: deleteUrl,
+                type: 'DELETE',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        $(`[data-comment-id="${commentId}"]`).remove();
+                        console.log('Comment deleted successfully!');
+                    } else {
+                        console.log('Error deleting comment:', response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error deleting comment:', error);
+                }
+            });
+        };
+
+      // Submit comment form via AJAX
+        $('#commentform').on('submit', function (e) {
+            e.preventDefault(); // Prevent form submission
+            var formData = new FormData(this);
+            var comment = formData.get('comment'); // Get the comment text
+
+            if (comment) {
+                var apiurl = $(this).attr('action'); // Get the form action URL
+                $.ajax({
+                    url: apiurl,
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    beforeSend: function () {
+                        $('#spinner_coment').removeClass('d-none'); // Show loading spinner
+                        $('#coment_btn').addClass('d-none'); // Hide the button text
+                    },
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            // Hide the 'no comment' section if a comment is added
+                            $('.no_comment').addClass('d-none');
+                            
+                            // Update the comment section with the new comment
+                            comments();
+
+                            // Clear the textarea and reset the form
+                            $('#comment').val(''); // Clear the textarea
+                            $('#commentform')[0].reset(); // Reset the form (in case of other inputs)
+
+                            // Hide the spinner and enable the button again
+                            $('#spinner_coment').addClass('d-none');
+                            $('#coment_btn').removeClass('d-none').prop('disabled', false);
+                        } else {
+                            console.log(response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ', error);
+                        $('#spinner_coment').addClass('d-none');
+                        $('#coment_btn').removeClass('d-none').prop('disabled', false);
+                    }
+                });
+            }
+        });
+
+        // Download GPA logic
         $(document).on('click', '.download_gpa', function() {
             var id = $(this).data('id');
             $('#pdf_form_id_input').val(id);
             $('#download_form').submit();
         });
-
-        });
-    </script>
+    });
+</script>
 @endPushOnce

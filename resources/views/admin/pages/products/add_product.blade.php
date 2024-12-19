@@ -327,6 +327,20 @@
                     <div class="alert-danger text-danger ">{{ $message }}</div>
                     @enderror
                 </div>
+                @php
+                $display = isset($product['product_template']) ? ($product['product_template'] == config('constants.PHARMACY_MEDECINE') ? '' : 'd-none') : '';
+                @endphp
+                <div class="col-md-6 question_risk-div {{$display}}">
+                    <label for="question_risk" class="col-form-label"> Question Risk</label>
+                    <select id="question_risk" name="question_risk" class="form-select">
+                        <option value="1" {{ (isset($product['question_risk']) && $product['question_risk'] == '1') ? 'selected' : '' }}>Low Risk</option>
+                        <option value="2" {{ (isset($product['question_risk']) && $product['question_risk'] == '2') ? 'selected' : '' }}>High Risk</option>
+                    </select>
+                    <div class="invalid-feedback">Please select the risk level!</div>
+                    @error('stock_status')
+                    <div class="alert-danger text-danger ">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 @php
                 $display = isset($product['product_template']) ? ($product['product_template'] == config('constants.PRESCRIPTION_MEDICINE') ? '' : 'd-none') : '';
@@ -666,6 +680,16 @@
                 $('.question_category-div').addClass('d-none');
             }
         });
+
+        $('#product_template').change(function() {
+            var template = $(this).val();
+            if (template == 1) {
+                $('.question_risk-div').removeClass('d-none');
+            } else {
+                $('.question_risk-div').addClass('d-none');
+            }
+        });
+
 
         $('.delete-variant').on('click', function() {
             var id = $(this).data("id");

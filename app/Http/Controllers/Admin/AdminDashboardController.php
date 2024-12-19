@@ -2997,6 +2997,29 @@ class AdminDashboardController extends Controller
         }
     }
 
+    public function comment_delete(Request $request, $id): JsonResponse
+    {
+        $this->authorize('comment_store');
+
+        try {
+            // Find the comment by ID
+            $comment = Comment::findOrFail($id);
+
+            // // Check if the comment belongs to the logged-in user (optional, if needed for extra security)
+            // if ($comment->user_id !== Auth::id()) {
+            //     return response()->json(['status' => 'error', 'message' => 'Unauthorized action'], 403);
+            // }
+
+            // Delete the comment
+            $comment->delete();
+
+            $message = 'Comment deleted successfully';
+            return response()->json(['status' => 'success', 'message' => $message]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Error deleting comment', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     public function update_additional_note(UpdateAdditionalNoteRequest $request)
     {
         $user = $this->getAuthUser();
