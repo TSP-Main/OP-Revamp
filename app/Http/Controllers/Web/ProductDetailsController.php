@@ -164,7 +164,7 @@ class ProductDetailsController extends Controller
     {
         $product_template_2_ids = [];
         foreach ($products as $item) {
-            if ($item->product_template == config('constants.PRESCRIPTION_MEDICINE')) {
+            if ($item->product_template == config('constants.PRESCRIPTION_MEDICINE') || $item->question_risk == '2') {
                 $product_template_2_ids[] = $item->id;
             }
         }
@@ -222,15 +222,17 @@ class ProductDetailsController extends Controller
 
     public function notify(Request $request, $productId)
     {
-        if (!auth()->check()) {
-            return redirect()->route('sign_in_form')->with('error', 'You need to be logged in to receive notifications.');
-        }
+        // if (!auth()->check()) {
+        //     return redirect()->route('sign_in_form')->with('error', 'You need to be logged in to receive notifications.');
+        // }
 
+
+        $email = $request->input('email');
         // Validate and fetch user email
         $user = auth()->user();
-        $request->validate([
-            'email' => 'required|email|in:' . $user->email,
-        ]);
+        // $request->validate([
+        //     'email' => $email ?? $user->email,
+        // ]);
 
         // Check if the product exists
         $product = Product::findOrFail($productId);
@@ -238,11 +240,11 @@ class ProductDetailsController extends Controller
         // Create or update the notification record
         ProductNotification::updateOrCreate(
             [
-                'user_id' => $user->id,
+                'user_id' => $user->id ?? null,
                 'product_id' => $productId,
             ],
             [
-                'email' => $user->email,
+                'email' => $user->email ?? $email,
             ]
         );
 

@@ -157,6 +157,7 @@ class HomeController extends Controller
 
     public function privacy_and_cookies_policy(Request $request)
     {
+        $this->shareMenuCategories();
         return view('web.pages.privacy_and_cookies_policy');
     }
 
@@ -168,26 +169,34 @@ class HomeController extends Controller
 
     public function acceptable_use_policy(Request $request)
     {
+        $this->shareMenuCategories();
         return view('web.pages.acceptable_use_policy');
     }
 
     public function editorial_policy(Request $request)
     {
+        $this->shareMenuCategories();
         return view('web.pages.editorial_policy');
     }
 
     public function dispensing_frequencies(Request $request)
     {
+        $this->shareMenuCategories();
+
         return view('web.pages.dispensing_frequencies');
     }
 
     public function identity_verification(Request $request)
     {
+        $this->shareMenuCategories();
+
         return view('web.pages.identity_verification');
     }
 
     public function clinic(Request $request)
     {
+        $this->shareMenuCategories();
+
         return view('web.pages.clinic');
     }
 }

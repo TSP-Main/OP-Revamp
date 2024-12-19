@@ -81,6 +81,8 @@ Route::prefix('admin')->middleware(['check.userAuthCheck'])->group(function () {
 
     Route::get('/comments/id', [AdminDashboardController::class, 'comments'])->name('admin.comments');
     Route::match(['get', 'post'], '/commentStore', [AdminDashboardController::class, 'comment_store'])->name('admin.commentStore');
+    Route::delete('comments/{id}', [AdminDashboardController::class, 'comment_delete'])->name('admin.commentdelete');
+
 
     Route::get('/doctors', [AdminDashboardController::class, 'doctors'])->name('admin.doctors');
     Route::match(['get', 'post'], '/addDoctor',   [AdminDashboardController::class, 'add_doctor'])->name('admin.addDoctor');

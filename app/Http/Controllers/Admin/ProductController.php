@@ -350,6 +350,7 @@ class ProductController extends Controller
                 'sub_category' => $request->sub_category ?? null,
                 'child_category' => $request->child_category ?? null,
                 'product_template' => $request->product_template ?? null,
+                'question_risk'      => $request->question_risk  ?? null,
                 'question_category' => $question_category ?? null,
                 'cut_price' => $request->cut_price,
                 'barcode' => $request->barcode,
