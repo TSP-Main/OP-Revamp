@@ -218,9 +218,11 @@
                                                             <span>ADD TO CART</span>
                                                         </a>
                                                         @elseif( $product->product_template == 1 && $product->question_risk == "2")
-                                                         <form action="{{ route('category.products', ['main_category' => $product->category->slug ?? NULL, 'sub_category' => $product->sub_cat->slug ?? NULL, 'child_category' => $product->child_cat->slug ?? NULL]) }}" method="POST">
+                                                        <form action="{{ route('web.consultationForm') }}" method="POST">
                                                             @csrf
+                                                            <input type="hidden" name="template" value="{{ config('constants.PHARMACY_MEDECINE') }}">
                                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                            <input type="hidden" name="question_risk" value="{{ $product->question_risk }}">
                                                             <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Start Consultation">
                                                                 <span>Start Consultation</span>
                                                             </button>
@@ -230,6 +232,7 @@
                                                             @csrf
                                                             <input type="hidden" name="template" value="{{ config('constants.PHARMACY_MEDECINE') }}">
                                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                            <input type="hidden" name="question_risk" value="{{ $product->question_risk }}">
                                                             <button type="submit" class="theme-btn-1 btn btn-effect-1" title="Start Consultation">
                                                                 <span>Start Consultation</span>
                                                             </button>
