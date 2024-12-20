@@ -225,7 +225,7 @@
                             </tbody>
                         </table>
                         <div id="ajax-alert" class="alert" style="display: none;"></div>
-                    @if(($user->hasRole('super_admin')))
+                    @if(($user->hasRole('super_admin')) || ($user->hasRole('pharmacy'))) 
                     <div class="col-md-12 d-flex justify-content-start align-items-center mt-3" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                         <form id="approval-form" action="{{ route('admin.changeProductStatus') }}" method="POST" style="width: 100%; max-width: 600px;">
                             @csrf
