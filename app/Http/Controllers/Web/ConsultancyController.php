@@ -18,13 +18,29 @@ class ConsultancyController extends Controller
     public function consultationForm(Request $request)
     {
         $this->shareMenuCategories();
+    
         $data['user'] = auth()->user() ?? [];
         $data['template'] = $request->template ?? session('template');
         $data['product_id'] = $request->product_id ?? session('product_id');
+        $questionRisk = $request->question_risk; // Get the 'question_risk' value from the request
+    
+        // If the template is PHARMACY_MEDECINE, check for question_risk and user login status
         if ($data['template'] == config('constants.PHARMACY_MEDECINE')) {
+    
+            // Check if the question_risk is 2, and user is not logged in
+            if ($questionRisk == 2 && !auth()->check()) {
+                session()->put('intended_url', 'fromConsultation');
+                session()->put('template', $data['template']);
+                session()->put('product_id', $data['product_id']);
+                return redirect()->route('sign_in_form');
+            }
+    
+            // If logged in or question_risk is not 2, proceed to the question page
             $data['questions'] = PMedGeneralQuestion::where(['status' => 'Active'])->get()->toArray();
             return view('web.pages.pmd_genral_question', $data);
+    
         } else if ($data['template'] == config('constants.PRESCRIPTION_MEDICINE')) {
+    
             if (auth()->user()) {
                 if ($data['user']->id_document ?? Null) {
                     foreach (session('consultations') ?? [] as $key => $value) {
@@ -35,7 +51,7 @@ class ConsultancyController extends Controller
                             }
                         }
                     }
-
+    
                     $data['questions'] = PrescriptionMedGeneralQuestion::where(['status' => 'Active'])->get()->toArray();
                     $data['gp_locations'] = Pharmacy4uGpLocation::where('status', 'Active')->latest('id')->get()->toArray();
                     return view('web.pages.premd_genral_question', $data);
@@ -55,7 +71,7 @@ class ConsultancyController extends Controller
             return redirect()->back();
         }
     }
-
+    
     public function idDocumentForm()
     {
         $this->shareMenuCategories();
